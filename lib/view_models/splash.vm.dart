@@ -15,22 +15,14 @@ class SplashViewModel extends BaseViewModel {
   bool checkLogin = false;
   String token = "";
   String userJson = "";
-  String day = '';
   DeviceInfoModel? deviceInfo;
   bool isLoading = true;
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
-    day = AppSP.get(AppSPKey.day) ?? '';
-    if (day != DateTime.now().toString()) {
-      AppSP.set(AppSPKey.day, DateTime.now().toString());
-    }
-   
     await _checkLogin();
     _navigateToNextPage(context);
   }
-
-
 
   Future<void> _checkLogin() async {
     if (token.isNotEmpty) {
@@ -47,7 +39,7 @@ class SplashViewModel extends BaseViewModel {
 
   void _navigateToNextPage(BuildContext context) {
     Future.wait([
-      Future.delayed(const Duration(seconds: 5)),
+      Future.delayed(const Duration(seconds: 1)),
       _checkLogin(),
     ]).then((_) {
       if (checkLogin) {

@@ -11,7 +11,7 @@ import '../../models/user/user.dart';
 class DeviceRequest {
   final Dio dio = Dio();
   Future<bool> connectDevice(
-      Device device, DeviceInfoModel deviceInfo, User currentUser) async {
+      DeviceInfoModel deviceInfo, User currentUser) async {
     bool checkConnect = false;
     final formData = FormData.fromMap({
       'computer_name': deviceInfo.model,
@@ -35,16 +35,29 @@ class DeviceRequest {
       );
       print('Body thêm device: ${response.data}');
       final responseData = jsonDecode(response.data);
-      if(responseData["status"] == 1){
+      if (responseData["status"] == 1) {
         checkConnect = true;
-        
-      }
-      else{
-
+      } else {
+        print('Lỗi khi thêm device: ${response.data}');
+        checkConnect = false;
       }
     } catch (e) {
       print('Lỗi: $e');
     }
     return checkConnect;
+  }
+
+  Future<List<Device>> getDeviceByCustomerId(String customerId) async {
+    List<Device> lstAllDevice = [];
+    final response = await dio.get(
+      '${Api.hostApi}${Api.getDeviceByCustomerId}/$customerId',
+    );
+    final responseData = jsonDecode(response.data);
+    print('getDeviceByCustomerId: ${responseData.toString()}');
+    List<dynamic> deviceList = responseData['Device_list'];
+    if (deviceList.isNotEmpty) {
+      lstAllDevice = deviceList.map((e) => Device.fromJson(e)).toList();
+    }
+    return lstAllDevice;
   }
 }

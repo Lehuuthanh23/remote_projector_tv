@@ -12,7 +12,7 @@ class CampSchedule {
   String customerId;
   String fromTime;
   String toTime;
-
+  String videoDuration;
   CampSchedule({
     required this.campaignId,
     required this.campaignName,
@@ -27,6 +27,7 @@ class CampSchedule {
     required this.customerId,
     required this.fromTime,
     required this.toTime,
+    required this.videoDuration,
   });
 
   factory CampSchedule.fromJson(Map<String, dynamic> json) {
@@ -44,6 +45,7 @@ class CampSchedule {
       customerId: json['customer_id'],
       fromTime: json['from_time'],
       toTime: json['to_time'],
+      videoDuration: json['video_duration'],
     );
   }
 
@@ -62,6 +64,7 @@ class CampSchedule {
       'customer_id': customerId,
       'from_time': fromTime,
       'to_time': toTime,
+      'video_duration': videoDuration,
     };
   }
 }
