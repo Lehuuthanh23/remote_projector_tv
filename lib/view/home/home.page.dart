@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:play_box/app/app_sp.dart';
+import 'package:play_box/app/app_sp_key.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../models/camp/camp_schedule.dart';
+import '../../request/camp/camp.request.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/buttonCustom.dart';
 import '../../widget/clock.dart';
@@ -32,8 +38,15 @@ class _HomePageState extends State<HomePage> {
       onViewModelReady: (viewModel) async {
         viewModel.viewContext = context;
         await viewModel.initialise();
+        List<CampSchedule> lstCampSchedule =
+            await CampRequest().getCampSchedule();
+        List<Map<String, dynamic>> jsonList =
+            lstCampSchedule.map((camp) => camp.toJson()).toList();
+        String lstCampScheduleString = jsonEncode(jsonList);
+        AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
       },
       builder: (context, viewModel, child) {
+        print('Giá trị ProjectorIP: ${AppSP.get(AppSPKey.projectorIP)}');
         return SafeArea(
           child: Scaffold(
             body: Stack(

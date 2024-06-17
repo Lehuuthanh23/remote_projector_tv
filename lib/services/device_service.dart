@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:play_box/app/app_sp.dart';
@@ -47,7 +48,8 @@ class DeviceInfoService {
         uuid: 'Unknown',
       );
     }
-    AppSP.set(AppSPKey.device, deviceInfoModel.toJson());
+    AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
+    print('Device tạo xong la: ${AppSP.get(AppSPKey.device)}');
     return deviceInfoModel;
   }
 }

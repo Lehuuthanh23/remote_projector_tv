@@ -10,12 +10,17 @@ import '../models/camp/camp_schedule.dart';
 import '../models/device/device_info_model.dart';
 import '../models/user/user.dart';
 import '../request/camp/camp.request.dart';
+import '../request/device/device.request.dart';
 import '../services/device_service.dart';
 import '../view/splash/splash.page.dart';
+import '../widget/pop_up.dart';
 
 class HomeViewModel extends BaseViewModel {
   late BuildContext viewContext;
   CampRequest campRequest = CampRequest();
+  bool turnOnlPJ = false;
+  bool turnOffPJ = false;
+  bool openOnStartup = false;
   List<CampModel> camps = [
     // CampModel(
     //   campaignId: '1',
@@ -52,6 +57,10 @@ class HomeViewModel extends BaseViewModel {
   List<CampSchedule> lstCampSchedule = [];
   User currentUser = User();
   DeviceInfoModel? deviceInfo;
+  DeviceRequest deviceRequest = DeviceRequest();
+  TextEditingController proUN = TextEditingController();
+  TextEditingController proPW = TextEditingController();
+  TextEditingController projectorIP = TextEditingController();
   initialise() async {
     currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
     await fetchDeviceInfo();
@@ -87,6 +96,54 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> connectDevice() async {
-    
+    bool checkConnect =
+        await deviceRequest.connectDevice(deviceInfo!, currentUser);
+    if (checkConnect) {
+      showDialog(
+        context: viewContext,
+        builder: (BuildContext context) {
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_success.png"),
+            title: 'Kết nối thành công',
+            leftText: 'Xác nhận',
+            onLeftTap: () {
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: viewContext,
+        builder: (BuildContext context) {
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_error.png"),
+            title: 'Kết nối thất bại',
+            leftText: 'Xác nhận',
+            onLeftTap: () {
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+    }
+  }
+
+  turnOnl() {
+    turnOnlPJ = !turnOnlPJ;
+    AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());
+    notifyListeners();
+  }
+
+  turnOff() {
+    turnOffPJ = !turnOffPJ;
+    AppSP.set(AppSPKey.turnOfflPJ, turnOffPJ.toString());
+    notifyListeners();
+  }
+
+  openOnStart() {
+    openOnStartup = !openOnStartup;
+    AppSP.set(AppSPKey.turnOfflPJ, openOnStartup.toString());
+    notifyListeners();
   }
 }

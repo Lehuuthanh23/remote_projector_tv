@@ -94,4 +94,38 @@ class Device {
       isCheckOffProjector: int.parse(json['isCheckOffProjector']),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'computer_id': computerId,
+      'computer_name': computerName,
+      'seri_computer': serialComputer,
+      'ip_address': ipAddress,
+      'status': status,
+      'provinces': provinces,
+      'district': district,
+      'wards': wards,
+      'center_id': centerId,
+      'location': location,
+      'actived_date': activedDate,
+      'created_date': createdDate,
+      'ultraviewPW': ultraviewPW,
+      'ultraviewID': ultraviewID,
+      'customer_id': customerId,
+      'type': type,
+      'id_dir': idDir,
+      'name_dir': nameDir,
+      'time_end': timeEnd,
+      'turn_on': turnOn.toString(),
+      'turn_off': turnOff.toString(),
+      'created_by': createdBy,
+      'last_MDF_by': lastMDFBy,
+      'last_MDF_date': lastMDFDate,
+      'user': user,
+      'pass': pass,
+      'deleted': deleted,
+      'isCheckOnProjector': isCheckOnProjector.toString(),
+      'isCheckOffProjector': isCheckOffProjector.toString(),
+    };
+  }
 }

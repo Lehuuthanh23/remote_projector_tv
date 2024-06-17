@@ -72,9 +72,13 @@ class _ButtomCustomState extends State<ButtomCustom> {
           margin: widget.margin,
           decoration: BoxDecoration(
             color: _isFocused
-                ? (widget.color ?? Colors.blue).withOpacity(0.7)
+                ? (widget.color ?? const Color.fromARGB(255, 192, 227, 255))
+                    .withOpacity(0.7)
                 : widget.color ??
-                    (_isFocused ? Colors.blue.withOpacity(0.7) : Colors.white),
+                    (_isFocused
+                        ? const Color.fromARGB(255, 192, 227, 255)
+                            .withOpacity(0.7)
+                        : Colors.white),
             borderRadius: BorderRadius.horizontal(
               left: Radius.circular(widget.borderRadius ?? 50),
               right: Radius.circular(widget.borderRadius ?? 50),
