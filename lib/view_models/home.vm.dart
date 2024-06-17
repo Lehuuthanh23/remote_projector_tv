@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -74,6 +75,8 @@ class HomeViewModel extends BaseViewModel {
   signOut() async {
     await AppSP.set(AppSPKey.token, '');
     await AppSP.set(AppSPKey.user_info, '');
+    const platform = MethodChannel('com.example/my_channel');
+    platform.invokeMethod('clearUser');
     Navigator.pushAndRemoveUntil(
         viewContext,
         MaterialPageRoute(builder: (context) => const SplashPage()),
