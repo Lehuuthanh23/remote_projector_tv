@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/constants/api.dart';
 import 'package:play_box/models/user/user.dart';
 
@@ -65,6 +66,9 @@ class AuthenticationRequest {
       print(userJson);
       await AppSP.set(AppSPKey.token, userJson['customer_token']);
       await AppSP.set(AppSPKey.user_info, jsonEncode(userJson));
+
+      const platform = MethodChannel('com.example/my_channel');
+      platform.invokeMethod('saveUser', { AppSPKey.user_info: jsonEncode(userJson) });
     }
     String id = AppSP.get(AppSPKey.token);
     String userInfo = AppSP.get(AppSPKey.user_info);
