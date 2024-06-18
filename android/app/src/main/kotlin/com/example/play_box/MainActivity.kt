@@ -14,8 +14,12 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import android.app.AlertDialog
+import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 class MainActivity: FlutterActivity() {
+    private val CHANNEL = "com.example.usb/serial"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -96,7 +100,37 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
+        
         FlutterEngineCache.getInstance().put("my_engine_id", flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+            call, result ->
+            if (call.method == "getUsbPath") {
+                val usbPath = getUsbPath()
+                if (usbPath != null) {
+                    result.success(usbPath)
+                } else {
+                    result.error("UNAVAILABLE", "USB path not available.", null)
+                }
+            } else {
+                result.notImplemented()
+            }
+        }
+    }
+    
+     private fun getUsbPath(): String? {
+        val storageDirectory = File("/storage")
+        if (storageDirectory.exists() && storageDirectory.isDirectory) {
+            val directories = storageDirectory.listFiles { file -> file.isDirectory }
+            if (directories != null) {
+                for (dir in directories) {
+                    // Check for the presence of Android folder or any specific criteria to confirm it's a USB
+                    if (File(dir, "Android").exists()) {
+                        return dir.absolutePath
+                    }
+                }
+            }
+        }
+        return null
     }
 }

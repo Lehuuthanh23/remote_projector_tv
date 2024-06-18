@@ -24,11 +24,11 @@ class MyBackgroundService : Service() {
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
-    private val checkInterval = 20 * 1000L
+    private val checkInterval = 100 * 1000L
     private val checkRunnable = object : Runnable {
         override fun run() {
             if (!isAppRunning(applicationContext)) {
-                openFlutterActivity(applicationContext)
+                //openFlutterActivity(applicationContext)
             }
 
             handler.postDelayed(this, checkInterval)

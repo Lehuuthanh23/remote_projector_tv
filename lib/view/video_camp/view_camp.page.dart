@@ -192,24 +192,22 @@ class _HtmlViewerPageState extends State<HtmlViewerPage> {
   }
 
   void _loadHtmlFromAssets(int index) async {
+    print('Vào _loadHtmlFromAssets');
     if (index >= lstVideoUrl.length) {
       _currentVideoIndex = 0;
       _loadHtmlFromAssets(_currentVideoIndex);
-      return;
     }
 
     _waitTime = Duration(
         seconds: int.parse(widget.lstCampSchedule[index].videoDuration));
-
     String filePath = 'assets/abc.html';
     String fileText = await rootBundle.loadString(filePath);
-
-    // Thực hiện thay đổi nội dung HTML
+    print('Nội dung file: $fileText');
     String updatedFileText = fileText.replaceAll(
       "link_video",
       lstVideoUrl[index],
     );
-
+    print('Nội dung file sau replace: $updatedFileText');
     _controller.loadRequest(
       Uri.dataFromString(
         updatedFileText,
