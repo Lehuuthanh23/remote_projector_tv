@@ -30,7 +30,7 @@ class CampRequest {
         .first;
     AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
     final response = await dio.get(
-      '${Api.hostApi}${Api.getCampBySeriComputer}/${deviceInfoModel.androidId}',
+      '${Api.hostApi}${Api.GetCampBySeriComputerAndCustomerID}/${deviceInfoModel.androidId}/${currentUser.customerId}',
     );
     final responseData = jsonDecode(response.data);
     print(responseData);

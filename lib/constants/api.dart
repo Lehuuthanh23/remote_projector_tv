@@ -43,4 +43,5 @@ class Api {
   static String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
   static String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
   static String getCampBySeriComputer = '/home/GetCamp_BySeriComputer';
+  static String GetCampBySeriComputerAndCustomerID = '/home/GetCamp_BySeriComputerAndCustomerID';
 }

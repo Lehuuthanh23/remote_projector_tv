@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
@@ -19,8 +20,8 @@ class _TimerClockState extends State<TimerClock> {
   late Timer _timer;
   late DateTime _currentTime;
   String day = '';
+  Dio dio = Dio();
   bool flagPlayVideo = false;
-
   @override
   void initState() {
     super.initState();
@@ -34,7 +35,7 @@ class _TimerClockState extends State<TimerClock> {
     setState(() {
       _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
     });
-
+    //AppSP.set(AppSPKey.day, '');
     day = AppSP.get(AppSPKey.day) ?? '';
     if (day != DateTime.now().toString().substring(0, 10)) {
       print('Đúng điều kiện để lấy lịch chiếu');
@@ -47,9 +48,10 @@ class _TimerClockState extends State<TimerClock> {
       String lstCampScheduleString = jsonEncode(jsonList);
       AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     }
-
     String lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
+    
     List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
+    print('Camp đã lưu: $lstCampScheduleString');
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
     List<CampSchedule> lstCampScheduleNew =
         lstCampScheduleJson.map((e) => CampSchedule.fromJson(e)).where((camp) {
@@ -57,17 +59,21 @@ class _TimerClockState extends State<TimerClock> {
       DateTime toTime = stringToDateTime(camp.toTime);
       return fromTime.isBefore(now) && toTime.isAfter(now);
     }).toList();
-    print('flagPlayVideo1: $flagPlayVideo');
-    if (flagPlayVideo == false) {
-      print('Đúng điều kiện lstCampScheduleNew != lstCampScheduleOld)');
-      flagPlayVideo = true;
-      print('flagPlayVideo2: $flagPlayVideo');
+    if (lstCampScheduleNew.isNotEmpty && flagPlayVideo == false) {
+      print('lstCampScheduleNew.isNotEmpty');
+      dio.get(
+          'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0103');
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => HtmlViewerPage(
-                    lstCampSchedule: lstCampScheduleNew,
-                  )));
+            builder: (context) => HtmlViewerPage(
+              lstCampSchedule: lstCampScheduleNew,
+            ),
+          ));
+      flagPlayVideo = true;
+    } else if (lstCampScheduleNew.isEmpty) {
+      dio.get(
+          'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0203');
     }
   }
 
