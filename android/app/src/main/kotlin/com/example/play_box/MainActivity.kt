@@ -14,15 +14,8 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import android.app.AlertDialog
-import android.util.Log
-import com.example.play_box.api.Constants
-import com.example.play_box.utils.JSON
-import com.example.play_box.utils.SharedPreferencesManager
-import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,8 +29,6 @@ class MainActivity: FlutterActivity() {
                 showPermissionDialog()
             }
         }
-
-        sharedPreferencesManager = SharedPreferencesManager(context)
 
         startMyBackgroundService()
     }
@@ -107,25 +98,5 @@ class MainActivity: FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         FlutterEngineCache.getInstance().put("my_engine_id", flutterEngine)
-
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example/my_channel")
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "saveUser" -> {
-                        val argument = call.argument<String>(Constants.USER_INFO)
-                        sharedPreferencesManager.saveUserProfile(argument)
-                        startMyBackgroundService()
-                        Log.d("MainActivity", "configureFlutterEngine: $argument")
-                    }
-
-                    "clearUser" -> {
-                        sharedPreferencesManager.clearData()
-                    }
-
-                    else -> {
-                        result.notImplemented()
-                    }
-                }
-            }
     }
 }
