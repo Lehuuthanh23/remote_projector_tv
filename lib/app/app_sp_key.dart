@@ -13,5 +13,5 @@ class AppSPKey {
   static const String proPW = 'proPW';
   static const String projectorIP = 'projectorIP';
   static const String lstCampSchedule = 'lstCampSchedule';
-  static const String lstCampScheduleOld = 'lstCampScheduleOld';
+  static const String checkConnect = '';
 }

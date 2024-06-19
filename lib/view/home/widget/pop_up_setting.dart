@@ -315,7 +315,9 @@ class PopupSettingScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             color: const Color(0xffEB6E2C),
                             onPressed: () async {
-                              await homeVM.connectDevice();
+                              AppSP.get(AppSPKey.checkConnect) == 'true'
+                                  ? null
+                                  : await homeVM.connectDevice();
                             },
                             title: 'KẾT NỐI',
                             textSize: 15,

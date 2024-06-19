@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:play_box/app/app_sp.dart';
+import 'package:play_box/app/app_sp_key.dart';
 import 'package:play_box/models/device/device_model.dart';
 
 import '../../app/app_utils.dart';
@@ -37,6 +39,7 @@ class DeviceRequest {
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
         checkConnect = true;
+        AppSP.set(AppSPKey.checkConnect, 'true');
       } else {
         print('Lỗi khi thêm device: ${response.data}');
         checkConnect = false;

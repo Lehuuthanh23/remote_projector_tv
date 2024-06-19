@@ -30,9 +30,6 @@ class LoginViewModel extends BaseViewModel {
       print(errorMessage);
       errorMessagee = errorMessage;
     } else {
-
-      
-
       Navigator.pushAndRemoveUntil(
         viewContext,
         MaterialPageRoute(builder: (context) => const HomePage()),

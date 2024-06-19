@@ -32,6 +32,9 @@ class _TimerClockState extends State<TimerClock> {
   }
 
   Future<void> _updateTime() async {
+    // AppSP.set(AppSPKey.day, '');
+    // AppSP.set(AppSPKey.lstCampSchedule, '');
+
     setState(() {
       _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
     });
@@ -40,7 +43,6 @@ class _TimerClockState extends State<TimerClock> {
     if (day != DateTime.now().toString().substring(0, 10)) {
       print('Đúng điều kiện để lấy lịch chiếu');
       AppSP.set(AppSPKey.day, DateTime.now().toString().substring(0, 10));
-
       List<CampSchedule> lstCampSchedule =
           await CampRequest().getCampSchedule();
       List<Map<String, dynamic>> jsonList =
@@ -48,32 +50,36 @@ class _TimerClockState extends State<TimerClock> {
       String lstCampScheduleString = jsonEncode(jsonList);
       AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     }
-    String lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
-    
-    List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
-    print('Camp đã lưu: $lstCampScheduleString');
-    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    List<CampSchedule> lstCampScheduleNew =
-        lstCampScheduleJson.map((e) => CampSchedule.fromJson(e)).where((camp) {
-      DateTime fromTime = stringToDateTime(camp.fromTime);
-      DateTime toTime = stringToDateTime(camp.toTime);
-      return fromTime.isBefore(now) && toTime.isAfter(now);
-    }).toList();
-    if (lstCampScheduleNew.isNotEmpty && flagPlayVideo == false) {
-      print('lstCampScheduleNew.isNotEmpty');
-      dio.get(
-          'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0103');
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HtmlViewerPage(
-              lstCampSchedule: lstCampScheduleNew,
-            ),
-          ));
-      flagPlayVideo = true;
-    } else if (lstCampScheduleNew.isEmpty) {
-      dio.get(
-          'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0203');
+    String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
+    if (lstCampScheduleString != null && lstCampScheduleString != '') {
+      List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
+      print('Camp đã lưu: $lstCampScheduleString');
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      List<CampSchedule> lstCampScheduleNew = lstCampScheduleJson
+          .map((e) => CampSchedule.fromJson(e))
+          .where((camp) {
+        DateTime fromTime = stringToDateTime(camp.fromTime);
+        DateTime toTime = stringToDateTime(camp.toTime);
+        return fromTime.isBefore(now) &&
+            toTime.isAfter(now) &&
+            camp.status == '1';
+      }).toList();
+      if (lstCampScheduleNew.isNotEmpty && flagPlayVideo == false) {
+        print('Mở xem video');
+        dio.get(
+            'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0103');
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ViewCampPage(
+                lstCampSchedule: lstCampScheduleNew,
+              ),
+            ));
+        flagPlayVideo = true;
+      } else if (lstCampScheduleNew.isEmpty) {
+        dio.get(
+            'http://admin1:panasonic@192.168.1.100/cgi-bin/sd95.cgi?cm=0200a13d0203');
+      }
     }
   }
 
