@@ -23,7 +23,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool _isDrawerOpen = false;
-
+  final HomeViewModel homeViewModel = HomeViewModel();
   void _toggleDrawer() {
     setState(() {
       _isDrawerOpen = !_isDrawerOpen;
@@ -31,10 +31,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    homeViewModel.setContext(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
       disposeViewModel: false,
-      viewModelBuilder: () => HomeViewModel(),
+      viewModelBuilder: () => homeViewModel,
       onViewModelReady: (viewModel) async {
         viewModel.viewContext = context;
         await viewModel.initialise();

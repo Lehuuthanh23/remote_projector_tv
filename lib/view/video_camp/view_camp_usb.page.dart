@@ -2,18 +2,22 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
-class ViewCampUSBPage extends StatefulWidget {
+class VideoPlayerWidget extends StatefulWidget {
+  final String customPath;
+
+  VideoPlayerWidget({Key? key, required this.customPath}) : super(key: key);
+
   @override
-  _ViewCampUSBPageState createState() => _ViewCampUSBPageState();
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
 }
 
-class _ViewCampUSBPageState extends State<ViewCampUSBPage> {
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   VideoPlayerController? _controller;
   List<File> videoFiles = [];
   int currentIndex = 0;
+  bool isSingleFile = false;
   String usbPathh = 'Không có';
 
   @override
@@ -40,28 +44,40 @@ class _ViewCampUSBPageState extends State<ViewCampUSBPage> {
     });
   }
 
-  Future<void> _loadVideosFromDirectory() async {
+  Future<void> _initializeVideoPlayer(String customPath) async {
     // Lấy đường dẫn tới USB
     await _getUsbPath();
-    usbPathh = '$_usbPath/Video/';
-    //usbPathh = '/storage/7432-760A/Video/';
-    final Directory directory = Directory(usbPathh);
-    if (directory.existsSync()) {
-      setState(() {
-        videoFiles = directory
-            .listSync()
-            .where((file) => path.extension(file.path).toLowerCase() == '.mp4')
-            .map((file) => File(file.path))
-            .toList();
-      });
+    usbPathh = '$_usbPath/$customPath';
 
-      if (videoFiles.isNotEmpty) {
-        _playVideo(0);
-      }
-    } else {
+    final File file = File(usbPathh);
+    if (file.existsSync()) {
+      // Nếu đường dẫn là một file
+      isSingleFile = true;
       setState(() {
-        videoFiles = [];
+        videoFiles = [file];
       });
+      _playVideo(0);
+    } else {
+      // Nếu đường dẫn là một thư mục
+      final Directory directory = Directory(usbPathh);
+      if (directory.existsSync()) {
+        setState(() {
+          videoFiles = directory
+              .listSync()
+              .where((file) => path.extension(file.path).toLowerCase() == '.mp4')
+              .map((file) => File(file.path))
+              .toList();
+          isSingleFile = false;
+        });
+
+        if (videoFiles.isNotEmpty) {
+          _playVideo(0);
+        }
+      } else {
+        setState(() {
+          videoFiles = [];
+        });
+      }
     }
   }
 
@@ -74,15 +90,15 @@ class _ViewCampUSBPageState extends State<ViewCampUSBPage> {
             _controller?.play();
           });
         })
-        ..setLooping(false)
+        ..setLooping(false) // Không lặp lại từng video
         ..addListener(() {
           if (_controller!.value.position == _controller!.value.duration) {
             if (currentIndex + 1 >= videoFiles.length) {
-              currentIndex = 0;
-              _playVideo(0);
+              currentIndex = 0; // Quay lại video đầu tiên
             } else {
-              _playVideo(++currentIndex);
+              currentIndex++;
             }
+            _playVideo(currentIndex);
           }
         });
     }
@@ -91,7 +107,7 @@ class _ViewCampUSBPageState extends State<ViewCampUSBPage> {
   @override
   void initState() {
     super.initState();
-    _loadVideosFromDirectory();
+    _initializeVideoPlayer(widget.customPath);
   }
 
   @override

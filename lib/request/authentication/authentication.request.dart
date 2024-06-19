@@ -16,6 +16,7 @@ import '../../services/device_service.dart';
 
 class AuthenticationRequest {
   final Dio dio = Dio();
+  String checkError = '';
   DeviceInfoModel? deviceInfo;
   Future<String?> login(BuildContext context, LoginRequestModel user) async {
     final formData = FormData.fromMap({
@@ -38,9 +39,9 @@ class AuthenticationRequest {
         await fetchDeviceInfo();
         print('Device: ${deviceInfo?.androidId}');
         //final responseCheck = await dio.
-        if (!await checkCustomerByDevice(
+        if (await checkCustomerByDevice(
             deviceInfo!.androidId, loginResponse.info.first.customerId!)) {
-          return 'Thiết bị đã có quyền sở hữu';
+          return 'Thiết bị đã có quyền sở hữu / Thông tin thiết bị: ${deviceInfo!.androidId}; Id người đăng nhập: ${loginResponse.info.first.customerId!}/ Data: $checkError';
         } else {
           await onLoginSuccess(context, response, loginResponse);
         }
@@ -68,7 +69,8 @@ class AuthenticationRequest {
       await AppSP.set(AppSPKey.user_info, jsonEncode(userJson));
 
       const platform = MethodChannel('com.example/my_channel');
-      platform.invokeMethod('saveUser', { AppSPKey.user_info: jsonEncode(userJson) });
+      platform
+          .invokeMethod('saveUser', {AppSPKey.user_info: jsonEncode(userJson)});
     }
     String id = AppSP.get(AppSPKey.token);
     String userInfo = AppSP.get(AppSPKey.user_info);
@@ -83,12 +85,18 @@ class AuthenticationRequest {
     );
     print(response);
     final responseData = jsonDecode(response.data);
+    checkError = response.data;
     print('Body checkCustomerByDevice: $responseData');
     List<dynamic> listUserJson = responseData['list'];
     if (listUserJson.isEmpty) {
-      check = true;
+      check = false;
     } else {
-      check = listUserJson.any((user) => user['customer_id'] == customerID);
+      print('Id truyền vào: $customerID');
+      if (listUserJson.any((user) => user['customer_id'] == customerID)) {
+        check = false;
+      } else {
+        check = true;
+      }
     }
     print('Giá trị của check: $check');
     return check;

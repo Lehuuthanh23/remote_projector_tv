@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../view_models/splash.vm.dart';
 
@@ -20,6 +21,8 @@ class _SplashPageState extends State<SplashPage> {
         await viewModel.init(context);
       },
       builder: (context, viewModel, child) {
+        String uuid = const Uuid().v4();
+        print('uuid: $uuid');
         return Scaffold(
           body: Container(
             height: double.infinity,

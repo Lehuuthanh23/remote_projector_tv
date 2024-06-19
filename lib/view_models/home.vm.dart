@@ -22,39 +22,7 @@ class HomeViewModel extends BaseViewModel {
   bool turnOnlPJ = false;
   bool turnOffPJ = false;
   bool openOnStartup = false;
-  List<CampModel> camps = [
-    // CampModel(
-    //   campaignId: '1',
-    //   campaignName: 'CAMP BDS ĐỒNG NAI',
-    //   status: 'Đang chạy',
-    //   videoId: '1',
-    //   fromDate: '2021-10-01',
-    //   toDate: '2021-10-10',
-    //   fromTime: '08:30',
-    //   toTime: '17:30',
-    //   daysOfWeek: 'T2,T3,T4',
-    //   videoType: 'Youtube',
-    //   urlYoutube: '',
-    //   urlUSP: '',
-    //   computerId: '123',
-    // ),
-    // CampModel(
-    //   campaignId: '1',
-    //   campaignName: 'CAMP BDS BÌNH DƯƠNG',
-    //   status: 'Đang chạy',
-    //   videoId: '1',
-    //   fromDate: '2021-10-01',
-    //   toDate: '2021-10-10',
-    //   fromTime: '08:30',
-    //   toTime: '17:30',
-    //   daysOfWeek: 'T2,T3,T4',
-    //   videoType: 'Youtube',
-    //   urlYoutube: '',
-    //   urlUSP: '',
-    //   computerId: '123',
-    // ),
-    // // Thêm các CampModel khác nếu cần
-  ];
+  List<CampModel> camps = [];
   List<CampSchedule> lstCampSchedule = [];
   User currentUser = User();
   DeviceInfoModel? deviceInfo;
@@ -72,14 +40,21 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  void setContext(BuildContext ctx) {
+    viewContext = ctx;
+  }
+
   signOut() async {
-    await AppSP.set(AppSPKey.token, '');
-    await AppSP.set(AppSPKey.user_info, '');
+    AppSP.set(AppSPKey.token, '');
+    AppSP.set(AppSPKey.user_info, '');
+    AppSP.set(AppSPKey.lstCampSchedule, '');
     const platform = MethodChannel('com.example/my_channel');
     platform.invokeMethod('clearUser');
     Navigator.pushAndRemoveUntil(
         viewContext,
-        MaterialPageRoute(builder: (context) => const SplashPage()),
+        MaterialPageRoute(
+          builder: (context) => const SplashPage(),
+        ),
         (router) => false);
   }
 
