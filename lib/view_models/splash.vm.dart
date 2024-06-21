@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -20,8 +21,22 @@ class SplashViewModel extends BaseViewModel {
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
-    await _checkLogin();
-    _navigateToNextPage(context);
+    _requestPermissions(context);
+  }
+
+  Future<void> _requestPermissions(BuildContext context) async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+    }
+
+    if (status.isGranted) {
+      await _checkLogin();
+      _navigateToNextPage(context);
+    } else {
+      // Quyền không được cấp
+      print('Quyền truy cập bộ nhớ không được cấp');
+    }
   }
 
   Future<void> _checkLogin() async {
