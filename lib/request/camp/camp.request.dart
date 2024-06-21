@@ -24,7 +24,7 @@ class CampRequest {
     DeviceRequest deviceRequest = DeviceRequest();
     List<Device> lstDevice =
         await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
-    Device device = lstDevice
+    Device? device = lstDevice
         .where((device) => device.serialComputer == deviceInfoModel.androidId)
         .toList()
         .first;
@@ -75,7 +75,7 @@ class CampRequest {
       options: AppUtils.createOptionsNoCookie(),
       data: formData,
     );
-    //print('Body: $response');
+    print('Body lịch chạy camp: $response');
     final responseData = jsonDecode(response.data);
     List<dynamic> timeCampSchedule = responseData['Camp_list'];
     lstCampSchedule =

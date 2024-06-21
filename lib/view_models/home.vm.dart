@@ -35,6 +35,11 @@ class HomeViewModel extends BaseViewModel {
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
+    List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
+    List<Map<String, dynamic>> jsonList =
+        lstCampSchedule.map((camp) => camp.toJson()).toList();
+    String lstCampScheduleString = jsonEncode(jsonList);
+    AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     print('Số lượng camp schedule: ${lstCampSchedule.length}');
     print('User hiện tại là: ${currentUser.customerName}');
     notifyListeners();

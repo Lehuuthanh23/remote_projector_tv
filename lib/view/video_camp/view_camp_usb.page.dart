@@ -1,28 +1,30 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 import 'package:video_player/video_player.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
-class VideoPlayerWidget extends StatefulWidget {
-  final String customPath;
+import '../../models/camp/camp_schedule.dart';
 
-  VideoPlayerWidget({Key? key, required this.customPath}) : super(key: key);
+class ViewCampUSBPage extends StatefulWidget {
+  final CampSchedule campSchedule;
+
+  ViewCampUSBPage({Key? key, required this.campSchedule}) : super(key: key);
 
   @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+  _ViewCampUSBPageState createState() => _ViewCampUSBPageState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  VideoPlayerController? _controller;
+class _ViewCampUSBPageState extends State<ViewCampUSBPage> {
+  VideoPlayerController? _uspController;
   List<File> videoFiles = [];
   int currentIndex = 0;
-  bool isSingleFile = false;
   String usbPathh = 'Không có';
-
   @override
   void dispose() {
-    _controller?.dispose();
+    _uspController?.dispose();
     super.dispose();
   }
 
@@ -44,15 +46,28 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
   }
 
-  Future<void> _initializeVideoPlayer(String customPath) async {
+  Future<void> _requestPermissions() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+    }
+
+    if (status.isGranted) {
+      _loadVideosFromDirectory();
+    } else {
+      // Quyền không được cấp
+      print('Quyền truy cập bộ nhớ không được cấp');
+    }
+  }
+
+  Future<void> _loadVideosFromDirectory() async {
     // Lấy đường dẫn tới USB
     await _getUsbPath();
-    usbPathh = '$_usbPath/$customPath';
+    usbPathh = '$_usbPath/${widget.campSchedule.urlUsp}';
 
     final File file = File(usbPathh);
     if (file.existsSync()) {
       // Nếu đường dẫn là một file
-      isSingleFile = true;
       setState(() {
         videoFiles = [file];
       });
@@ -64,14 +79,21 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         setState(() {
           videoFiles = directory
               .listSync()
-              .where((file) => path.extension(file.path).toLowerCase() == '.mp4')
+              .where(
+                  (file) => path.extension(file.path).toLowerCase() == '.mp4')
               .map((file) => File(file.path))
               .toList();
-          isSingleFile = false;
         });
 
         if (videoFiles.isNotEmpty) {
           _playVideo(0);
+          if (videoFiles.isNotEmpty) {
+            _playVideo(0);
+          }
+        } else {
+          setState(() {
+            videoFiles = [];
+          });
         }
       } else {
         setState(() {
@@ -79,26 +101,23 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         });
       }
     }
+    //}
   }
 
   void _playVideo(int index) {
     if (index >= 0 && index < videoFiles.length) {
-      _controller?.dispose();
-      _controller = VideoPlayerController.file(videoFiles[index])
+      _uspController?.dispose();
+      _uspController = VideoPlayerController.file(videoFiles[index])
         ..initialize().then((_) {
           setState(() {
-            _controller?.play();
+            _uspController?.play();
           });
         })
-        ..setLooping(false) // Không lặp lại từng video
+        ..setLooping(false)
         ..addListener(() {
-          if (_controller!.value.position == _controller!.value.duration) {
-            if (currentIndex + 1 >= videoFiles.length) {
-              currentIndex = 0; // Quay lại video đầu tiên
-            } else {
-              currentIndex++;
-            }
-            _playVideo(currentIndex);
+          if (_uspController!.value.position ==
+              _uspController!.value.duration) {
+            Navigator.pop(context);
           }
         });
     }
@@ -107,21 +126,25 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _initializeVideoPlayer(widget.customPath);
+    _requestPermissions();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: _controller == null
+        child: _uspController == null
             ? Text('Đường dẫn: $usbPathh')
-            : _controller!.value.isInitialized
+            : _uspController!.value.isInitialized
                 ? AspectRatio(
-                    aspectRatio: _controller!.value.aspectRatio,
-                    child: VideoPlayer(_controller!),
+                    aspectRatio: _uspController!.value.aspectRatio,
+                    child: VideoPlayer(_uspController!),
                   )
-                : const CircularProgressIndicator(),
+                : Positioned.fill(
+                    child: Container(
+                      color: Colors.black,
+                    ),
+                  ),
       ),
     );
   }

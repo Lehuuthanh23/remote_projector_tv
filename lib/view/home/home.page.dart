@@ -36,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     homeViewModel.setContext(context);
   }
 
+  String check = 'Chưa check';
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
@@ -44,15 +45,9 @@ class _HomePageState extends State<HomePage> {
       onViewModelReady: (viewModel) async {
         viewModel.viewContext = context;
         await viewModel.initialise();
-        List<CampSchedule> lstCampSchedule =
-            await CampRequest().getCampSchedule();
-        List<Map<String, dynamic>> jsonList =
-            lstCampSchedule.map((camp) => camp.toJson()).toList();
-        String lstCampScheduleString = jsonEncode(jsonList);
-        AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
+        print('Lưu lại giá trị lịch chiếu ');
       },
       builder: (context, viewModel, child) {
-        print('Giá trị ProjectorIP: ${AppSP.get(AppSPKey.projectorIP)}');
         return SafeArea(
           child: Scaffold(
             body: Stack(

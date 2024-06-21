@@ -362,33 +362,50 @@
 // }
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart'
+    show MethodChannel, PlatformException, rootBundle;
 
 import '../../models/camp/camp_schedule.dart';
 
-class ViewCampPage extends StatefulWidget {
-  final List<CampSchedule> lstCampSchedule;
+class ViewCampWebViewPage extends StatefulWidget {
+  final CampSchedule campSchedule;
 
-  ViewCampPage({Key? key, required this.lstCampSchedule}) : super(key: key);
+  ViewCampWebViewPage({Key? key, required this.campSchedule}) : super(key: key);
 
   @override
-  _ViewCampPageState createState() => _ViewCampPageState();
+  _ViewCampWebViewPageState createState() => _ViewCampWebViewPageState();
 }
 
-class _ViewCampPageState extends State<ViewCampPage> {
+class _ViewCampWebViewPageState extends State<ViewCampWebViewPage> {
   late final WebViewController _controller;
   int _currentVideoIndex = 0;
   List<String> lstVideoUrl = [];
   late Duration _waitTime; // Thời gian chờ trước khi chuyển video
   bool _showBlackOverlay =
       true; // Biến để theo dõi khi nào nên hiển thị màn hình đen
+  String check = '';
+  Future<void> _requestPermissions() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+    }
 
+    if (status.isGranted) {
+      _loadHtmlFromAssets(_currentVideoIndex);
+    } else {
+      // Quyền không được cấp
+      print('Quyền truy cập bộ nhớ không được cấp');
+    }
+  }
+
+  String fileText = '';
+  String updatedFileText = '';
   @override
   void initState() {
     super.initState();
-    lstVideoUrl =
-        widget.lstCampSchedule.map((camp) => camp.urlYoutube).toList();
+    lstVideoUrl = [widget.campSchedule.urlYoutube];
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -409,28 +426,20 @@ class _ViewCampPageState extends State<ViewCampPage> {
           },
         ),
       );
-
-    _loadHtmlFromAssets(_currentVideoIndex);
+    _requestPermissions();
   }
 
   void _loadHtmlFromAssets(int index) async {
     print('Vào _loadHtmlFromAssets');
-    if (index >= lstVideoUrl.length) {
-      _currentVideoIndex = 0;
-      _loadHtmlFromAssets(_currentVideoIndex);
-    }
-
-    _waitTime = Duration(
-        seconds: int.parse(widget.lstCampSchedule[index].videoDuration));
+    _waitTime = Duration(seconds: int.parse(widget.campSchedule.videoDuration));
     String filePath = 'assets/abc.html';
-    String fileText = await rootBundle.loadString(filePath);
+    fileText = await rootBundle.loadString(filePath);
     print('Nội dung file: $fileText');
-    String updatedFileText = fileText.replaceAll(
+    updatedFileText = fileText.replaceAll(
       "link_video",
-     //lstVideoUrl[index],
-     '/storage/7432-760A/Video/galaxy_s24_ultra.mp4'
+      lstVideoUrl[index],
     );
-    print('Nội dung file sau replace: $updatedFileText');
+    print('Nội dung file sau replace: $fileText');
     _controller.loadRequest(
       Uri.dataFromString(
         updatedFileText,
@@ -449,8 +458,9 @@ class _ViewCampPageState extends State<ViewCampPage> {
       });
 
       Future.delayed(_waitTime, () {
-        _currentVideoIndex++;
-        _loadHtmlFromAssets(_currentVideoIndex);
+        // _currentVideoIndex++;
+        // _loadHtmlFromAssets(_currentVideoIndex);
+        Navigator.pop(context);
       });
     });
   }
