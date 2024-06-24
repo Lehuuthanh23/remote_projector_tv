@@ -65,7 +65,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         decoration: InputDecoration(
                                           label: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 'Họ & tên',
@@ -98,7 +98,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         decoration: InputDecoration(
                                           label: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 'Số điện thoại',
@@ -136,7 +136,7 @@ class PopupSettingScreen extends StatelessWidget {
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         Focus(
                                           child: TextFormField(
@@ -153,6 +153,7 @@ class PopupSettingScreen extends StatelessWidget {
                                               border:
                                                   const UnderlineInputBorder(),
                                             ),
+
                                             initialValue: homeVM.deviceInfo!
                                                         .serialNumber ==
                                                     'unknown'
@@ -174,67 +175,6 @@ class PopupSettingScreen extends StatelessWidget {
                                             initialValue: 'Đã tắt',
                                           ),
                                         ),
-                                        Focus(
-                                          child: TextFormField(
-                                            focusNode: FocusNode(),
-                                            controller: viewModel.proUN,
-                                            decoration: const InputDecoration(
-                                              labelText: 'ProUN',
-                                              hintText: '',
-                                              border: UnderlineInputBorder(),
-                                            ),
-                                            onChanged: (value) {
-                                              viewModel.proUN.text = value;
-                                              AppSP.set(AppSPKey.proUN,
-                                                  viewModel.proUN.text);
-                                              viewModel.notifyListeners();
-                                            },
-                                          ),
-                                        ),
-                                        Focus(
-                                          child: TextFormField(
-                                            controller: viewModel.proPW,
-                                            focusNode: FocusNode(),
-                                            decoration: const InputDecoration(
-                                              labelText: 'ProPW',
-                                              hintText: '',
-                                              border: UnderlineInputBorder(),
-                                            ),
-                                            onChanged: (value) {
-                                              viewModel.proPW.text = value;
-                                              AppSP.set(AppSPKey.proPW,
-                                                  viewModel.proPW.text);
-                                              viewModel.notifyListeners();
-                                            },
-                                          ),
-                                        ),
-                                        Focus(
-                                          child: TextFormField(
-                                            controller: viewModel.projectorIP,
-                                            focusNode: FocusNode(),
-                                            decoration: const InputDecoration(
-                                              labelText: 'ProjectorIP ',
-                                              hintText: '',
-                                              border: UnderlineInputBorder(),
-                                            ),
-                                            onChanged: (value) {
-                                              viewModel.projectorIP.text =
-                                                  value;
-                                              AppSP.set(AppSPKey.projectorIP,
-                                                  viewModel.projectorIP.text);
-                                              viewModel.notifyListeners();
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
                                         const SizedBox(height: 10),
                                         Focus(
                                           child: TextFormField(
@@ -246,12 +186,103 @@ class PopupSettingScreen extends StatelessWidget {
                                               border: UnderlineInputBorder(),
                                             ),
                                             initialValue:
-                                                homeVM.deviceInfo!.model,
+                                            homeVM.deviceInfo!.model,
                                           ),
                                         ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Focus(
+                                                child: TextFormField(
+                                                  controller: viewModel.proUN,
+                                                  focusNode: FocusNode(),
+                                                  decoration:
+                                                  const InputDecoration(
+                                                    labelText: 'ProUN',
+                                                    hintText: '',
+                                                    border:
+                                                    UnderlineInputBorder(),
+                                                  ),
+                                                  onChanged: (value) {
+                                                    viewModel.proUN.text =
+                                                        value;
+                                                    AppSP.set(
+                                                        AppSPKey.proUN,
+                                                        viewModel.proUN.text);
+                                                    viewModel
+                                                        .notifyListeners();
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Focus(
+                                                child: TextFormField(
+                                                  controller: viewModel.proPW,
+                                                  focusNode: FocusNode(),
+                                                  decoration:
+                                                  const InputDecoration(
+                                                    labelText: 'ProPW',
+                                                    hintText: '',
+                                                    border:
+                                                    UnderlineInputBorder(),
+                                                  ),
+                                                  onChanged: (value) {
+                                                    viewModel.proPW.text =
+                                                        value;
+                                                    AppSP.set(
+                                                        AppSPKey.proPW,
+                                                        viewModel.proPW.text);
+                                                    viewModel
+                                                        .notifyListeners();
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: Focus(
+                                                child: TextFormField(
+                                                  controller:
+                                                  viewModel.projectorIP,
+                                                  focusNode: FocusNode(),
+                                                  decoration:
+                                                  const InputDecoration(
+                                                    labelText:
+                                                    'ProjectorIP',
+                                                    hintText: '',
+                                                    border:
+                                                    UnderlineInputBorder(),
+                                                  ),
+                                                  onChanged: (value) {
+                                                    viewModel.projectorIP.text =
+                                                        value;
+                                                    AppSP.set(
+                                                        AppSPKey.projectorIP,
+                                                        viewModel
+                                                            .projectorIP.text);
+                                                    viewModel
+                                                        .notifyListeners();
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
                                         Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                          MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
@@ -269,7 +300,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         ),
                                         Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                          MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
@@ -287,7 +318,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         ),
                                         Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                          MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
