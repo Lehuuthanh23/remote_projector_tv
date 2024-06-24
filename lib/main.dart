@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:play_box/models/camp/camp_schedule.dart';
-import 'package:play_box/view/video_camp/view_camp_webview.page.dart';
 
 import 'app/di.dart';
+import 'view/download.dart';
 import 'view/splash/splash.page.dart';
-import 'view/video_camp/test_get_usb.dart';
-import 'view/video_camp/view_camp_usb.page.dart';
+import 'view/video_camp/view_video_camp.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

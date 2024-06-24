@@ -4,13 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
-import 'package:play_box/view/video_camp/view_camp_usb.page.dart';
-import 'package:play_box/view/video_camp/view_camp_webview.page.dart';
 
 import '../models/camp/camp_schedule.dart';
 import '../request/camp/camp.request.dart';
-import '../view/video_camp/test_get_usb.dart';
-import '../view/video_camp/view_camp.dart';
+import '../view/video_camp/view_video_camp.dart';
 
 class TimerClock extends StatefulWidget {
   const TimerClock({super.key});
@@ -24,9 +21,8 @@ class _TimerClockState extends State<TimerClock> {
   late DateTime _currentTime;
   String day = '';
   Dio dio = Dio();
-  bool flagPlayCamp = false; // Biến cờ hiệu để kiểm tra việc điều hướng
-  bool isPlaying =
-      false; // Biến cờ hiệu để kiểm tra xem đang phát video hay không
+  bool flagPlayCamp = false;
+  bool isPlaying = false;
 
   @override
   void initState() {
@@ -43,9 +39,20 @@ class _TimerClockState extends State<TimerClock> {
     });
 
     day = AppSP.get(AppSPKey.day) ?? '';
-    if (day != DateTime.now().toString().substring(0, 10)) {
+    if (day !=
+        DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 7))
+            .toString()
+            .substring(0, 10)) {
       print('Đúng điều kiện để lấy lịch chiếu');
-      AppSP.set(AppSPKey.day, DateTime.now().toString().substring(0, 10));
+      AppSP.set(
+          AppSPKey.day,
+          DateTime.now()
+              .toUtc()
+              .add(const Duration(hours: 7))
+              .toString()
+              .substring(0, 10));
       List<CampSchedule> lstCampSchedule =
           await CampRequest().getCampSchedule();
       List<Map<String, dynamic>> jsonList =
@@ -86,7 +93,7 @@ class _TimerClockState extends State<TimerClock> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => VideoPlayerFromCampSchedule(
+              builder: (context) => ViewVideoCamp(
                 campSchedules: lstCampScheduleNew,
                 lstCampScheduleString: lstCampScheduleString,
               ),

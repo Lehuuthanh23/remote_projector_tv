@@ -25,12 +25,16 @@ class CampRequest {
     List<Device> lstDevice =
         await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
     Device? device = lstDevice
-        .where((device) => device.serialComputer == deviceInfoModel.androidId)
+        .where((device) =>
+            device.serialComputer ==
+            (deviceInfoModel.serialNumber == 'unknown'
+                ? deviceInfoModel.androidId
+                : deviceInfoModel.serialNumber))
         .toList()
         .first;
     AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
     final response = await dio.get(
-      '${Api.hostApi}${Api.GetCampBySeriComputerAndCustomerID}/${deviceInfoModel.androidId}/${currentUser.customerId}',
+      '${Api.hostApi}${Api.GetCampBySeriComputerAndCustomerID}/${deviceInfoModel.serialNumber == 'unknown' ? deviceInfoModel.androidId : deviceInfoModel.serialNumber}/${currentUser.customerId}',
     );
     final responseData = jsonDecode(response.data);
     print(responseData);
@@ -81,5 +85,26 @@ class CampRequest {
     lstCampSchedule =
         timeCampSchedule.map((e) => CampSchedule.fromJson(e)).toList();
     return lstCampSchedule;
+  }
+
+  Future<void> addCampaignRunProfile(CampSchedule camp) async {
+    User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    Device device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.computer)));
+    final formData = FormData.fromMap({
+      'customer_id': currentUser.customerId,
+      'customer_name': currentUser.customerName,
+      'campaign_id': camp.campaignId,
+      'campaign_name': camp.campaignName,
+      'url': camp.videoType == 'url' ? camp.urlYoutube : camp.urlUsp,
+      'computer_id': device.customerId,
+      'seri_computer': device.serialComputer,
+      'run_time': DateTime.now().toUtc().add(const Duration(hours: 7)),
+      'computer_name': device.computerName,
+    });
+    await dio.post(
+      AppUtils.createUrl(Api.addCampaignRunProfile),
+      options: AppUtils.createOptionsNoCookie(),
+      data: formData,
+    );
   }
 }

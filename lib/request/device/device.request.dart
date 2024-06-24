@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 import 'package:play_box/models/device/device_model.dart';
+import 'package:play_box/models/notification/notify_model.dart';
 
 import '../../app/app_utils.dart';
 import '../../constants/api.dart';
 import '../../models/device/device_info_model.dart';
 import '../../models/user/user.dart';
+import '../notification/notify.request.dart';
 
 class DeviceRequest {
   final Dio dio = Dio();
@@ -17,7 +20,9 @@ class DeviceRequest {
     bool checkConnect = false;
     final formData = FormData.fromMap({
       'computer_name': deviceInfo.model,
-      'seri_computer': deviceInfo.androidId,
+      'seri_computer': deviceInfo.serialNumber == 'unknown'
+          ? deviceInfo.androidId
+          : deviceInfo.serialNumber,
       'status': '1',
       'provinces': '',
       'district': '',
@@ -39,7 +44,39 @@ class DeviceRequest {
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
         checkConnect = true;
-        AppSP.set(AppSPKey.checkConnect, 'true');
+        final formDataNotify = FormData.fromMap({
+          'customer_id': currentUser.customerId,
+          'title': 'Kết nối thiết bị mới',
+          'descript': 'Kết nối thiết bị mới thành công',
+          'detail': 'Thiết bị ${deviceInfo.model} được thêm thành công',
+          'picture': '',
+        });
+
+        //Lưu thiết bị vào bộ nhớ khi kết nối thành công
+        DeviceInfoModel deviceInfoModel =
+            DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
+        DeviceRequest deviceRequest = DeviceRequest();
+        List<Device> lstDevice =
+            await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
+        Device? device = lstDevice
+            .where((device) =>
+                device.serialComputer ==
+                (deviceInfoModel.serialNumber == 'unknown'
+                    ? deviceInfoModel.androidId
+                    : deviceInfoModel.serialNumber))
+            .toList()
+            .first;
+        //Thêm thông báo
+        NotifyRequest notifyRequest = NotifyRequest();
+        Notify notify = Notify(
+            title: 'Kết nối thiết bị mới',
+            descript: 'Kết nối thiết bị mới thành công',
+            detail: 'Thiết bị ${deviceInfo.model} được thêm thành công',
+            picture: '');
+        await notifyRequest.addNotify(notify);
+        //
+        AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
+        //
       } else {
         print('Lỗi khi thêm device: ${response.data}');
         checkConnect = false;
@@ -56,7 +93,6 @@ class DeviceRequest {
       '${Api.hostApi}${Api.getDeviceByCustomerId}/$customerId',
     );
     final responseData = jsonDecode(response.data);
-    print('getDeviceByCustomerId: ${responseData.toString()}');
     List<dynamic> deviceList = responseData['Device_list'];
     if (deviceList.isNotEmpty) {
       lstAllDevice = deviceList.map((e) => Device.fromJson(e)).toList();

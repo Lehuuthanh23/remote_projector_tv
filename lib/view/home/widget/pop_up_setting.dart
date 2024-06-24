@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
+import 'package:play_box/app/app_utils.dart';
 import '../../../view_models/home.vm.dart';
 import '../../../widget/buttonCustom.dart';
 import 'package:stacked/stacked.dart';
@@ -141,14 +142,24 @@ class PopupSettingScreen extends StatelessWidget {
                                           child: TextFormField(
                                             focusNode: FocusNode(),
                                             enabled: false,
-                                            decoration: const InputDecoration(
-                                              labelText: 'ANDROID ID',
+                                            decoration: InputDecoration(
+                                              labelText: homeVM.deviceInfo!
+                                                          .serialNumber ==
+                                                      'unknown'
+                                                  ? 'ANDROID ID'
+                                                  : 'SERI NUMBER',
                                               hintText: '',
                                               enabled: false,
-                                              border: UnderlineInputBorder(),
+                                              border:
+                                                  const UnderlineInputBorder(),
                                             ),
-                                            initialValue:
-                                            homeVM.deviceInfo!.androidId,
+
+                                            initialValue: homeVM.deviceInfo!
+                                                        .serialNumber ==
+                                                    'unknown'
+                                                ? homeVM.deviceInfo!.androidId
+                                                : homeVM
+                                                    .deviceInfo!.serialNumber,
                                           ),
                                         ),
                                         const SizedBox(height: 10),
@@ -345,7 +356,10 @@ class PopupSettingScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             color: const Color(0xffEB6E2C),
                             onPressed: () async {
-                              await homeVM.connectDevice();
+                              print('Nhấn connect');
+                              await AppUtils.checkConnect()
+                                  ? null
+                                  : await homeVM.connectDevice();
                             },
                             title: 'KẾT NỐI',
                             textSize: 15,

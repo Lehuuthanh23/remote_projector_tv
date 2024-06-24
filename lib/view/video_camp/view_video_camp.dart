@@ -1,25 +1,28 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 import '../../models/camp/camp_schedule.dart';
+import '../../models/notification/notify_model.dart';
+import '../../request/camp/camp.request.dart';
+import '../../request/notification/notify.request.dart';
 
-class VideoPlayerFromCampSchedule extends StatefulWidget {
+class ViewVideoCamp extends StatefulWidget {
   final List<CampSchedule> campSchedules;
   final String lstCampScheduleString;
-  VideoPlayerFromCampSchedule(
+  ViewVideoCamp(
       {Key? key,
       required this.campSchedules,
       required this.lstCampScheduleString})
       : super(key: key);
 
   @override
-  _VideoPlayerFromCampScheduleState createState() =>
-      _VideoPlayerFromCampScheduleState();
+  _ViewVideoCampState createState() => _ViewVideoCampState();
 }
 
-class _VideoPlayerFromCampScheduleState
-    extends State<VideoPlayerFromCampSchedule> {
+class _ViewVideoCampState extends State<ViewVideoCamp> {
   VideoPlayerController? _controller;
   late Future<void> _initializeVideoPlayerFuture;
   int _currentIndex = 0;
@@ -27,6 +30,8 @@ class _VideoPlayerFromCampScheduleState
   List<String> _usbPath = [];
   String nameVideo = '';
   List<String> nameCamp = [];
+  String _formattedTime = '';
+  late Duration _waitTime;
   @override
   void initState() {
     print('Số lượng camp: ${widget.campSchedules.length}');
@@ -36,6 +41,16 @@ class _VideoPlayerFromCampScheduleState
     });
     super.initState();
     _loadNextVideo();
+    _updateTime();
+    Timer.periodic(Duration(seconds: 1), (Timer t) => _updateTime());
+  }
+
+  void _updateTime() {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final formattedTime = DateFormat('HH:mm:ss').format(now);
+    setState(() {
+      _formattedTime = formattedTime;
+    });
   }
 
   Future<void> _getUsbPath() async {
@@ -58,6 +73,7 @@ class _VideoPlayerFromCampScheduleState
     if (_currentIndex < widget.campSchedules.length) {
       final campSchedule = widget.campSchedules[_currentIndex];
       nameVideo = campSchedule.campaignName;
+      _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
       try {
         if (campSchedule.videoType == 'url') {
           print('vào video: $nameVideo');
@@ -78,7 +94,16 @@ class _VideoPlayerFromCampScheduleState
           _controller!.play();
         });
         // Đặt thời gian chờ 15 giây trước khi chuyển sang video tiếp theo
-        Future.delayed(Duration(seconds: 15), () {
+        Future.delayed(_waitTime, () async {
+          CampRequest campRequest = CampRequest();
+          await campRequest.addCampaignRunProfile(campSchedule);
+          NotifyRequest notifyRequest = NotifyRequest();
+          Notify notify = Notify(
+              title: 'Chạy chiến dịch',
+              descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
+              detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
+              picture: '');
+          await notifyRequest.addNotify(notify);
           _currentIndex++;
           if (_currentIndex >= widget.campSchedules.length) {
             _currentIndex = 0; // Lặp lại từ video đầu tiên
@@ -119,6 +144,20 @@ class _VideoPlayerFromCampScheduleState
                 : Container(
                     color: Colors.black,
                   ),
+          ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
+              child: Text(
+                _formattedTime,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
           ),
         ],
       ),
