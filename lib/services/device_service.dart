@@ -13,13 +13,21 @@ class DeviceInfoService {
 
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      String serialNumber = '';
+
+      if (androidInfo.version.sdkInt < 29) {
+        serialNumber = androidInfo.serialNumber;
+      } else {
+        serialNumber = 'unknown';
+      }
+
       deviceInfoModel = DeviceInfoModel(
         model: androidInfo.model ?? '',
         manufacturer: androidInfo.manufacturer ?? '',
         osVersion: 'Android ${androidInfo.version.release}',
         deviceName: androidInfo.device ?? '',
         platform: 'Android',
-        serialNumber: androidInfo.serialNumber,
+        serialNumber: serialNumber,
         androidId: androidInfo.id,
         uuid: androidInfo.id,
       );
@@ -49,7 +57,7 @@ class DeviceInfoService {
       );
     }
     AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
-    print('Device tạo xong la: ${AppSP.get(AppSPKey.device)}');
+    print('Device tạo xong là: ${AppSP.get(AppSPKey.device)}');
     return deviceInfoModel;
   }
 }

@@ -43,5 +43,8 @@ class Api {
   static String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
   static String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
   static String getCampBySeriComputer = '/home/GetCamp_BySeriComputer';
-  static String GetCampBySeriComputerAndCustomerID = '/home/GetCamp_BySeriComputerAndCustomerID';
+  static String GetCampBySeriComputerAndCustomerID =
+      '/home/GetCamp_BySeriComputerAndCustomerID';
+  static String insertNotify = '/home/InsertNotify';
+  static String addCampaignRunProfile = '/home/AddCampaignRunProfile';
 }

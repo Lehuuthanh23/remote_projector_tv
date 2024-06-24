@@ -41,7 +41,7 @@ class AuthenticationRequest {
         //final responseCheck = await dio.
         if (await checkCustomerByDevice(
             deviceInfo!.androidId, loginResponse.info.first.customerId!)) {
-          return 'Thiết bị đã có quyền sở hữu / Thông tin thiết bị: ${deviceInfo!.androidId}; Id người đăng nhập: ${loginResponse.info.first.customerId!}/ Data: $checkError';
+          return 'Thiết bị đã có quyền sở hữu';
         } else {
           await onLoginSuccess(context, response, loginResponse);
         }

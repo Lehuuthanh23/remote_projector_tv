@@ -48,6 +48,7 @@ class _HomePageState extends State<HomePage> {
         print('Lưu lại giá trị lịch chiếu ');
       },
       builder: (context, viewModel, child) {
+        viewModel.viewContext = context;
         return SafeArea(
           child: Scaffold(
             body: Stack(
