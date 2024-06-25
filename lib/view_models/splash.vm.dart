@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stacked/stacked.dart';
@@ -18,9 +19,22 @@ class SplashViewModel extends BaseViewModel {
   String userJson = "";
   DeviceInfoModel? deviceInfo;
   bool isLoading = true;
+  Dio dio = Dio();
+  String proUN = '';
+  String proPW = '';
+  String projectorIP = '';
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
+    proUN = AppSP.get(AppSPKey.proUN) ?? '';
+    proPW = AppSP.get(AppSPKey.proPW) ?? '';
+    projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
+    if (AppSP.get(AppSPKey.openPJOnStartup) == 'true') {
+      print('Mở máy chiếu khi mới khởi động');
+      String onProjector =
+          "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
+      dio.get(onProjector);
+    }
     _requestPermissions(context);
   }
 

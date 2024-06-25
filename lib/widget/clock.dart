@@ -4,14 +4,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
+import 'package:play_box/view_models/home.vm.dart';
 
 import '../models/camp/camp_schedule.dart';
 import '../request/camp/camp.request.dart';
 import '../view/video_camp/view_video_camp.dart';
 
 class TimerClock extends StatefulWidget {
-  const TimerClock({super.key});
-
+  TimerClock({super.key, required this.homeViewModel});
+  HomeViewModel homeViewModel;
   @override
   _TimerClockState createState() => _TimerClockState();
 }
@@ -23,7 +24,9 @@ class _TimerClockState extends State<TimerClock> {
   Dio dio = Dio();
   bool flagPlayCamp = false;
   bool isPlaying = false;
-
+  String proUN = '';
+  String proPW = '';
+  String projectorIP = '';
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,9 @@ class _TimerClockState extends State<TimerClock> {
     });
 
     day = AppSP.get(AppSPKey.day) ?? '';
+    proUN = AppSP.get(AppSPKey.proUN) ?? '';
+    proPW = AppSP.get(AppSPKey.proPW) ?? '';
+    projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
     if (day !=
         DateTime.now()
             .toUtc()
@@ -75,36 +81,59 @@ class _TimerClockState extends State<TimerClock> {
             camp.status == '1';
       }).toList();
 
-      if (lstCampScheduleNew.isEmpty) {
-        if (isPlaying) {
-          print('Vào tắt video');
-          Navigator.pop(context);
-          setState(() {
-            isPlaying = false;
-            flagPlayCamp = false;
-          });
-        }
-      } else {
-        print('Vào play video');
-        if (!flagPlayCamp) {
-          setState(() {
-            isPlaying = true;
-          });
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ViewVideoCamp(
-                campSchedules: lstCampScheduleNew,
-                lstCampScheduleString: lstCampScheduleString,
-              ),
-            ),
-          ).then((_) {
+      if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
+        print('Đúng điều kiện checkplay video');
+        if (lstCampScheduleNew.isEmpty) {
+          if (isPlaying) {
+            if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+              print('Tắt máy chiếu');
+              String offProjector =
+                  'http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0203';
+              dio.get(offProjector);
+            }
+            print('Vào tắt video');
+            Navigator.pop(context);
             setState(() {
-              flagPlayCamp = false;
               isPlaying = false;
+              flagPlayCamp = false;
             });
-          });
-          flagPlayCamp = true;
+          }
+        } else {
+          print('Vào play video');
+          if (AppSP.get(AppSPKey.turnOnlPJ) == 'true') {
+            print('Mở máy chiếu');
+            String onProjector =
+                "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
+            dio.get(onProjector);
+          }
+          if (!flagPlayCamp) {
+            setState(() {
+              isPlaying = true;
+            });
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ViewVideoCamp(
+                  campSchedules: lstCampScheduleNew,
+                  lstCampScheduleString: lstCampScheduleString,
+                ),
+              ),
+            ).then((_) {
+              setState(() {
+                flagPlayCamp = false;
+                isPlaying = false;
+                widget.homeViewModel.notifyListeners();
+                if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+                  print('Tắt máy chiếu');
+                  String offProjector =
+                      'http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0203';
+                  dio.get(offProjector);
+                }
+              });
+            });
+            flagPlayCamp = true;
+          }
         }
       }
     }
@@ -132,7 +161,7 @@ class _TimerClockState extends State<TimerClock> {
     return Center(
       child: Text(
         _formatTime(_currentTime),
-        style: const TextStyle(fontSize: 48),
+        style: const TextStyle(fontSize: 35),
       ),
     );
   }

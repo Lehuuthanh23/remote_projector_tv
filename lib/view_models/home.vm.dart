@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
@@ -30,8 +31,14 @@ class HomeViewModel extends BaseViewModel {
   TextEditingController proUN = TextEditingController();
   TextEditingController proPW = TextEditingController();
   TextEditingController projectorIP = TextEditingController();
+  Dio dio = Dio();
+
   initialise() async {
     currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
+    proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
+    projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
+    print('Giá trị: ${proUN.text}');
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
@@ -82,6 +89,10 @@ class HomeViewModel extends BaseViewModel {
     bool checkConnect =
         await deviceRequest.connectDevice(deviceInfo!, currentUser);
     if (checkConnect) {
+      Navigator.pop(viewContext);
+      AppSP.set(AppSPKey.proPW, proPW.text);
+      AppSP.set(AppSPKey.proUN, proUN.text);
+      AppSP.set(AppSPKey.projectorIP, projectorIP.text);
       showDialog(
         context: viewContext,
         builder: (BuildContext context) {
@@ -115,18 +126,27 @@ class HomeViewModel extends BaseViewModel {
   turnOnl() {
     turnOnlPJ = !turnOnlPJ;
     AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());
+    print('Giá trị lưu mở pj: ${AppSP.get(AppSPKey.turnOnlPJ)}');
     notifyListeners();
   }
 
   turnOff() {
     turnOffPJ = !turnOffPJ;
     AppSP.set(AppSPKey.turnOfflPJ, turnOffPJ.toString());
+    print('Giá trị lưu tắt pj: ${AppSP.get(AppSPKey.turnOfflPJ)}');
     notifyListeners();
   }
 
   openOnStart() {
     openOnStartup = !openOnStartup;
-    AppSP.set(AppSPKey.turnOfflPJ, openOnStartup.toString());
+    AppSP.set(AppSPKey.openPJOnStartup, openOnStartup.toString());
+    print('Giá trị mở khi khởi động: ${AppSP.get(AppSPKey.openPJOnStartup)}');
+    notifyListeners();
+  }
+
+  playCamp(bool check) {
+    AppSP.set(AppSPKey.checkPlayVideo, '$check');
+    print('Check play video: ${AppSP.get(AppSPKey.checkPlayVideo)}');
     notifyListeners();
   }
 }

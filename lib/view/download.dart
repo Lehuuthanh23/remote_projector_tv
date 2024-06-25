@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as path;
+
+import 'video_camp/video_downloader.dart';
 
 class VideoDownloaderScreen extends StatefulWidget {
   @override
@@ -14,16 +17,16 @@ class _VideoDownloaderScreenState extends State<VideoDownloaderScreen> {
   double _progress = 0.0;
   String _progressString = "0%";
   static const platform = MethodChannel('com.example.usb/serial');
-  String _usbPath = '';
-
+  List<String> usbPath = [];
+  String urlVideo = 'https://web5sao.net/media/SamsungGalaxy-S24-Ultra.mp4';
   Future<void> _getUsbPath() async {
     try {
-      final String result = await platform.invokeMethod('getUsbPath');
-      setState(() {
-        _usbPath = result;
-      });
+      var result = await platform.invokeMethod('getUsbPath');
+      for (var path in result) {
+        usbPath.add(path.toString());
+      }
     } on PlatformException catch (e) {
-      print("Failed to get USB path: '${e.message}'.");
+      print('Lỗi: $e');
     }
   }
 
@@ -34,27 +37,34 @@ class _VideoDownloaderScreenState extends State<VideoDownloaderScreen> {
       if (await Permission.storage.request().isGranted) {
         // Get the USB directory
         await _getUsbPath();
-        directory = Directory(_usbPath + "/Video");
-
+        directory = Directory("${usbPath.first}/Video");
+        String nameVideo = urlVideo.split('/').last.split('.').first.toString();
+        print('Name video: $nameVideo');
         if (!await directory.exists()) {
           await directory.create(recursive: true);
         }
+        String savePath = path.join(directory.path, '$nameVideo.mp4');
+        // File saveFile = File('${directory.path}/$nameVideo.mp4');
+        // Dio dio = Dio();
 
-        File saveFile = File('${directory.path}/videodemo.mp4');
-        Dio dio = Dio();
+        // await dio.download(
+        //   url,
+        //   saveFile.path,
+        //   onReceiveProgress: (received, total) {
+        //     if (total != -1) {
+        //       setState(() {
+        //         _progress = received / total;
+        //         _progressString = "${(_progress * 100).toStringAsFixed(0)}%";
+        //       });
+        //     }
+        //   },
+        // );
 
-        await dio.download(
-          url,
-          saveFile.path,
-          onReceiveProgress: (received, total) {
-            if (total != -1) {
-              setState(() {
-                _progress = received / total;
-                _progressString = (_progress * 100).toStringAsFixed(0) + "%";
-              });
-            }
-          },
-        );
+        await VideoDownloader.startDownload(url, savePath, (progress) {
+          setState(() {
+            _progress = progress;
+          });
+        });
       } else {
         // Handle permission denial
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +78,7 @@ class _VideoDownloaderScreenState extends State<VideoDownloaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _urlController.text = 'https://web5sao.net/media/AppleiPhone15-Pro.mp4';
+    _urlController.text = urlVideo;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Video Downloader"),
@@ -109,10 +119,4 @@ class _VideoDownloaderScreenState extends State<VideoDownloaderScreen> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: VideoDownloaderScreen(),
-  ));
 }
