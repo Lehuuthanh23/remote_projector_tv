@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:play_box/models/camp/camp_schedule.dart';
-
 import 'app/di.dart';
-import 'view/download.dart';
 import 'view/splash/splash.page.dart';
-import 'view/video_camp/view_video_camp.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DependencyInjection.init();
+  // final app = shelf_router.Router();
+
+  // app.get('/current_time', (Request request) {
+  //   final now = DateTime.now();
+  //   final formattedTime = now.toIso8601String();
+  //   return Response.ok(formattedTime);
+  // });
+
+  // final server = await shelf_io.serve(app, '0.0.0.0', 8080);
+  // print('Server running on localhost:${server.port}');
   runApp(const MyApp());
 }
 

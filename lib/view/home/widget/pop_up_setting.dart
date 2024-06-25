@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 import 'package:play_box/app/app_utils.dart';
@@ -9,13 +10,17 @@ import 'package:stacked/stacked.dart';
 class PopupSettingScreen extends StatelessWidget {
   const PopupSettingScreen({Key? key, required this.homeVM}) : super(key: key);
   final HomeViewModel homeVM;
+
   @override
   Widget build(BuildContext context) {
+    bool checkConnect = false;
     return ViewModelBuilder<HomeViewModel>.reactive(
         disposeViewModel: false,
         viewModelBuilder: () => homeVM,
         onViewModelReady: (viewModel) async {
           viewModel.viewContext = context;
+          checkConnect = await AppUtils.checkConnect();
+          viewModel.notifyListeners();
         },
         builder: (context, viewModel, child) {
           return Center(
@@ -65,7 +70,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         decoration: InputDecoration(
                                           label: Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 'Họ & tên',
@@ -98,7 +103,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         decoration: InputDecoration(
                                           label: Column(
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 'Số điện thoại',
@@ -136,7 +141,7 @@ class PopupSettingScreen extends StatelessWidget {
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Focus(
                                           child: TextFormField(
@@ -153,7 +158,6 @@ class PopupSettingScreen extends StatelessWidget {
                                               border:
                                                   const UnderlineInputBorder(),
                                             ),
-
                                             initialValue: homeVM.deviceInfo!
                                                         .serialNumber ==
                                                     'unknown'
@@ -172,7 +176,7 @@ class PopupSettingScreen extends StatelessWidget {
                                               enabled: false,
                                               border: UnderlineInputBorder(),
                                             ),
-                                            initialValue: 'Đã tắt',
+                                            initialValue: 'Đang chạy',
                                           ),
                                         ),
                                         const SizedBox(height: 10),
@@ -186,7 +190,7 @@ class PopupSettingScreen extends StatelessWidget {
                                               border: UnderlineInputBorder(),
                                             ),
                                             initialValue:
-                                            homeVM.deviceInfo!.model,
+                                                homeVM.deviceInfo!.model,
                                           ),
                                         ),
                                       ],
@@ -196,85 +200,47 @@ class PopupSettingScreen extends StatelessWidget {
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Expanded(
-                                              child: Focus(
-                                                child: TextFormField(
-                                                  controller: viewModel.proUN,
-                                                  focusNode: FocusNode(),
-                                                  decoration:
-                                                  const InputDecoration(
-                                                    labelText: 'ProUN',
-                                                    hintText: '',
-                                                    border:
-                                                    UnderlineInputBorder(),
-                                                  ),
-                                                  onChanged: (value) {
-                                                    viewModel.proUN.text =
-                                                        value;
-                                                    AppSP.set(
-                                                        AppSPKey.proUN,
-                                                        viewModel.proUN.text);
-                                                    viewModel
-                                                        .notifyListeners();
-                                                  },
-                                                ),
+                                              child: TextFieldSetting(
+                                                label: 'ProUN',
+                                                controller: viewModel.proUN,
+                                                enabled: (AppSP.get(AppSPKey
+                                                                .proUN) ??
+                                                            '') !=
+                                                        ''
+                                                    ? false
+                                                    : true,
                                               ),
                                             ),
                                             const SizedBox(width: 16),
                                             Expanded(
-                                              child: Focus(
-                                                child: TextFormField(
-                                                  controller: viewModel.proPW,
-                                                  focusNode: FocusNode(),
-                                                  decoration:
-                                                  const InputDecoration(
-                                                    labelText: 'ProPW',
-                                                    hintText: '',
-                                                    border:
-                                                    UnderlineInputBorder(),
-                                                  ),
-                                                  onChanged: (value) {
-                                                    viewModel.proPW.text =
-                                                        value;
-                                                    AppSP.set(
-                                                        AppSPKey.proPW,
-                                                        viewModel.proPW.text);
-                                                    viewModel
-                                                        .notifyListeners();
-                                                  },
-                                                ),
+                                              child: TextFieldSetting(
+                                                label: 'ProPW',
+                                                controller: viewModel.proPW,
+                                                enabled: (AppSP.get(AppSPKey
+                                                                .proPW) ??
+                                                            '') !=
+                                                        ''
+                                                    ? false
+                                                    : true,
                                               ),
                                             ),
                                             const SizedBox(width: 16),
                                             Expanded(
-                                              child: Focus(
-                                                child: TextFormField(
-                                                  controller:
-                                                  viewModel.projectorIP,
-                                                  focusNode: FocusNode(),
-                                                  decoration:
-                                                  const InputDecoration(
-                                                    labelText:
-                                                    'ProjectorIP',
-                                                    hintText: '',
-                                                    border:
-                                                    UnderlineInputBorder(),
-                                                  ),
-                                                  onChanged: (value) {
-                                                    viewModel.projectorIP.text =
-                                                        value;
-                                                    AppSP.set(
-                                                        AppSPKey.projectorIP,
-                                                        viewModel
-                                                            .projectorIP.text);
-                                                    viewModel
-                                                        .notifyListeners();
-                                                  },
-                                                ),
+                                              child: TextFieldSetting(
+                                                label: 'ProjectorIP',
+                                                controller:
+                                                    viewModel.projectorIP,
+                                                enabled: (AppSP.get(AppSPKey
+                                                                .projectorIP) ??
+                                                            '') !=
+                                                        ''
+                                                    ? false
+                                                    : true,
                                               ),
                                             ),
                                           ],
@@ -282,7 +248,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         const SizedBox(height: 10),
                                         Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                              MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
@@ -300,7 +266,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         ),
                                         Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                              MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
@@ -318,7 +284,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         ),
                                         Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                              MainAxisAlignment.start,
                                           children: [
                                             Focus(
                                               child: Checkbox(
@@ -356,12 +322,11 @@ class PopupSettingScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             color: const Color(0xffEB6E2C),
                             onPressed: () async {
-                              print('Nhấn connect');
-                              await AppUtils.checkConnect()
+                              checkConnect
                                   ? null
                                   : await homeVM.connectDevice();
                             },
-                            title: 'KẾT NỐI',
+                            title: checkConnect ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
                             textSize: 15,
                           ),
                         ),
@@ -386,5 +351,43 @@ class PopupSettingScreen extends StatelessWidget {
             ),
           );
         });
+  }
+}
+
+class TextFieldSetting extends StatelessWidget {
+  const TextFieldSetting({
+    super.key,
+    required this.controller,
+    required this.label,
+    required this.enabled,
+  });
+  final TextEditingController controller;
+  final String label;
+  final bool enabled;
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      child: TextFormField(
+        controller: controller,
+        focusNode: FocusNode(),
+        readOnly: !enabled,
+        cursorColor: Colors.black,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: '',
+          enabled: enabled,
+          labelStyle: const TextStyle(color: Colors.black),
+          border: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.black)),
+          enabledBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.black)),
+          focusedBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.black)),
+        ),
+        onChanged: (value) {
+          controller.text = value;
+        },
+      ),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
@@ -144,7 +145,24 @@ class _HomePageState extends State<HomePage> {
                             title: 'THOÁT',
                             textSize: 15,
                           ),
-                          const TimerClock(),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              CupertinoSwitch(
+                                  value: bool.parse(
+                                      AppSP.get(AppSPKey.checkPlayVideo) ??
+                                          'true'),
+                                  onChanged: (check) =>
+                                      viewModel.playCamp(check)),
+                              const Text(
+                                'Tự động chạy',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ],
+                          ),
+                          TimerClock(
+                            homeViewModel: viewModel,
+                          ),
                         ],
                       ),
                       const SizedBox(
