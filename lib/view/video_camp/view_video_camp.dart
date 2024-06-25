@@ -36,11 +36,11 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
   late Duration _waitTime;
   Timer? _timer;
   String checkPlay = '';
-
+  String pathImage = '';
   @override
   void initState() {
     super.initState();
-    _loadNextVideo();
+    _loadNextMedia();
     _updateTime();
 
     _timer = Timer.periodic(Duration(seconds: 1), (Timer t) => _updateTime());
@@ -74,88 +74,130 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
     }
   }
 
-  Future<void> _loadNextVideo() async {
+  bool _isImageFile(String path) {
+    return path.endsWith('.jpg') ||
+        path.endsWith('.jpeg') ||
+        path.endsWith('.png') ||
+        path.endsWith('.gif');
+  }
+
+  bool _isImageUrl(String url) {
+    return url.endsWith('.jpg') ||
+        url.endsWith('.jpeg') ||
+        url.endsWith('.png') ||
+        url.endsWith('.gif');
+  }
+
+  DateTime stringToDateTime(String time) {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final parts = time.split(':');
+    final hour = int.parse(parts[0]);
+    final minute = int.parse(parts[1]);
+    final second = int.parse(parts[2]);
+    return DateTime(now.year, now.month, now.day, hour, minute, second)
+        .toUtc()
+        .add(const Duration(hours: 7));
+  }
+
+  Future<void> _loadNextMedia() async {
     if (_currentIndex < widget.campSchedules.length) {
       final campSchedule = widget.campSchedules[_currentIndex];
-      nameVideo = campSchedule.campaignName;
-      _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
-      try {
-        await _getUsbPath();
-        if (_usbPath.isEmpty) {
-          _controller?.dispose();
-          _controller = VideoPlayerController.networkUrl(
-              Uri.parse(campSchedule.urlYoutube));
-          checkPlay = 'Chạy bằng Url';
-        } else {
-          String nameVideoSave = campSchedule.urlYoutube
-              .split('/')
-              .last
-              .split('.')
-              .first
-              .toString();
-          String savePath = '${_usbPath.first}/Video/$nameVideoSave.mp4';
-          Directory videoDir = Directory('${_usbPath.first}/Video');
-          if (!videoDir.existsSync()) {
-            videoDir.createSync(recursive: true);
-          }
-          if (!File(savePath).existsSync()) {
-            VideoDownloader.startDownload(
-                campSchedule.urlYoutube, savePath, (progress) {});
-          } else {
-            widget.campSchedules[_currentIndex].videoType = 'usb';
-          }
-          if (campSchedule.videoType == 'url') {
+      DateTime fromTime = stringToDateTime(campSchedule.fromTime);
+      DateTime toTime = stringToDateTime(campSchedule.toTime);
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      if (fromTime.isBefore(now) &&
+          toTime.isAfter(now) &&
+          campSchedule.status == '1') {
+        nameVideo = campSchedule.campaignName;
+        _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
+        try {
+
+          
+
+
+          await _getUsbPath();
+          if (_usbPath.isEmpty) {
             _controller?.dispose();
             _controller = VideoPlayerController.networkUrl(
                 Uri.parse(campSchedule.urlYoutube));
             checkPlay = 'Chạy bằng Url';
           } else {
-            String usbPathh = '';
-            if (File('${_usbPath.first}/Video/$nameVideoSave.mp4')
-                .existsSync()) {
-              usbPathh = '${_usbPath.first}/Video/$nameVideoSave.mp4';
+            String nameVideoSave = campSchedule.urlYoutube
+                .split('/')
+                .last
+                .split('.')
+                .first
+                .toString();
+            String savePath = '${_usbPath.first}/Video/$nameVideoSave.mp4';
+            Directory videoDir = Directory('${_usbPath.first}/Video');
+            if (!videoDir.existsSync()) {
+              videoDir.createSync(recursive: true);
+            }
+            if (!File(savePath).existsSync()) {
+              VideoDownloader.startDownload(
+                  campSchedule.urlYoutube, savePath, (progress) {});
             } else {
-              usbPathh = '${_usbPath.first}/${campSchedule.urlUsp}';
+              widget.campSchedules[_currentIndex].videoType = 'usb';
             }
-            print('usb path: $usbPathh');
-            _controller?.dispose();
-            _controller = VideoPlayerController.file(File(usbPathh));
-            checkPlay = 'Chạy bằng USB';
+            if (campSchedule.videoType == 'url') {
+              _controller?.dispose();
+              _controller = VideoPlayerController.networkUrl(
+                  Uri.parse(campSchedule.urlYoutube));
+              checkPlay = 'Chạy bằng Url';
+            } else {
+              String usbPathh = '';
+              if (File('${_usbPath.first}/Video/$nameVideoSave.mp4')
+                  .existsSync()) {
+                usbPathh = '${_usbPath.first}/Video/$nameVideoSave.mp4';
+              } else {
+                usbPathh = '${_usbPath.first}/${campSchedule.urlUsp}';
+              }
+              print('usb path: $usbPathh');
+              _controller?.dispose();
+              _controller = VideoPlayerController.file(File(usbPathh));
+              checkPlay = 'Chạy bằng USB : $usbPathh';
+            }
           }
-        }
-        _initializeVideoPlayerFuture = _controller!.initialize();
-        await _initializeVideoPlayerFuture;
-        _controller!.setLooping(false);
-        if (mounted) {
-          setState(() {
-            _controller!.play();
-          });
-        }
-        Future.delayed(_waitTime, () async {
+          _initializeVideoPlayerFuture = _controller!.initialize();
+          await _initializeVideoPlayerFuture;
+          _controller!.setLooping(false);
           if (mounted) {
-            CampRequest campRequest = CampRequest();
-            await campRequest.addCampaignRunProfile(campSchedule);
-            NotifyRequest notifyRequest = NotifyRequest();
-            Notify notify = Notify(
-                title: 'Chạy chiến dịch',
-                descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                picture: '');
-            await notifyRequest.addNotify(notify);
-            _currentIndex++;
-            if (_currentIndex >= widget.campSchedules.length) {
-              _currentIndex = 0; // Lặp lại từ video đầu tiên
-            }
-            _loadNextVideo();
+            setState(() {
+              _controller!.play();
+            });
           }
-        });
-      } catch (e) {
-        print('Error loading video: $e');
+          Future.delayed(_waitTime, () async {
+            if (mounted) {
+              CampRequest campRequest = CampRequest();
+              await campRequest.addCampaignRunProfile(campSchedule);
+              NotifyRequest notifyRequest = NotifyRequest();
+              Notify notify = Notify(
+                  title: 'Chạy chiến dịch',
+                  descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                  detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                  picture: '');
+              await notifyRequest.addNotify(notify);
+              _currentIndex++;
+              if (_currentIndex >= widget.campSchedules.length) {
+                _currentIndex = 0; // Lặp lại từ video đầu tiên
+              }
+              _loadNextMedia();
+            }
+          });
+        } catch (e) {
+          print('Error loading video: $e');
+          _currentIndex++;
+          if (_currentIndex >= widget.campSchedules.length) {
+            _currentIndex = 0; // Lặp lại từ video đầu tiên
+          }
+          _loadNextMedia();
+        }
+      } else {
         _currentIndex++;
         if (_currentIndex >= widget.campSchedules.length) {
           _currentIndex = 0; // Lặp lại từ video đầu tiên
         }
-        _loadNextVideo();
+        _loadNextMedia();
       }
     }
   }
@@ -205,13 +247,13 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
                         fontSize: 24,
                       ),
                     ),
-                    // Text(
-                    //   checkPlay,
-                    //   style: const TextStyle(
-                    //     color: Colors.white,
-                    //     fontSize: 24,
-                    //   ),
-                    // ),
+                    Text(
+                      checkPlay,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                    ),
                   ],
                 ),
               ),
