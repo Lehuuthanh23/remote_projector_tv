@@ -95,7 +95,7 @@ class CampRequest {
       'customer_name': currentUser.customerName,
       'campaign_id': camp.campaignId,
       'campaign_name': camp.campaignName,
-      'url': camp.videoType == 'url' ? camp.urlYoutube : camp.urlUsp,
+      'url': camp.videoType == 'url' ? camp.urlYoutube : camp.urlUsb,
       'computer_id': device.customerId,
       'seri_computer': device.serialComputer,
       'run_time': DateTime.now().toUtc().add(const Duration(hours: 7)),

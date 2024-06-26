@@ -6,7 +6,7 @@ class CampSchedule {
   String status;
   String videoType;
   String urlYoutube;
-  String urlUsp;
+  String urlUsb;
   String daysOfWeek;
   String deleted;
   String customerId;
@@ -21,7 +21,7 @@ class CampSchedule {
     required this.status,
     required this.videoType,
     required this.urlYoutube,
-    required this.urlUsp,
+    required this.urlUsb,
     required this.daysOfWeek,
     required this.deleted,
     required this.customerId,
@@ -39,7 +39,7 @@ class CampSchedule {
       status: json['status'],
       videoType: json['video_type'],
       urlYoutube: json['url_youtobe'],
-      urlUsp: json['url_usp'],
+      urlUsb: json['url_usp'],
       daysOfWeek: json['days_of_week'],
       deleted: json['deleted'] ?? '',
       customerId: json['customer_id'],
@@ -58,7 +58,7 @@ class CampSchedule {
       'status': status,
       'video_type': videoType,
       'url_youtobe': urlYoutube,
-      'url_usp': urlUsp,
+      'url_usp': urlUsb,
       'days_of_week': daysOfWeek,
       'deleted': deleted,
       'customer_id': customerId,
