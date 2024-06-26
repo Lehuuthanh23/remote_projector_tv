@@ -36,7 +36,10 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
   late Duration _waitTime;
   Timer? _timer;
   String checkPlay = '';
-  String pathImage = '';
+  bool checkImage = false;
+  late CampSchedule campSchedule;
+  File? image;
+  String checkVideo = '';
   @override
   void initState() {
     super.initState();
@@ -74,18 +77,11 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
     }
   }
 
-  bool _isImageFile(String path) {
+  bool _isImage(String path) {
     return path.endsWith('.jpg') ||
         path.endsWith('.jpeg') ||
         path.endsWith('.png') ||
         path.endsWith('.gif');
-  }
-
-  bool _isImageUrl(String url) {
-    return url.endsWith('.jpg') ||
-        url.endsWith('.jpeg') ||
-        url.endsWith('.png') ||
-        url.endsWith('.gif');
   }
 
   DateTime stringToDateTime(String time) {
@@ -101,7 +97,7 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
 
   Future<void> _loadNextMedia() async {
     if (_currentIndex < widget.campSchedules.length) {
-      final campSchedule = widget.campSchedules[_currentIndex];
+      campSchedule = widget.campSchedules[_currentIndex];
       DateTime fromTime = stringToDateTime(campSchedule.fromTime);
       DateTime toTime = stringToDateTime(campSchedule.toTime);
       DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
@@ -111,79 +107,143 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
         nameVideo = campSchedule.campaignName;
         _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
         try {
-
-          
-
-
           await _getUsbPath();
-          if (_usbPath.isEmpty) {
-            _controller?.dispose();
-            _controller = VideoPlayerController.networkUrl(
-                Uri.parse(campSchedule.urlYoutube));
-            checkPlay = 'Chạy bằng Url';
+          if ((campSchedule.videoType == 'url' &&
+                  _isImage(campSchedule.urlYoutube)) ||
+              (campSchedule.videoType == 'usb' &&
+                  _isImage(campSchedule.urlUsb))) {
+            checkVideo = 'Chạy hình';
+            print('Chạy hình');
+            if (mounted) {
+              setState(() {
+                checkImage = true;
+                if (_usbPath.isNotEmpty) {
+                  String nameImageSave =
+                      campSchedule.urlYoutube.split('/').last;
+                  String savePath = '${_usbPath.first}/Images/$nameImageSave';
+                  Directory imageDir = Directory('${_usbPath.first}/Images');
+                  if (!imageDir.existsSync()) {
+                    imageDir.createSync(recursive: true);
+                  }
+                  if (campSchedule.videoType == 'url') {
+                    if (!File(savePath).existsSync()) {
+                      VideoDownloader.startDownload(
+                          campSchedule.urlYoutube, savePath, (progress) {});
+                      checkVideo = '$checkVideo : chạy bằng url';
+                    }
+                    if (File(savePath).existsSync()) {
+                      image = File(savePath);
+                      checkVideo = '$checkVideo : chạy bằng usb';
+                    }
+                  } else if (File(
+                          '${_usbPath.first}/Images/${campSchedule.urlUsb}')
+                      .existsSync()) {
+                    image =
+                        File('${_usbPath.first}/Images/${campSchedule.urlUsb}');
+                    checkVideo = '$checkVideo : chạy bằng usb';
+                  } else {
+                    _currentIndex++;
+                    if (_currentIndex >= widget.campSchedules.length) {
+                      _currentIndex = 0; // Lặp lại từ video đầu tiên
+                    }
+                    _loadNextMedia();
+                  }
+                }
+              });
+              Future.delayed(_waitTime, () async {
+                CampRequest campRequest = CampRequest();
+                await campRequest.addCampaignRunProfile(campSchedule);
+                NotifyRequest notifyRequest = NotifyRequest();
+                Notify notify = Notify(
+                    title: 'Chạy chiến dịch',
+                    descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                    detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                    picture: '');
+                await notifyRequest.addNotify(notify);
+                _currentIndex++;
+                if (_currentIndex >= widget.campSchedules.length) {
+                  _currentIndex = 0; // Lặp lại từ video đầu tiên
+                }
+                _loadNextMedia();
+              });
+            }
           } else {
-            String nameVideoSave = campSchedule.urlYoutube
-                .split('/')
-                .last
-                .split('.')
-                .first
-                .toString();
-            String savePath = '${_usbPath.first}/Video/$nameVideoSave.mp4';
-            Directory videoDir = Directory('${_usbPath.first}/Video');
-            if (!videoDir.existsSync()) {
-              videoDir.createSync(recursive: true);
-            }
-            if (!File(savePath).existsSync()) {
-              VideoDownloader.startDownload(
-                  campSchedule.urlYoutube, savePath, (progress) {});
-            } else {
-              widget.campSchedules[_currentIndex].videoType = 'usb';
-            }
-            if (campSchedule.videoType == 'url') {
+            checkImage = false;
+            checkVideo = 'Chạy video';
+            print('Chạy video');
+            if (_usbPath.isEmpty) {
               _controller?.dispose();
               _controller = VideoPlayerController.networkUrl(
                   Uri.parse(campSchedule.urlYoutube));
-              checkPlay = 'Chạy bằng Url';
             } else {
-              String usbPathh = '';
-              if (File('${_usbPath.first}/Video/$nameVideoSave.mp4')
-                  .existsSync()) {
-                usbPathh = '${_usbPath.first}/Video/$nameVideoSave.mp4';
+              String nameVideoSave = campSchedule.urlYoutube.split('/').last;
+              String savePath = '${_usbPath.first}/Video/$nameVideoSave';
+              Directory videoDir = Directory('${_usbPath.first}/Video');
+
+              if (campSchedule.videoType == 'url') {
+                if (!videoDir.existsSync()) {
+                  videoDir.createSync(recursive: true);
+                }
+                if (!File(savePath).existsSync()) {
+                  VideoDownloader.startDownload(
+                      campSchedule.urlYoutube, savePath, (progress) {});
+                }
+                if (!File(savePath).existsSync()) {
+                  _controller?.dispose();
+                  _controller = VideoPlayerController.networkUrl(
+                      Uri.parse(campSchedule.urlYoutube));
+                  checkVideo = '$checkVideo : chạy bằng url';
+                } else {
+                  _controller?.dispose();
+                  _controller = VideoPlayerController.file(File(savePath));
+                  checkPlay = 'Chạy bằng USB : $savePath';
+                  checkVideo = '$checkVideo : chạy bằng usb';
+                }
               } else {
-                usbPathh = '${_usbPath.first}/${campSchedule.urlUsp}';
+                String usbPathh = '';
+                if (File('${_usbPath.first}/${campSchedule.urlUsb}')
+                    .existsSync()) {
+                  usbPathh = '${_usbPath.first}/Video/${campSchedule.urlUsb}';
+                  print('usb path: $usbPathh');
+                  _controller?.dispose();
+                  _controller = VideoPlayerController.file(File(usbPathh));
+                  checkVideo = '$checkVideo : chạy bằng usb';
+                } else {
+                  _currentIndex++;
+                  if (_currentIndex >= widget.campSchedules.length) {
+                    _currentIndex = 0; // Lặp lại từ video đầu tiên
+                  }
+                  _loadNextMedia();
+                }
               }
-              print('usb path: $usbPathh');
-              _controller?.dispose();
-              _controller = VideoPlayerController.file(File(usbPathh));
-              checkPlay = 'Chạy bằng USB : $usbPathh';
             }
-          }
-          _initializeVideoPlayerFuture = _controller!.initialize();
-          await _initializeVideoPlayerFuture;
-          _controller!.setLooping(false);
-          if (mounted) {
-            setState(() {
-              _controller!.play();
+            _initializeVideoPlayerFuture = _controller!.initialize();
+            await _initializeVideoPlayerFuture;
+            _controller!.setLooping(true);
+            if (mounted) {
+              setState(() {
+                _controller!.play();
+              });
+            }
+            Future.delayed(_waitTime, () async {
+              if (mounted) {
+                CampRequest campRequest = CampRequest();
+                await campRequest.addCampaignRunProfile(campSchedule);
+                NotifyRequest notifyRequest = NotifyRequest();
+                Notify notify = Notify(
+                    title: 'Chạy chiến dịch',
+                    descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                    detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
+                    picture: '');
+                await notifyRequest.addNotify(notify);
+                _currentIndex++;
+                if (_currentIndex >= widget.campSchedules.length) {
+                  _currentIndex = 0; // Lặp lại từ video đầu tiên
+                }
+                _loadNextMedia();
+              }
             });
           }
-          Future.delayed(_waitTime, () async {
-            if (mounted) {
-              CampRequest campRequest = CampRequest();
-              await campRequest.addCampaignRunProfile(campSchedule);
-              NotifyRequest notifyRequest = NotifyRequest();
-              Notify notify = Notify(
-                  title: 'Chạy chiến dịch',
-                  descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  picture: '');
-              await notifyRequest.addNotify(notify);
-              _currentIndex++;
-              if (_currentIndex >= widget.campSchedules.length) {
-                _currentIndex = 0; // Lặp lại từ video đầu tiên
-              }
-              _loadNextMedia();
-            }
-          });
         } catch (e) {
           print('Error loading video: $e');
           _currentIndex++;
@@ -223,14 +283,7 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
               color: Colors.black, // Nền màu đen
             ),
             Center(
-              child: _controller != null && _controller!.value.isInitialized
-                  ? AspectRatio(
-                      aspectRatio: _controller!.value.aspectRatio,
-                      child: VideoPlayer(_controller!),
-                    )
-                  : Container(
-                      color: Colors.black,
-                    ),
+              child: buildMediaWidget(),
             ),
             Positioned(
               bottom: 20,
@@ -248,7 +301,7 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
                       ),
                     ),
                     Text(
-                      checkPlay,
+                      checkVideo,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -262,5 +315,36 @@ class _ViewVideoCampState extends State<ViewVideoCamp> {
         ),
       ),
     );
+  }
+
+  Widget buildMediaWidget() {
+    if (checkImage) {
+      if (campSchedule.videoType == 'url' && image == null) {
+        return Image.network(
+          campSchedule.urlYoutube,
+          fit: BoxFit.cover,
+        );
+      } else if (image != null) {
+        return Image.file(
+          image!,
+          fit: BoxFit.cover,
+        );
+      } else {
+        return Container(
+          color: Colors.black,
+        );
+      }
+    } else {
+      if (_controller != null && _controller!.value.isInitialized) {
+        return AspectRatio(
+          aspectRatio: _controller!.value.aspectRatio,
+          child: VideoPlayer(_controller!),
+        );
+      } else {
+        return Container(
+          color: Colors.black,
+        );
+      }
+    }
   }
 }
