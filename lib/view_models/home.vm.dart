@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:play_box/app/app_string.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -10,9 +11,11 @@ import '../app/app_sp_key.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../models/device/device_info_model.dart';
+import '../models/packet/packet_model.dart';
 import '../models/user/user.dart';
 import '../request/camp/camp.request.dart';
 import '../request/device/device.request.dart';
+import '../request/packet/packet.request.dart';
 import '../services/device_service.dart';
 import '../view/splash/splash.page.dart';
 import '../widget/pop_up.dart';
@@ -32,6 +35,8 @@ class HomeViewModel extends BaseViewModel {
   TextEditingController proPW = TextEditingController();
   TextEditingController projectorIP = TextEditingController();
   Dio dio = Dio();
+  List<PacketModel> packets = [];
+  bool isDrawerOpen = false;
 
   initialise() async {
     currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
@@ -39,6 +44,7 @@ class HomeViewModel extends BaseViewModel {
     proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
     print('Giá trị: ${proUN.text}');
+    await _fetchPackets();
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
@@ -47,13 +53,37 @@ class HomeViewModel extends BaseViewModel {
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
-    print('Số lượng camp schedule: ${lstCampSchedule.length}');
-    print('User hiện tại là: ${currentUser.customerName}');
+    notifyListeners();
+  }
+
+  void toggleDrawer() {
+    isDrawerOpen = !isDrawerOpen;
     notifyListeners();
   }
 
   void setContext(BuildContext ctx) {
     viewContext = ctx;
+  }
+
+  Future<void> _fetchPackets() async {
+    packets = await PacketRequest().getPacketByCustomerId();
+    AppString.checkPacket = packets.isNotEmpty;
+    if (!AppString.checkPacket) {
+      _showExpiredDialog();
+    }
+  }
+
+  void _showExpiredDialog() {
+    showDialog(
+        context: viewContext,
+        builder: (context) => PopUpWidget(
+              icon: Image.asset("assets/images/ic_error.png"),
+              title: 'Gói cước hết hạn',
+              leftText: 'Xác nhận',
+              onLeftTap: () {
+                Navigator.pop(context);
+              },
+            ));
   }
 
   signOut() async {

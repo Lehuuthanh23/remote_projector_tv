@@ -57,7 +57,6 @@ class DeviceInfoService {
       );
     }
     AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
-    print('Device tạo xong là: ${AppSP.get(AppSPKey.device)}');
     return deviceInfoModel;
   }
 }
