@@ -64,7 +64,10 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
               child: ListView.builder(
                 itemCount: camps.length,
                 itemBuilder: (context, index) {
-                  return CampCard(camp: camps[index]);
+                  return CampCard(
+                    camp: camps[index],
+                    focusNode: FocusNode(),
+                  );
                 },
               ),
             ),

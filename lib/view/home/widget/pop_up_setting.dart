@@ -62,66 +62,59 @@ class PopupSettingScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Focus(
-                                      child: TextFormField(
-                                        focusNode: FocusNode(),
-                                        readOnly: true,
-                                        enabled: false,
-                                        decoration: InputDecoration(
-                                          label: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Họ & tên',
-                                                style: TextStyle(
-                                                    color: Color(0xff797979),
-                                                    fontSize: 15),
-                                              ),
-                                              Text(
-                                                homeVM
-                                                    .currentUser.customerName!,
-                                                style: const TextStyle(
-                                                    fontSize: 20),
-                                              ),
-                                            ],
-                                          ),
-                                          prefixIcon: Image.asset(
-                                              'assets/images/ic_profile.png'),
-                                          border: const OutlineInputBorder(),
+                                    child: TextFormField(
+                                      readOnly: true,
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        label: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Họ & tên',
+                                              style: TextStyle(
+                                                  color: Color(0xff797979),
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              homeVM.currentUser.customerName!,
+                                              style:
+                                                  const TextStyle(fontSize: 20),
+                                            ),
+                                          ],
                                         ),
+                                        prefixIcon: Image.asset(
+                                            'assets/images/ic_profile.png'),
+                                        border: const OutlineInputBorder(),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
-                                    child: Focus(
-                                      child: TextFormField(
-                                        readOnly: true,
-                                        enabled: false,
-                                        focusNode: FocusNode(),
-                                        decoration: InputDecoration(
-                                          label: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Số điện thoại',
-                                                style: TextStyle(
-                                                    color: Color(0xff797979),
-                                                    fontSize: 15),
-                                              ),
-                                              Text(
-                                                homeVM.currentUser.phoneNumber!,
-                                                style: const TextStyle(
-                                                    fontSize: 20),
-                                              ),
-                                            ],
-                                          ),
-                                          prefixIcon: Image.asset(
-                                              'assets/images/ic_phone_number.png'),
-                                          border: const OutlineInputBorder(),
+                                    child: TextFormField(
+                                      readOnly: true,
+                                      enabled: false,
+                                      decoration: InputDecoration(
+                                        label: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Số điện thoại',
+                                              style: TextStyle(
+                                                  color: Color(0xff797979),
+                                                  fontSize: 15),
+                                            ),
+                                            Text(
+                                              homeVM.currentUser.phoneNumber!,
+                                              style:
+                                                  const TextStyle(fontSize: 20),
+                                            ),
+                                          ],
                                         ),
+                                        prefixIcon: Image.asset(
+                                            'assets/images/ic_phone_number.png'),
+                                        border: const OutlineInputBorder(),
                                       ),
                                     ),
                                   ),
@@ -143,55 +136,45 @@ class PopupSettingScreen extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Focus(
-                                          child: TextFormField(
-                                            focusNode: FocusNode(),
-                                            enabled: false,
-                                            decoration: InputDecoration(
-                                              labelText: homeVM.deviceInfo!
-                                                          .serialNumber ==
-                                                      'unknown'
-                                                  ? 'ANDROID ID'
-                                                  : 'SERI NUMBER',
-                                              hintText: '',
-                                              enabled: false,
-                                              border:
-                                                  const UnderlineInputBorder(),
-                                            ),
-                                            initialValue: homeVM.deviceInfo!
+                                        TextFormField(
+                                          enabled: false,
+                                          decoration: InputDecoration(
+                                            labelText: homeVM.deviceInfo!
                                                         .serialNumber ==
                                                     'unknown'
-                                                ? homeVM.deviceInfo!.androidId
-                                                : homeVM
-                                                    .deviceInfo!.serialNumber,
+                                                ? 'ANDROID ID'
+                                                : 'SERI NUMBER',
+                                            hintText: '',
+                                            enabled: false,
+                                            border:
+                                                const UnderlineInputBorder(),
                                           ),
+                                          initialValue: homeVM.deviceInfo!
+                                                      .serialNumber ==
+                                                  'unknown'
+                                              ? homeVM.deviceInfo!.androidId
+                                              : homeVM.deviceInfo!.serialNumber,
                                         ),
                                         const SizedBox(height: 10),
-                                        Focus(
-                                          child: TextFormField(
-                                            focusNode: FocusNode(),
-                                            decoration: const InputDecoration(
-                                              labelText: 'Trạng thái',
-                                              hintText: '',
-                                              enabled: false,
-                                              border: UnderlineInputBorder(),
-                                            ),
-                                            initialValue: 'Đang chạy',
+                                        TextFormField(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Trạng thái',
+                                            hintText: '',
+                                            enabled: false,
+                                            border: UnderlineInputBorder(),
                                           ),
+                                          initialValue: 'Đang chạy',
                                         ),
                                         const SizedBox(height: 10),
-                                        Focus(
-                                          child: TextFormField(
-                                            focusNode: FocusNode(),
-                                            decoration: const InputDecoration(
-                                              labelText: 'Tên thiết bị',
-                                              hintText: '',
-                                              enabled: false,
-                                              border: UnderlineInputBorder(),
-                                            ),
-                                            initialValue:
-                                                homeVM.deviceInfo!.model,
+                                        TextFormField(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Tên thiết bị',
+                                            hintText: '',
+                                            enabled: false,
+                                            border: UnderlineInputBorder(),
                                           ),
+                                          initialValue:
+                                              homeVM.deviceInfo!.model,
                                         ),
                                       ],
                                     ),
@@ -250,16 +233,14 @@ class PopupSettingScreen extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
-                                            Focus(
-                                              child: Checkbox(
-                                                checkColor: Colors.amber,
-                                                activeColor: Colors.transparent,
-                                                focusNode: FocusNode(),
-                                                value: homeVM.turnOnlPJ,
-                                                onChanged: (bool? value) {
-                                                  homeVM.turnOnl();
-                                                },
-                                              ),
+                                            Checkbox(
+                                              checkColor: Colors.amber,
+                                              activeColor: Colors.transparent,
+                                              focusNode: FocusNode(),
+                                              value: homeVM.turnOnlPJ,
+                                              onChanged: (bool? value) {
+                                                homeVM.turnOnl();
+                                              },
                                             ),
                                             const Text('Điều khiển mở PJ'),
                                           ],
@@ -268,16 +249,14 @@ class PopupSettingScreen extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
-                                            Focus(
-                                              child: Checkbox(
-                                                checkColor: Colors.amber,
-                                                activeColor: Colors.transparent,
-                                                focusNode: FocusNode(),
-                                                value: homeVM.turnOffPJ,
-                                                onChanged: (bool? value) {
-                                                  homeVM.turnOff();
-                                                },
-                                              ),
+                                            Checkbox(
+                                              checkColor: Colors.amber,
+                                              activeColor: Colors.transparent,
+                                              focusNode: FocusNode(),
+                                              value: homeVM.turnOffPJ,
+                                              onChanged: (bool? value) {
+                                                homeVM.turnOff();
+                                              },
                                             ),
                                             const Text('Điều khiển tắt PJ'),
                                           ],
@@ -286,16 +265,14 @@ class PopupSettingScreen extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
-                                            Focus(
-                                              child: Checkbox(
-                                                checkColor: Colors.amber,
-                                                activeColor: Colors.transparent,
-                                                focusNode: FocusNode(),
-                                                value: homeVM.openOnStartup,
-                                                onChanged: (bool? value) {
-                                                  homeVM.openOnStart();
-                                                },
-                                              ),
+                                            Checkbox(
+                                              checkColor: Colors.amber,
+                                              activeColor: Colors.transparent,
+                                              focusNode: FocusNode(),
+                                              value: homeVM.openOnStartup,
+                                              onChanged: (bool? value) {
+                                                homeVM.openOnStart();
+                                              },
                                             ),
                                             const Text('Mở khi khởi động'),
                                           ],
@@ -311,39 +288,30 @@ class PopupSettingScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  FocusTraversalGroup(
-                    policy: WidgetOrderTraversalPolicy(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Focus(
-                          child: ButtomCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            color: const Color(0xffEB6E2C),
-                            onPressed: () async {
-                              checkConnect
-                                  ? null
-                                  : await homeVM.connectDevice();
-                            },
-                            title: checkConnect ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
-                            textSize: 15,
-                          ),
-                        ),
-                        Focus(
-                          child: ButtomCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            color: Colors.black,
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            title: 'THOÁT',
-                            textSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ButtomCustom(
+                        width: 150,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        color: const Color(0xffEB6E2C),
+                        onPressed: () async {
+                          checkConnect ? null : await homeVM.connectDevice();
+                        },
+                        title: checkConnect ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
+                        textSize: 15,
+                      ),
+                      ButtomCustom(
+                        width: 150,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        color: Colors.black,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        title: 'THOÁT',
+                        textSize: 15,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -366,28 +334,26 @@ class TextFieldSetting extends StatelessWidget {
   final bool enabled;
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      child: TextFormField(
-        controller: controller,
-        focusNode: FocusNode(),
-        readOnly: !enabled,
-        cursorColor: Colors.black,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: '',
-          enabled: enabled,
-          labelStyle: const TextStyle(color: Colors.black),
-          border: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.black)),
-          enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.black)),
-          focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.black)),
-        ),
-        onChanged: (value) {
-          controller.text = value;
-        },
+    return TextFormField(
+      controller: controller,
+      focusNode: enabled ? FocusNode() : null,
+      readOnly: !enabled,
+      cursorColor: Colors.black,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: '',
+        enabled: enabled,
+        labelStyle: const TextStyle(color: Colors.black),
+        border: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black)),
+        enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black)),
+        focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black)),
       ),
+      onChanged: (value) {
+        controller.text = value;
+      },
     );
   }
 }

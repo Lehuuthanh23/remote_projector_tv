@@ -79,7 +79,6 @@ class CampRequest {
       options: AppUtils.createOptionsNoCookie(),
       data: formData,
     );
-    print('Body lịch chạy camp: $response');
     final responseData = jsonDecode(response.data);
     List<dynamic> timeCampSchedule = responseData['Camp_list'];
     lstCampSchedule =

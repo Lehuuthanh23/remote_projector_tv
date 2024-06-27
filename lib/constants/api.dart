@@ -47,4 +47,5 @@ class Api {
       '/home/GetCamp_BySeriComputerAndCustomerID';
   static String insertNotify = '/home/InsertNotify';
   static String addCampaignRunProfile = '/home/AddCampaignRunProfile';
+  static String getPacketByCustomerId = '/home/GetPacket_ByCustomerId';
 }
