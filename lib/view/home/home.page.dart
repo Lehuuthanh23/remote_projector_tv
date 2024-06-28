@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 import 'package:stacked/stacked.dart';
@@ -137,8 +136,7 @@ class _HomePageState extends State<HomePage> {
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             color: Colors.black,
-                            onPressed: () =>
-                                Phoenix.rebirth(context), //viewModel.signOut(),
+                            onPressed: () => viewModel.signOut(),
                             title: 'THOÁT',
                             textSize: 15,
                           ),

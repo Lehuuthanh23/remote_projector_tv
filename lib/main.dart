@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stacked/stacked.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 import 'view_models/home.vm.dart';
 import 'view/splash/splash.page.dart';
@@ -11,14 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DependencyInjection.init();
   runApp(
-    Phoenix(
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => HomeViewModel()),
-        ],
-        child: const MyApp(),
-      ),
-    ),
+    const MyApp(),
   );
 }
 
