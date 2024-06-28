@@ -195,7 +195,7 @@ class PopupSettingScreen extends StatelessWidget {
                                                                 .proUN) ??
                                                             '') !=
                                                         ''
-                                                    ? false
+                                                    ? true
                                                     : true,
                                               ),
                                             ),
@@ -208,7 +208,7 @@ class PopupSettingScreen extends StatelessWidget {
                                                                 .proPW) ??
                                                             '') !=
                                                         ''
-                                                    ? false
+                                                    ? true
                                                     : true,
                                               ),
                                             ),
@@ -222,7 +222,7 @@ class PopupSettingScreen extends StatelessWidget {
                                                                 .projectorIP) ??
                                                             '') !=
                                                         ''
-                                                    ? false
+                                                    ? true
                                                     : true,
                                               ),
                                             ),

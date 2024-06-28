@@ -9,7 +9,7 @@ import '../app/app_sp_key.dart';
 import '../models/device/device_info_model.dart';
 import '../models/user/user.dart';
 import '../request/account/account.request.dart';
-import '../services/device_service.dart';
+import '../services/device.service.dart';
 import '../view/authentication/login.page.dart';
 import '../view/home/home.page.dart';
 
