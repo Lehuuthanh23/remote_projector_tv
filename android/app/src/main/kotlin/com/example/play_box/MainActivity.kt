@@ -10,9 +10,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
-import android.os.Environment
 import android.util.Log
 import android.app.AlertDialog
 import io.flutter.embedding.android.FlutterActivity
@@ -21,19 +19,26 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import com.example.play_box.service.MyBackgroundService
+import com.example.play_box.utils.Constants
+import com.example.play_box.utils.SharedPreferencesManager
 
-class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.example.usb/serial"
-    private val REQUEST_EXTERNAL_STORAGE = 1
-    private val PERMISSIONS_STORAGE = arrayOf(
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
+class MainActivity : FlutterActivity() {
+    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    companion object {
+        const val TAG = "MainActivity"
+
+        private const val CHANNEL = "com.example.usb/serial"
+        private const val REQUEST_EXTERNAL_STORAGE = 1
+        private val PERMISSIONS_STORAGE = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Khởi chạy broadcast khi cần
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 200)
         }
@@ -43,6 +48,8 @@ class MainActivity: FlutterActivity() {
                 showPermissionDialog()
             }
         }
+
+        sharedPreferencesManager = SharedPreferencesManager(context)
 
         verifyStoragePermissions(this)
 
@@ -68,10 +75,13 @@ class MainActivity: FlutterActivity() {
 
     @RequiresApi(Build.VERSION_CODES.M)
     private fun openOverlayPermissionSettings() {
-        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:" + this.packageName))
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:" + this.packageName)
+        )
         startActivityForResult(intent, 200)
-        Toast.makeText(this, "Vui lòng cấp quyền hiển thị trên ứng dụng khác", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Vui lòng cấp quyền hiển thị trên ứng dụng khác", Toast.LENGTH_SHORT)
+            .show()
     }
 
     override fun onRequestPermissionsResult(
@@ -94,9 +104,17 @@ class MainActivity: FlutterActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (Settings.canDrawOverlays(activity)) {
-                Toast.makeText(activity, "Quyền hiển thị trên ứng dụng khác đã được cấp", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    activity,
+                    "Quyền hiển thị trên ứng dụng khác đã được cấp",
+                    Toast.LENGTH_SHORT,
+                ).show()
             } else {
-                Toast.makeText(activity, "Quyền hiển thị trên ứng dụng khác bị từ chối", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    activity,
+                    "Quyền hiển thị trên ứng dụng khác bị từ chối",
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
     }
@@ -111,11 +129,10 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun verifyStoragePermissions(activity: Activity) {
-        // Kiểm tra xem chúng ta có quyền truy cập bộ nhớ hay không
-        val permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val permission =
+            ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
-            // Chúng ta không có quyền, yêu cầu người dùng cấp quyền
             ActivityCompat.requestPermissions(
                 activity,
                 PERMISSIONS_STORAGE,
@@ -129,35 +146,57 @@ class MainActivity: FlutterActivity() {
 
         FlutterEngineCache.getInstance().put("my_engine_id", flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-            call, result ->
-            if (call.method == "getUsbPath") {
-                val usbPath = getUsbPath()
-                if (usbPath != null) {
-                    result.success(usbPath)
-                } else {
-                    result.error("UNAVAILABLE", "USB path not available.", null)
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "saveUser" -> {
+                    val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
+                    sharedPreferencesManager.saveUserIdConnected(argument)
+                    startMyBackgroundService()
+                    Log.d(TAG, "saveUser: $argument")
                 }
-            } else {
-                result.notImplemented()
+
+                "saveComputer" -> {
+                    val serialComputer = call.argument<String>(Constants.SERIAL_COMPUTER)
+                    val computerId = call.argument<String>(Constants.COMPUTER_ID)
+                    sharedPreferencesManager.saveSerialComputer(serialComputer)
+                    sharedPreferencesManager.saveIdComputer(computerId)
+                }
+
+                "clearUser" -> {
+                    sharedPreferencesManager.clearData()
+                }
+
+                "getUsbPath" -> {
+                    val usbPath = getUsbPath()
+                    result.success(usbPath)
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
     }
 
-   private fun getUsbPath(): List<String> {
-    val usbPaths = mutableListOf<String>()
-    val storageDirectory = File("/storage")
-    if (storageDirectory.exists() && storageDirectory.isDirectory) {
-        val directories = storageDirectory.listFiles { file -> file.isDirectory }
-        if (directories != null) {
-            for (dir in directories) {
-                // Kiểm tra sự hiện diện của thư mục Android hoặc bất kỳ tiêu chí nào để xác nhận nó là USB
-                if (File(dir, "Android").exists()) {
-                    usbPaths.add(dir.absolutePath)
+    private fun getUsbPath(): List<String> {
+        val usbPaths = mutableListOf<String>()
+        val storageDirectory = File("/storage")
+
+        if (storageDirectory.exists() && storageDirectory.isDirectory) {
+            val directories = storageDirectory.listFiles { file -> file.isDirectory }
+            if (directories != null) {
+                for (dir in directories) {
+                    // Kiểm tra sự hiện diện của thư mục Android hoặc bất kỳ tiêu chí nào để xác nhận nó là USB
+                    if (File(dir, "Android").exists()) {
+                        usbPaths.add(dir.absolutePath)
+                    }
                 }
             }
         }
-    }
-    return usbPaths
+
+        return usbPaths
     }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/models/device/device_info_model.dart';
 import 'package:play_box/models/device/device_model.dart';
 import '../../app/app_sp.dart';
@@ -33,6 +34,13 @@ class CampRequest {
         .toList()
         .first;
     AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
+
+    const platform = MethodChannel('com.example.usb/serial');
+    platform.invokeMethod('saveComputer', {
+      AppSPKey.serial_computer: device.serialComputer,
+      AppSPKey.computer_id: device.computerId
+    });
+
     final response = await dio.get(
       '${Api.hostApi}${Api.GetCampBySeriComputerAndCustomerID}/${deviceInfoModel.serialNumber == 'unknown' ? deviceInfoModel.androidId : deviceInfoModel.serialNumber}/${currentUser.customerId}',
     );

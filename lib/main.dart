@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
       viewModelBuilder: () => HomeViewModel(),
-      onModelReady: (viewModel) {
+      onViewModelReady: (viewModel) {
         viewModel.setContext(context);
         viewModel.initialise();
       },

@@ -64,9 +64,9 @@ class AuthenticationRequest {
       await AppSP.set(AppSPKey.token, userJson['customer_token']);
       await AppSP.set(AppSPKey.user_info, jsonEncode(userJson));
 
-      const platform = MethodChannel('com.example/my_channel');
+      const platform = MethodChannel('com.example.usb/serial');
       platform
-          .invokeMethod('saveUser', {AppSPKey.user_info: jsonEncode(userJson)});
+          .invokeMethod('saveUser', {AppSPKey.user_info: userJson['customer_id']});
     }
     String id = AppSP.get(AppSPKey.token);
     String userInfo = AppSP.get(AppSPKey.user_info);

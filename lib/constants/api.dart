@@ -48,6 +48,4 @@ class Api {
   static String insertNotify = '/home/InsertNotify';
   static String addCampaignRunProfile = '/home/AddCampaignRunProfile';
   static String getPacketByCustomerId = '/home/GetPacket_ByCustomerId';
-  static String getNewCommandsBySeriComputer = '/home/GetNewCommands_BySeriComputer';
-  static String replyCommand = '/home/ReplyCommand';
 }

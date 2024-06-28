@@ -1,6 +1,8 @@
 class AppSPKey {
   AppSPKey._();
   static const String user_info = "user_info";
+  static const String serial_computer = 'serial_computer';
+  static const String computer_id = 'computer_id';
   static const String token = 'token';
   static const String day = 'day';
   static const String device = 'device';

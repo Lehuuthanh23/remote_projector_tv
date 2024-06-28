@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +12,11 @@ import '../app/app_sp_key.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../models/device/device_info_model.dart';
-import '../models/device/device_model.dart';
 import '../models/packet/packet_model.dart';
 import '../models/user/user.dart';
 import '../request/camp/camp.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
-import '../services/command.service.dart';
 import '../services/device.service.dart';
 import '../view/splash/splash.page.dart';
 import '../widget/pop_up.dart';
@@ -52,7 +49,6 @@ class HomeViewModel extends BaseViewModel {
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
-    startBackgroundTask();
     List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
@@ -95,8 +91,10 @@ class HomeViewModel extends BaseViewModel {
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.user_info, '');
     AppSP.set(AppSPKey.lstCampSchedule, '');
-    const platform = MethodChannel('com.example/my_channel');
+
+    const platform = MethodChannel('com.example.usb/serial');
     platform.invokeMethod('clearUser');
+
     Navigator.pushAndRemoveUntil(
         viewContext,
         MaterialPageRoute(
@@ -183,41 +181,5 @@ class HomeViewModel extends BaseViewModel {
     AppSP.set(AppSPKey.checkPlayVideo, '$check');
     print('Check play video: ${AppSP.get(AppSPKey.checkPlayVideo)}');
     notifyListeners();
-  }
-
-  void fetchDataInIsolate(Map<String, dynamic> params) {
-    final sendPort = params['sendPort'] as SendPort;
-    final deviceJson = params['device'] as String;
-
-    final receivePort = ReceivePort();
-    sendPort.send(receivePort.sendPort);
-
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
-      final apiService = CommandService(params['context']);
-      final device = Device.fromJson(jsonDecode(deviceJson));
-      await apiService.getCommand(device);
-    });
-
-    receivePort.listen((_) {
-      // Lắng nghe và xử lý các thông điệp từ main isolate (nếu cần)
-    });
-  }
-
-  void startBackgroundTask() async {
-    final receivePort = ReceivePort();
-    final device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.computer)));
-    await Isolate.spawn(fetchDataInIsolate, {
-      'sendPort': receivePort.sendPort,
-      'device':
-          jsonEncode(device.toJson()), // Truyền dữ liệu device vào isolate
-      'context': viewContext,
-    });
-
-    receivePort.listen((message) {
-      if (message is SendPort) {
-        final sendPort = message;
-        // Gửi thông điệp đến isolate nếu cần thiết
-      }
-    });
   }
 }
