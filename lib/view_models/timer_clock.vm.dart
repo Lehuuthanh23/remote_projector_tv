@@ -86,7 +86,6 @@ class TimerClockViewModel extends BaseViewModel {
             camp.status == '1' &&
             checkPacket!;
       }).toList();
-      print('Số lượng lịch chạy: ${lstCampScheduleNew.length}');
       if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
         print('Đúng điều kiện checkplay video');
         if (lstCampScheduleNew.isEmpty) {

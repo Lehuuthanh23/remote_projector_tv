@@ -16,8 +16,8 @@ class ViewCampViewModel extends BaseViewModel {
   late Future<void> _initializeVideoPlayerFuture;
   int _currentIndex = 0;
   static const platform = MethodChannel('com.example.usb/serial');
-  List<String> _usbPath = [];
-  List<String> get usbPath => _usbPath;
+  static const usbEventChannel = EventChannel('com.example.usb/event');
+  List<String> usbPaths = [];
   String nameVideo = '';
   String _formattedTime = '';
   String get formattedTime => _formattedTime;
@@ -28,14 +28,38 @@ class ViewCampViewModel extends BaseViewModel {
   late CampSchedule campSchedule;
   File? image;
   String checkVideo = '';
-
+  String checkUSB = '';
+  String errorString = '';
+  String checkConnectUSB = '';
+  StreamSubscription? _usbSubscription;
   void init(List<CampSchedule> campSchedules) {
     _loadNextMedia(campSchedules);
     _updateTime();
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer t) => _updateTime());
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      print('Số giây');
+      _updateTime();
+    });
+    _usbSubscription =
+        usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
+  }
+
+  void _onUsbEvent(dynamic event) {
+    if (event == 'USB_DISCONNECTED') {
+      print('USB bị rút');
+      checkConnectUSB = 'USB bị rút';
+      _controller?.pause();
+      _controller = null;
+      _getUsbPath(); // Cập nhật lại danh sách USB path
+      notifyListeners();
+    } else if (event == 'USB_CONNECTED') {
+      print('USB được kết nối');
+      checkConnectUSB = 'USB được kết nối';
+      _getUsbPath(); // Cập nhật lại danh sách USB path
+    }
   }
 
   void disposeViewModel() {
+    print('Dispose play camp');
     _controller?.dispose();
     _timer?.cancel();
   }
@@ -56,8 +80,9 @@ class ViewCampViewModel extends BaseViewModel {
       }
     } on PlatformException catch (e) {
       print('Lỗi: $e');
+      errorString = e.toString();
     }
-    _usbPath = usbPath;
+    usbPaths = usbPath;
     notifyListeners();
   }
 
@@ -85,24 +110,31 @@ class ViewCampViewModel extends BaseViewModel {
       DateTime fromTime = stringToDateTime(campSchedule.fromTime);
       DateTime toTime = stringToDateTime(campSchedule.toTime);
       DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+
       if (fromTime.isBefore(now) &&
           toTime.isAfter(now) &&
           campSchedule.status == '1') {
         nameVideo = campSchedule.campaignName;
         _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
+
         try {
           await _getUsbPath();
+          if (usbPaths.isNotEmpty) {
+            checkUSB = 'Có usb: ${usbPaths.first}';
+          } else {
+            checkUSB = 'Không có usb';
+          }
+
           if ((campSchedule.videoType == 'url' &&
                   _isImage(campSchedule.urlYoutube)) ||
               (campSchedule.videoType == 'usb' &&
                   _isImage(campSchedule.urlUsb))) {
             checkVideo = 'Chạy hình';
-            print('Chạy hình');
             checkImage = true;
-            if (_usbPath.isNotEmpty) {
+            if (usbPaths.isNotEmpty) {
               String nameImageSave = campSchedule.urlYoutube.split('/').last;
-              String savePath = '${_usbPath.first}/Images/$nameImageSave';
-              Directory imageDir = Directory('${_usbPath.first}/Images');
+              String savePath = '${usbPaths.first}/Images/$nameImageSave';
+              Directory imageDir = Directory('${usbPaths.first}/Images');
               if (!imageDir.existsSync()) {
                 imageDir.createSync(recursive: true);
               }
@@ -110,53 +142,37 @@ class ViewCampViewModel extends BaseViewModel {
                 if (!File(savePath).existsSync()) {
                   VideoDownloader.startDownload(
                       campSchedule.urlYoutube, savePath, (progress) {});
-                  checkVideo = '$checkVideo : chạy bằng url';
+                  checkPlay = 'Chạy url';
                 }
                 if (File(savePath).existsSync()) {
                   image = File(savePath);
-                  checkVideo = '$checkVideo : chạy bằng usb';
+                  checkPlay = 'Chạy usb';
                 }
-              } else if (File('${_usbPath.first}/Images/${campSchedule.urlUsb}')
+              } else if (File('${usbPaths.first}/Images/${campSchedule.urlUsb}')
                   .existsSync()) {
-                image = File('${_usbPath.first}/Images/${campSchedule.urlUsb}');
-                checkVideo = '$checkVideo : chạy bằng usb';
+                checkPlay = 'Chạy usb';
+                image = File('${usbPaths.first}/Images/${campSchedule.urlUsb}');
               } else {
-                _currentIndex++;
-                if (_currentIndex >= campSchedules.length) {
-                  _currentIndex = 0; // Lặp lại từ video đầu tiên
-                }
-                _loadNextMedia(campSchedules);
+                _loadNextMediaAfterDelay(campSchedules, false);
+                return;
               }
             }
             notifyListeners();
             Future.delayed(_waitTime, () async {
-              CampRequest campRequest = CampRequest();
-              await campRequest.addCampaignRunProfile(campSchedule);
-              NotifyRequest notifyRequest = NotifyRequest();
-              Notify notify = Notify(
-                  title: 'Chạy chiến dịch',
-                  descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  picture: '');
-              await notifyRequest.addNotify(notify);
-              _currentIndex++;
-              if (_currentIndex >= campSchedules.length) {
-                _currentIndex = 0; // Lặp lại từ video đầu tiên
-              }
-              _loadNextMedia(campSchedules);
+              _onMediaFinished(campSchedules);
             });
           } else {
             checkImage = false;
             checkVideo = 'Chạy video';
-            print('Chạy video');
-            if (_usbPath.isEmpty) {
+
+            if (usbPaths.isEmpty) {
               _controller?.dispose();
               _controller = VideoPlayerController.networkUrl(
                   Uri.parse(campSchedule.urlYoutube));
             } else {
               String nameVideoSave = campSchedule.urlYoutube.split('/').last;
-              String savePath = '${_usbPath.first}/Video/$nameVideoSave';
-              Directory videoDir = Directory('${_usbPath.first}/Video');
+              String savePath = '${usbPaths.first}/Video/$nameVideoSave';
+              Directory videoDir = Directory('${usbPaths.first}/Video');
 
               if (campSchedule.videoType == 'url') {
                 if (!videoDir.existsSync()) {
@@ -170,28 +186,22 @@ class ViewCampViewModel extends BaseViewModel {
                   _controller?.dispose();
                   _controller = VideoPlayerController.networkUrl(
                       Uri.parse(campSchedule.urlYoutube));
-                  checkVideo = '$checkVideo : chạy bằng url';
+                  checkPlay = 'Chạy url';
                 } else {
                   _controller?.dispose();
                   _controller = VideoPlayerController.file(File(savePath));
-                  checkPlay = 'Chạy bằng USB : $savePath';
-                  checkVideo = '$checkVideo : chạy bằng usb';
+                  checkPlay = 'Chạy usb';
                 }
               } else {
-                String usbPathh = '';
-                if (File('${_usbPath.first}/${campSchedule.urlUsb}')
-                    .existsSync()) {
-                  usbPathh = '${_usbPath.first}/Video/${campSchedule.urlUsb}';
-                  print('usb path: $usbPathh');
+                String usbPathh =
+                    '${usbPaths.first}/Video/${campSchedule.urlUsb}';
+                if (File(usbPathh).existsSync()) {
                   _controller?.dispose();
                   _controller = VideoPlayerController.file(File(usbPathh));
-                  checkVideo = '$checkVideo : chạy bằng usb';
+                  checkPlay = 'Chạy usb';
                 } else {
-                  _currentIndex++;
-                  if (_currentIndex >= campSchedules.length) {
-                    _currentIndex = 0; // Lặp lại từ video đầu tiên
-                  }
-                  _loadNextMedia(campSchedules);
+                  _loadNextMediaAfterDelay(campSchedules, false);
+                  return;
                 }
               }
             }
@@ -201,37 +211,49 @@ class ViewCampViewModel extends BaseViewModel {
             _controller!.play();
             notifyListeners();
             Future.delayed(_waitTime, () async {
-              CampRequest campRequest = CampRequest();
-              await campRequest.addCampaignRunProfile(campSchedule);
-              NotifyRequest notifyRequest = NotifyRequest();
-              Notify notify = Notify(
-                  title: 'Chạy chiến dịch',
-                  descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
-                  picture: '');
-              await notifyRequest.addNotify(notify);
-              _currentIndex++;
-              if (_currentIndex >= campSchedules.length) {
-                _currentIndex = 0; // Lặp lại từ video đầu tiên
-              }
-              _loadNextMedia(campSchedules);
+              _onMediaFinished(campSchedules);
             });
           }
         } catch (e) {
-          print('Error loading video: $e');
-          _currentIndex++;
-          if (_currentIndex >= campSchedules.length) {
-            _currentIndex = 0; // Lặp lại từ video đầu tiên
-          }
-          _loadNextMedia(campSchedules);
+          print('Error loading media: $e');
+          _loadNextMediaAfterDelay(campSchedules);
         }
       } else {
-        _currentIndex++;
-        if (_currentIndex >= campSchedules.length) {
-          _currentIndex = 0; // Lặp lại từ video đầu tiên
-        }
-        _loadNextMedia(campSchedules);
+        _loadNextMediaAfterDelay(campSchedules, false);
       }
     }
+  }
+
+  Future<void> _loadNextMediaAfterDelay(List<CampSchedule> campSchedules,
+      [bool delay = true]) async {
+    _currentIndex++;
+    if (_currentIndex >= campSchedules.length) {
+      _currentIndex = 0; // Lặp lại từ video đầu tiên
+    }
+    if (delay) {
+      Future.delayed(_waitTime, () {
+        _loadNextMedia(campSchedules);
+      });
+    } else {
+      _loadNextMedia(campSchedules);
+    }
+  }
+
+  void _onMediaFinished(List<CampSchedule> campSchedules) {
+    CampRequest campRequest = CampRequest();
+    campRequest.addCampaignRunProfile(campSchedule);
+    NotifyRequest notifyRequest = NotifyRequest();
+    Notify notify = Notify(
+      title: 'Chạy chiến dịch',
+      descript: 'Chạy chiến dịch ${campSchedule.campaignName}',
+      detail: 'Chạy chiến dịch ${campSchedule.campaignName}',
+      picture: '',
+    );
+    notifyRequest.addNotify(notify);
+    _currentIndex++;
+    if (_currentIndex >= campSchedules.length) {
+      _currentIndex = 0; // Lặp lại từ video đầu tiên
+    }
+    _loadNextMedia(campSchedules);
   }
 }

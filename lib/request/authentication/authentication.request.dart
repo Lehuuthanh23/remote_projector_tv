@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:play_box/constants/api.dart';
-import 'package:play_box/models/user/user.dart';
 
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
@@ -12,7 +11,7 @@ import '../../app/app_utils.dart';
 import '../../models/device/device_info_model.dart';
 import '../../models/user/authentication/request/login_request_model.dart';
 import '../../models/user/authentication/response/login_response_model.dart';
-import '../../services/device_service.dart';
+import '../../services/device.service.dart';
 
 class AuthenticationRequest {
   final Dio dio = Dio();
@@ -30,14 +29,11 @@ class AuthenticationRequest {
         data: formData,
         options: AppUtils.createOptionsNoCookie(),
       );
-      print('Body login: $response');
       final responseData = jsonDecode(response.data);
       // Deserialize response into LoginResponseModel
       final loginResponse = LoginResponseModel.fromJson(responseData);
-      print('Login ${loginResponse.info}');
       if (loginResponse.status == 1 && loginResponse.info.isNotEmpty) {
         await fetchDeviceInfo();
-        print('Device: ${deviceInfo?.androidId}');
         //final responseCheck = await dio.
         if (await checkCustomerByDevice(
             deviceInfo!.androidId, loginResponse.info.first.customerId!)) {
@@ -68,9 +64,9 @@ class AuthenticationRequest {
       await AppSP.set(AppSPKey.token, userJson['customer_token']);
       await AppSP.set(AppSPKey.user_info, jsonEncode(userJson));
 
-      const platform = MethodChannel('com.example/my_channel');
+      const platform = MethodChannel('com.example.usb/serial');
       platform
-          .invokeMethod('saveUser', {AppSPKey.user_info: jsonEncode(userJson)});
+          .invokeMethod('saveUser', {AppSPKey.user_info: userJson['customer_id']});
     }
     String id = AppSP.get(AppSPKey.token);
     String userInfo = AppSP.get(AppSPKey.user_info);

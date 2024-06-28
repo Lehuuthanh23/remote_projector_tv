@@ -21,8 +21,9 @@ class ViewCamp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
+      onDispose: (viewModel) => viewModel.disposeViewModel(),
       viewModelBuilder: () => ViewCampViewModel(),
-      onModelReady: (viewModel) => viewModel.init(campSchedules),
+      onViewModelReady: (viewModel) => viewModel.init(campSchedules),
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {
@@ -39,7 +40,7 @@ class ViewCamp extends StatelessWidget {
                   child: viewModel.checkImage
                       ? (viewModel.campSchedule.videoType == 'url' &&
                                   viewModel.image == null) ||
-                              viewModel.usbPath.isEmpty
+                              viewModel.usbPaths.isEmpty
                           ? Image.network(
                               viewModel.campSchedule.urlYoutube,
                               fit: BoxFit.fill,
@@ -79,7 +80,14 @@ class ViewCamp extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          viewModel.checkVideo,
+                          viewModel.checkUSB,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                          ),
+                        ),
+                        Text(
+                          '${viewModel.checkConnectUSB} : ${viewModel.checkPlay}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,

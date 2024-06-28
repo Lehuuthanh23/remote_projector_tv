@@ -16,22 +16,122 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.play_box.MainActivity
 import com.example.play_box.R
+import com.example.play_box.base.api.ApiService
+import com.example.play_box.model.command.CommandEnum
+import com.example.play_box.model.command.CommandModel
+import com.example.play_box.utils.AppApi
+import com.example.play_box.utils.JSON
+import com.example.play_box.utils.SharedPreferencesManager
+import com.example.play_box.utils.getCurrentTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import okhttp3.FormBody
+
 
 class MyBackgroundService : Service() {
     companion object {
-        val TAG = "MyBackgroundService"
+        const val TAG = "MyBackgroundService"
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
-    private val checkInterval = 100 * 1000L
-    private val checkRunnable = object : Runnable {
+    private val apiService = ApiService()
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+
+    private val checkCommandInterval = 10 * 1000L
+    private val checkAliveInterval = 60 * 1000L
+
+    private lateinit var sharedPreferences: SharedPreferencesManager
+
+    private val checkCommandRunnable = object : Runnable {
         override fun run() {
-            if (!isAppRunning(applicationContext)) {
-                //openFlutterActivity(applicationContext)
+            checkCommandList()
+
+            handler.postDelayed(this, checkCommandInterval)
+        }
+    }
+
+    private val checkAliveRunnable = object : Runnable {
+        override fun run() {
+            checkAlive()
+
+            handler.postDelayed(this, checkAliveInterval)
+        }
+    }
+
+    private fun checkAlive() {
+        if (!sharedPreferences.getUserIdConnected().isNullOrBlank()) {
+            serviceScope.launch {
+                val computerId = sharedPreferences.getIdComputer()
+                if (computerId != null) {
+                    apiService.get(
+                        url = "${AppApi.UPDATE_ALIVE_TIME_DEVICE}/$computerId",
+                    )
+                }
+            }
+        } else stopSelf()
+    }
+
+    private fun checkCommandList() {
+        if (!sharedPreferences.getUserIdConnected().isNullOrBlank()) {
+            serviceScope.launch {
+                val serialComputer: String? = sharedPreferences.getSerialComputer()
+                if (serialComputer != null) {
+                    val response = apiService.get(
+                        url = "${AppApi.GET_NEW_COMMANDS}/$serialComputer",
+                    )
+
+                    if (response != null) {
+                        val commandList: List<CommandModel> =
+                            JSON.decodeToList(response["cmd_list"], Array<CommandModel>::class.java)
+                        if (commandList.isNotEmpty()) {
+                            for (item in commandList) {
+                                Log.d(TAG, "checkCommandList: ${item.cmdId} - ${item.cmdCode}")
+                                invokeCommand(item)
+                            }
+                        }
+                    }
+                }
+            }
+        } else stopSelf()
+    }
+
+    private fun invokeCommand(command: CommandModel) {
+        when (command.cmdCode) {
+            CommandEnum.GET_TIME_NOW.command -> {
+                val timeString = getCurrentTime()
+
+                serviceScope.launch {
+                    val formBody = FormBody.Builder()
+                        .add("return_value", timeString)
+                        .build()
+
+                    apiService.post(
+                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
+                        body = formBody,
+                    )
+                }
             }
 
-            handler.postDelayed(this, checkInterval)
+            CommandEnum.RESTART_APP.command -> {
+                serviceScope.launch {
+                    val formBody = FormBody.Builder()
+                        .add("return_value", "OK")
+                        .build()
+
+                    apiService.post(
+                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
+                        body = formBody,
+                    )
+
+                    openFlutterActivity()
+                }
+            }
+
+            else -> {}
         }
     }
 
@@ -40,16 +140,12 @@ class MyBackgroundService : Service() {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val taskInfoList = activityManager.getRunningTasks(Int.MAX_VALUE)
 
-        Log.d(TAG, "Received broadcast: ${taskInfoList.size} - ${taskInfoList.firstOrNull()?.topActivity} - ${activityClass.name}")
-
         return taskInfoList.firstOrNull()?.topActivity.toString().contains(activityClass.name)
     }
 
-    private fun openFlutterActivity(context: Context) {
-        Log.d(TAG, "Received broadcast: openActivity")
-
+    private fun openFlutterActivity() {
         val i = Intent(this, MainActivity::class.java)
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(i)
     }
 
@@ -57,16 +153,23 @@ class MyBackgroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "my_service_channel"
             val channelName = "My Service Channel"
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel =
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
+        sharedPreferences = SharedPreferencesManager(applicationContext)
         super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        handler.postDelayed(checkRunnable, checkInterval)
+        handler.removeCallbacks(checkCommandRunnable)
+        handler.removeCallbacks(checkAliveRunnable)
+        handler.postDelayed(checkCommandRunnable, checkCommandInterval)
+        handler.postDelayed(checkAliveRunnable, checkAliveInterval)
+
         val notification = createNotification()
         startForeground(1001, notification)
         return START_STICKY
@@ -75,15 +178,18 @@ class MyBackgroundService : Service() {
     private fun createNotification(): Notification {
         val channelId = "my_service_channel"
         val channelName = "My Service Channel"
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel =
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 
         val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent =
+            PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
 
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("Projector")
@@ -94,7 +200,8 @@ class MyBackgroundService : Service() {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(checkRunnable)
+        handler.removeCallbacks(checkCommandRunnable)
+        handler.removeCallbacks(checkAliveRunnable)
         super.onDestroy()
     }
 

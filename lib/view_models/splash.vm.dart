@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stacked/stacked.dart';
 
@@ -9,7 +10,7 @@ import '../app/app_sp_key.dart';
 import '../models/device/device_info_model.dart';
 import '../models/user/user.dart';
 import '../request/account/account.request.dart';
-import '../services/device_service.dart';
+import '../services/device.service.dart';
 import '../view/authentication/login.page.dart';
 import '../view/home/home.page.dart';
 
@@ -62,6 +63,9 @@ class SplashViewModel extends BaseViewModel {
           await request.getCustomerById(userFromJson.customerId!);
       if (currentUser != null && token == currentUser.customerToken) {
         checkLogin = true;
+        const platform = MethodChannel('com.example.usb/serial');
+        platform
+            .invokeMethod('saveUser', {AppSPKey.user_info: currentUser.customerId});
       }
     }
   }

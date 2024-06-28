@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 import 'package:play_box/models/device/device_model.dart';
@@ -15,6 +16,7 @@ import '../notification/notify.request.dart';
 
 class DeviceRequest {
   final Dio dio = Dio();
+
   Future<bool> connectDevice(
       DeviceInfoModel deviceInfo, User currentUser) async {
     bool checkConnect = false;
@@ -76,6 +78,12 @@ class DeviceRequest {
         await notifyRequest.addNotify(notify);
         //
         AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
+
+        const platform = MethodChannel('com.example.usb/serial');
+        platform.invokeMethod('saveComputer', {
+          AppSPKey.serial_computer: device.serialComputer,
+          AppSPKey.computer_id: device.computerId
+        });
         //
       } else {
         print('Lỗi khi thêm device: ${response.data}');

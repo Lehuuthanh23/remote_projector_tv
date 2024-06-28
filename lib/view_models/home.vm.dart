@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -16,7 +17,7 @@ import '../models/user/user.dart';
 import '../request/camp/camp.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
-import '../services/device_service.dart';
+import '../services/device.service.dart';
 import '../view/splash/splash.page.dart';
 import '../widget/pop_up.dart';
 
@@ -90,8 +91,10 @@ class HomeViewModel extends BaseViewModel {
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.user_info, '');
     AppSP.set(AppSPKey.lstCampSchedule, '');
-    const platform = MethodChannel('com.example/my_channel');
+
+    const platform = MethodChannel('com.example.usb/serial');
     platform.invokeMethod('clearUser');
+
     Navigator.pushAndRemoveUntil(
         viewContext,
         MaterialPageRoute(
