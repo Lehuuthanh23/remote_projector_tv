@@ -13,7 +13,7 @@ class PopupSettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool checkConnect = false;
+    bool checkConnect = true;
     return ViewModelBuilder<HomeViewModel>.reactive(
         disposeViewModel: false,
         viewModelBuilder: () => homeVM,
