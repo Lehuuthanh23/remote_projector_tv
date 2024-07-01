@@ -32,6 +32,7 @@ class ViewCampViewModel extends BaseViewModel {
   String errorString = '';
   String checkConnectUSB = '';
   StreamSubscription? _usbSubscription;
+  bool checkAlive = true;
   void init(List<CampSchedule> campSchedules) {
     _loadNextMedia(campSchedules);
     _updateTime();
@@ -62,6 +63,8 @@ class ViewCampViewModel extends BaseViewModel {
     print('Dispose play camp');
     _controller?.dispose();
     _timer?.cancel();
+    checkAlive = false;
+    super.dispose();
   }
 
   void _updateTime() {
@@ -105,6 +108,9 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   Future<void> _loadNextMedia(List<CampSchedule> campSchedules) async {
+    if (!checkAlive) {
+      return;
+    }
     if (_currentIndex < campSchedules.length) {
       campSchedule = campSchedules[_currentIndex];
       DateTime fromTime = stringToDateTime(campSchedule.fromTime);
