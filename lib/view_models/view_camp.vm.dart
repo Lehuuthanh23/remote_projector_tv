@@ -64,6 +64,8 @@ class ViewCampViewModel extends BaseViewModel {
     checkAlive = false;
     _controller?.dispose();
     _timer?.cancel();
+    checkAlive = false;
+    super.dispose();
   }
 
   void _updateTime() {
@@ -110,8 +112,6 @@ class ViewCampViewModel extends BaseViewModel {
     if (!checkAlive) {
       return;
     }
-
-    print('nextMedia');
     if (_currentIndex < campSchedules.length) {
       campSchedule = campSchedules[_currentIndex];
       DateTime fromTime = stringToDateTime(campSchedule.fromTime);
