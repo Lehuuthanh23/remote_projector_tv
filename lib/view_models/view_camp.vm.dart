@@ -32,6 +32,7 @@ class ViewCampViewModel extends BaseViewModel {
   String errorString = '';
   String checkConnectUSB = '';
   StreamSubscription? _usbSubscription;
+  bool checkAlive = true;
   void init(List<CampSchedule> campSchedules) {
     _loadNextMedia(campSchedules);
     _updateTime();
@@ -60,6 +61,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   void disposeViewModel() {
     print('Dispose play camp');
+    checkAlive = false;
     _controller?.dispose();
     _timer?.cancel();
   }
@@ -105,6 +107,11 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   Future<void> _loadNextMedia(List<CampSchedule> campSchedules) async {
+    if (!checkAlive) {
+      return;
+    }
+
+    print('nextMedia');
     if (_currentIndex < campSchedules.length) {
       campSchedule = campSchedules[_currentIndex];
       DateTime fromTime = stringToDateTime(campSchedule.fromTime);
@@ -227,6 +234,7 @@ class ViewCampViewModel extends BaseViewModel {
   Future<void> _loadNextMediaAfterDelay(List<CampSchedule> campSchedules,
       [bool delay = true]) async {
     _currentIndex++;
+    print('object: $_currentIndex');
     if (_currentIndex >= campSchedules.length) {
       _currentIndex = 0; // Lặp lại từ video đầu tiên
     }
@@ -240,6 +248,7 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   void _onMediaFinished(List<CampSchedule> campSchedules) {
+    print('onFinish');
     CampRequest campRequest = CampRequest();
     campRequest.addCampaignRunProfile(campSchedule);
     NotifyRequest notifyRequest = NotifyRequest();
