@@ -33,7 +33,10 @@ class ViewCampViewModel extends BaseViewModel {
   String checkConnectUSB = '';
   StreamSubscription? _usbSubscription;
   bool checkAlive = true;
+  List<CampSchedule>? campSchedulesNew;
+  bool? checkDisconnectUSB;
   void init(List<CampSchedule> campSchedules) {
+    campSchedulesNew = campSchedules;
     _loadNextMedia(campSchedules);
     _updateTime();
     _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
@@ -44,18 +47,20 @@ class ViewCampViewModel extends BaseViewModel {
         usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
   }
 
-  void _onUsbEvent(dynamic event) {
+  Future<void> _onUsbEvent(dynamic event) async {
     if (event == 'USB_DISCONNECTED') {
       print('USB bị rút');
       checkConnectUSB = 'USB bị rút';
-      _controller?.pause();
-      _controller = null;
-      _getUsbPath(); // Cập nhật lại danh sách USB path
+      _controller?.dispose();
+      checkDisconnectUSB = true;
+      _loadNextMediaAfterDelay(campSchedulesNew!, false);
+      // Cập nhật lại danh sách USB path
       notifyListeners();
     } else if (event == 'USB_CONNECTED') {
       print('USB được kết nối');
       checkConnectUSB = 'USB được kết nối';
-      _getUsbPath(); // Cập nhật lại danh sách USB path
+      checkDisconnectUSB = false;
+      await _getUsbPath(); // Cập nhật lại danh sách USB path
     }
   }
 
@@ -64,7 +69,6 @@ class ViewCampViewModel extends BaseViewModel {
     checkAlive = false;
     _controller?.dispose();
     _timer?.cancel();
-    checkAlive = false;
     super.dispose();
   }
 
@@ -123,7 +127,6 @@ class ViewCampViewModel extends BaseViewModel {
           campSchedule.status == '1') {
         nameVideo = campSchedule.campaignName;
         _waitTime = Duration(seconds: int.parse(campSchedule.videoDuration));
-
         try {
           await _getUsbPath();
           if (usbPaths.isNotEmpty) {
@@ -136,6 +139,7 @@ class ViewCampViewModel extends BaseViewModel {
                   _isImage(campSchedule.urlYoutube)) ||
               (campSchedule.videoType == 'usb' &&
                   _isImage(campSchedule.urlUsb))) {
+            _controller?.dispose();
             checkVideo = 'Chạy hình';
             checkImage = true;
             if (usbPaths.isNotEmpty) {
@@ -165,8 +169,16 @@ class ViewCampViewModel extends BaseViewModel {
               }
             }
             notifyListeners();
-            Future.delayed(_waitTime, () async {
-              _onMediaFinished(campSchedules);
+            // Future.delayed(_waitTime, () async {});
+            var counter = _waitTime.inSeconds;
+            Timer.periodic(const Duration(seconds: 1), (timer) {
+              print(timer.tick);
+              counter--;
+              if (counter == 0 || checkDisconnectUSB == true) {
+                timer.cancel();
+                _onMediaFinished(campSchedules);
+                checkDisconnectUSB = null;
+              }
             });
           } else {
             checkImage = false;
@@ -217,8 +229,18 @@ class ViewCampViewModel extends BaseViewModel {
             _controller!.setLooping(true);
             _controller!.play();
             notifyListeners();
-            Future.delayed(_waitTime, () async {
-              _onMediaFinished(campSchedules);
+            // Future.delayed(_waitTime, () async {
+            //   _onMediaFinished(campSchedules);
+            // });
+            var counter = _waitTime.inSeconds;
+            Timer.periodic(const Duration(seconds: 1), (timer) {
+              print(timer.tick);
+              counter--;
+              if (counter == 0 || checkDisconnectUSB == true) {
+                timer.cancel();
+                _onMediaFinished(campSchedules);
+                checkDisconnectUSB = null;
+              }
             });
           }
         } catch (e) {
@@ -239,11 +261,31 @@ class ViewCampViewModel extends BaseViewModel {
       _currentIndex = 0; // Lặp lại từ video đầu tiên
     }
     if (delay) {
-      Future.delayed(_waitTime, () {
-        _loadNextMedia(campSchedules);
+      // Future.delayed(_waitTime, () {
+      //   _loadNextMedia(campSchedules);
+      // });
+      var counter = _waitTime.inSeconds;
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        print(timer.tick);
+        counter--;
+        if (counter == 0 || checkDisconnectUSB == true) {
+          timer.cancel();
+          _loadNextMedia(campSchedules);
+          checkDisconnectUSB = null;
+        }
       });
     } else {
-      _loadNextMedia(campSchedules);
+      //_loadNextMedia(campSchedules);
+      var counter = _waitTime.inSeconds;
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        print(timer.tick);
+        counter--;
+        if (counter == 0 || checkDisconnectUSB == true) {
+          timer.cancel();
+          _loadNextMedia(campSchedules);
+          checkDisconnectUSB = null;
+        }
+      });
     }
   }
 

@@ -21,13 +21,14 @@ class ViewCamp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
-      onDispose: (viewModel) => viewModel.disposeViewModel(),
+      disposeViewModel: false,
       viewModelBuilder: () => ViewCampViewModel(),
       onViewModelReady: (viewModel) => viewModel.init(campSchedules),
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {
             AppSP.set(AppSPKey.checkPlayVideo, 'false');
+            viewModel.disposeViewModel();
             return true;
           },
           child: Scaffold(

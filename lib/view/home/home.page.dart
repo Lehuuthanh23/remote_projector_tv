@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
+import 'package:play_box/constants/app_color.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -146,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                               CupertinoSwitch(
                                   value: bool.parse(
                                       AppSP.get(AppSPKey.checkPlayVideo) ??
-                                          'true'),
+                                          'false'),
                                   onChanged: (check) =>
                                       viewModel.playCamp(check)),
                               const Text(
@@ -192,58 +193,74 @@ class _HomePageState extends State<HomePage> {
                   bottom: 0,
                   child: FocusScope(
                     canRequestFocus: viewModel.isDrawerOpen,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 2,
-                      color: Colors.black26,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 40),
-                      child: ListView.builder(
-                        itemCount: viewModel.lstCampSchedule.length,
-                        itemBuilder: (context, index) {
-                          final camp = viewModel.lstCampSchedule[index];
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () =>
-                                  print('Nhấn vào camp: ${camp.campaignName}'),
-                              child: Container(
-                                margin: const EdgeInsets.only(top: 20),
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  children: [
-                                    Row(
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width / 2,
+                          color: Colors.black26,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 60),
+                          child: ListView.builder(
+                            itemCount: viewModel.lstCampSchedule.length,
+                            itemBuilder: (context, index) {
+                              final camp = viewModel.lstCampSchedule[index];
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => print(
+                                      'Nhấn vào camp: ${camp.campaignName}'),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: 20),
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
                                       children: [
-                                        Text(
-                                          '${camp.fromTime.substring(0, 5)} - ${camp.toTime.substring(0, 5)}',
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              color: Colors.white),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${camp.fromTime.substring(0, 5)} - ${camp.toTime.substring(0, 5)}',
+                                              style: const TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.white),
+                                            ),
+                                            const SizedBox(width: 50),
+                                            Text(
+                                              camp.campaignName,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 20,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(width: 50),
-                                        Text(
-                                          camp.campaignName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 20,
-                                            color: Colors.white,
-                                          ),
+                                        const SizedBox(
+                                          height: 20,
                                         ),
+                                        const Divider(
+                                          color: Colors.white,
+                                          height: 1,
+                                        )
                                       ],
                                     ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    const Divider(
-                                      color: Colors.white,
-                                      height: 1,
-                                    )
-                                  ],
+                                  ),
                                 ),
+                              );
+                            },
+                          ),
+                        ),
+                        Positioned(
+                            top: 10,
+                            right: 10,
+                            child: IconButton(
+                              focusColor: Colors.black12,
+                              onPressed: viewModel.toggleDrawer,
+                              icon: const Icon(
+                                Icons.close,
+                                size: 30,
+                                color: Colors.white,
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            )),
+                      ],
                     ),
                   ),
                 ),
