@@ -2,28 +2,97 @@ package com.example.play_box
 
 import android.Manifest
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
-import android.util.Log
 import android.app.AlertDialog
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.FlutterEngineCache
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import com.example.play_box.service.MyBackgroundService
 import com.example.play_box.utils.Constants
 import com.example.play_box.utils.SharedPreferencesManager
+import android.hardware.usb.UsbManager
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private val USB_EVENT_CHANNEL = "com.example.usb/event"
+    private var eventSink: EventChannel.EventSink? = null
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, USB_EVENT_CHANNEL).setStreamHandler(
+            object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    eventSink = events
+                    registerReceiver(usbReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED))
+                    registerReceiver(usbReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    eventSink = null
+                    unregisterReceiver(usbReceiver)
+                }
+            }
+        )
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.usb/serial").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "saveUser" -> {
+                    val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
+                    sharedPreferencesManager.saveUserIdConnected(argument)
+                    startMyBackgroundService()
+                    Log.d(TAG, "saveUser: $argument")
+                }
+
+                "saveComputer" -> {
+                    val serialComputer = call.argument<String>(Constants.SERIAL_COMPUTER)
+                    val computerId = call.argument<String>(Constants.COMPUTER_ID)
+                    sharedPreferencesManager.saveSerialComputer(serialComputer)
+                    sharedPreferencesManager.saveIdComputer(computerId)
+                }
+
+                "clearUser" -> {
+                    sharedPreferencesManager.clearData()
+                }
+
+                "getUsbPath" -> {
+                    val usbPath = getUsbPath()
+                    result.success(usbPath)
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    private val usbReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    eventSink?.success("USB_CONNECTED")
+                }
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
+                    eventSink?.success("USB_DISCONNECTED")
+                }
+            }
+        }
+    }
 
     companion object {
         const val TAG = "MainActivity"
@@ -134,46 +203,6 @@ class MainActivity : FlutterActivity() {
                 PERMISSIONS_STORAGE,
                 REQUEST_EXTERNAL_STORAGE,
             )
-        }
-    }
-
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-
-        FlutterEngineCache.getInstance().put("my_engine_id", flutterEngine)
-
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CHANNEL
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "saveUser" -> {
-                    val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
-                    sharedPreferencesManager.saveUserIdConnected(argument)
-                    startMyBackgroundService()
-                    Log.d(TAG, "saveUser: $argument")
-                }
-
-                "saveComputer" -> {
-                    val serialComputer = call.argument<String>(Constants.SERIAL_COMPUTER)
-                    val computerId = call.argument<String>(Constants.COMPUTER_ID)
-                    sharedPreferencesManager.saveSerialComputer(serialComputer)
-                    sharedPreferencesManager.saveIdComputer(computerId)
-                }
-
-                "clearUser" -> {
-                    sharedPreferencesManager.clearData()
-                }
-
-                "getUsbPath" -> {
-                    val usbPath = getUsbPath()
-                    result.success(usbPath)
-                }
-
-                else -> {
-                    result.notImplemented()
-                }
-            }
         }
     }
 
