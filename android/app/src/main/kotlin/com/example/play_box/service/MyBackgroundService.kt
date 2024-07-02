@@ -29,10 +29,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
 
-
 class MyBackgroundService : Service() {
     companion object {
         const val TAG = "MyBackgroundService"
+        private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
+        private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())
@@ -41,16 +42,13 @@ class MyBackgroundService : Service() {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
-    private val checkCommandInterval = 10 * 1000L
-    private val checkAliveInterval = 60 * 1000L
-
     private lateinit var sharedPreferences: SharedPreferencesManager
 
     private val checkCommandRunnable = object : Runnable {
         override fun run() {
             checkCommandList()
 
-            handler.postDelayed(this, checkCommandInterval)
+            handler.postDelayed(this, CHECK_COMMAND_INTERVAL)
         }
     }
 
@@ -58,7 +56,7 @@ class MyBackgroundService : Service() {
         override fun run() {
             checkAlive()
 
-            handler.postDelayed(this, checkAliveInterval)
+            handler.postDelayed(this, CHECK_ALIVE_INTERVAL)
         }
     }
 
@@ -167,8 +165,8 @@ class MyBackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         handler.removeCallbacks(checkCommandRunnable)
         handler.removeCallbacks(checkAliveRunnable)
-        handler.postDelayed(checkCommandRunnable, checkCommandInterval)
-        handler.postDelayed(checkAliveRunnable, checkAliveInterval)
+        handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
+        handler.postDelayed(checkAliveRunnable, CHECK_ALIVE_INTERVAL)
 
         val notification = createNotification()
         startForeground(1001, notification)

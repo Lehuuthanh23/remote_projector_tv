@@ -13,8 +13,11 @@ class MyBroadcastReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context?, intent: Intent) {
-        Log.d(TAG, "onReceive: ${intent.action}")
-        if (intent.action.equals(Intent.ACTION_BOOT_COMPLETED) || intent.action.equals("com.htc.intent.action.QUICKBOOT_POWERON")) {
+        if (intent.action.equals(Intent.ACTION_BOOT_COMPLETED)
+            || intent.action.equals("com.htc.intent.action.QUICKBOOT_POWERON")
+            || intent.action.equals("android.intent.action.QUICKBOOT_POWERON")
+            || intent.action.equals(Intent.ACTION_REBOOT)
+        ) {
             val serviceIntent = Intent(context, MyBackgroundService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context?.startForegroundService(serviceIntent)

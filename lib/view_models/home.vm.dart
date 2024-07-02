@@ -40,7 +40,10 @@ class HomeViewModel extends BaseViewModel {
   bool isDrawerOpen = false;
 
   initialise() async {
-    currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    String? info = AppSP.get(AppSPKey.user_info);
+    if (info != null) {
+      currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    }
     proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
