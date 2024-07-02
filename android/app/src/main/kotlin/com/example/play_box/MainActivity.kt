@@ -60,13 +60,11 @@ class MainActivity : FlutterActivity() {
     private fun showPermissionDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Cấp quyền hiển thị trên ứng dụng khác")
-        builder.setMessage("Ứng dụng cần quyền này để thực hiện một số tính năng. Vui lòng cấp quyền để tiếp tục.")
+        builder.setMessage("Ứng dụng cần quyền này để có thể khởi động lại khi cần thiết. Vui lòng cấp quyền hiển thị trên ứng dụng khác.")
         builder.setPositiveButton("OK") { _, _ ->
-            // Người dùng nhấn OK, mở trang cài đặt để cấp quyền
             openOverlayPermissionSettings()
         }
         builder.setNegativeButton("Cancel") { dialog, _ ->
-            // Người dùng nhấn Cancel, đóng dialog
             dialog.dismiss()
         }
         builder.setCancelable(true)
@@ -80,8 +78,6 @@ class MainActivity : FlutterActivity() {
             Uri.parse("package:" + this.packageName)
         )
         startActivityForResult(intent, 200)
-        Toast.makeText(this, "Vui lòng cấp quyền hiển thị trên ứng dụng khác", Toast.LENGTH_SHORT)
-            .show()
     }
 
     override fun onRequestPermissionsResult(
@@ -136,7 +132,7 @@ class MainActivity : FlutterActivity() {
             ActivityCompat.requestPermissions(
                 activity,
                 PERMISSIONS_STORAGE,
-                REQUEST_EXTERNAL_STORAGE
+                REQUEST_EXTERNAL_STORAGE,
             )
         }
     }
@@ -189,7 +185,6 @@ class MainActivity : FlutterActivity() {
             val directories = storageDirectory.listFiles { file -> file.isDirectory }
             if (directories != null) {
                 for (dir in directories) {
-                    // Kiểm tra sự hiện diện của thư mục Android hoặc bất kỳ tiêu chí nào để xác nhận nó là USB
                     if (File(dir, "Android").exists()) {
                         usbPaths.add(dir.absolutePath)
                     }

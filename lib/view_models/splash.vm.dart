@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -10,7 +9,6 @@ import '../app/app_sp_key.dart';
 import '../models/device/device_info_model.dart';
 import '../models/user/user.dart';
 import '../request/account/account.request.dart';
-import '../services/device.service.dart';
 import '../view/authentication/login.page.dart';
 import '../view/home/home.page.dart';
 
@@ -35,22 +33,6 @@ class SplashViewModel extends BaseViewModel {
       String onProjector =
           "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
       dio.get(onProjector);
-    }
-    _requestPermissions(context);
-  }
-
-  Future<void> _requestPermissions(BuildContext context) async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
-    }
-
-    if (status.isGranted) {
-      await _checkLogin();
-      _navigateToNextPage(context);
-    } else {
-      // Quyền không được cấp
-      print('Quyền truy cập bộ nhớ không được cấp');
     }
   }
 
