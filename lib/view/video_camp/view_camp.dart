@@ -1,10 +1,7 @@
-import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:stacked/stacked.dart';
 import 'package:video_player/video_player.dart';
+
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
 import '../../models/camp/camp_schedule.dart';
@@ -13,22 +10,25 @@ import '../../view_models/view_camp.vm.dart';
 class ViewCamp extends StatelessWidget {
   final List<CampSchedule> campSchedules;
 
-  ViewCamp({
-    Key? key,
+  const ViewCamp({
+    super.key,
     required this.campSchedules,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
-      disposeViewModel: false,
-      viewModelBuilder: () => ViewCampViewModel(),
-      onViewModelReady: (viewModel) => viewModel.init(campSchedules),
+      viewModelBuilder: () => ViewCampViewModel(
+        campSchedulesNew: campSchedules,
+        context: context,
+      ),
+      onViewModelReady: (viewModel) {
+        viewModel.init();
+      },
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {
             AppSP.set(AppSPKey.checkPlayVideo, 'false');
-            viewModel.disposeViewModel();
             return true;
           },
           child: Scaffold(
@@ -39,11 +39,14 @@ class ViewCamp extends StatelessWidget {
                 ),
                 Center(
                   child: viewModel.checkImage
-                      ? (viewModel.campSchedule.videoType == 'url' &&
+                      ? (viewModel.campSchedulesNew[viewModel.currentIndex]
+                                          .videoType ==
+                                      'url' &&
                                   viewModel.image == null) ||
                               viewModel.usbPaths.isEmpty
                           ? Image.network(
-                              viewModel.campSchedule.urlYoutube,
+                              viewModel.campSchedulesNew[viewModel.currentIndex]
+                                  .urlYoutube,
                               fit: BoxFit.fill,
                             )
                           : viewModel.image != null
@@ -75,20 +78,6 @@ class ViewCamp extends StatelessWidget {
                       children: [
                         Text(
                           viewModel.formattedTime,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                          ),
-                        ),
-                        Text(
-                          viewModel.checkUSB,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                          ),
-                        ),
-                        Text(
-                          '${viewModel.checkConnectUSB} : ${viewModel.checkPlay}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,

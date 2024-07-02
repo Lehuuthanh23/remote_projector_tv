@@ -22,6 +22,7 @@ class SplashViewModel extends BaseViewModel {
   String proUN = '';
   String proPW = '';
   String projectorIP = '';
+
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
@@ -34,6 +35,7 @@ class SplashViewModel extends BaseViewModel {
           "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
       dio.get(onProjector);
     }
+    _navigateToNextPage(context);
   }
 
   Future<void> _checkLogin() async {

@@ -1,18 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
-import 'package:play_box/constants/app_color.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
-import '../../models/camp/camp_schedule.dart';
-import '../../request/camp/camp.request.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/buttonCustom.dart';
-import '../../widget/clock.dart';
 import '../timer_clock/timer_clock.dart';
 import 'widget/pop_up_camp_run.dart';
 import 'widget/pop_up_setting.dart';
@@ -33,7 +27,6 @@ class _HomePageState extends State<HomePage> {
     homeViewModel.setContext(context);
   }
 
-  String check = 'Chưa check';
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
@@ -188,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                   duration: const Duration(milliseconds: 300),
                   left: viewModel.isDrawerOpen
                       ? 0
-                      : -MediaQuery.of(context).size.width / 2,
+                      : -MediaQuery.of(context).size.width,
                   top: 0,
                   bottom: 0,
                   child: FocusScope(
@@ -196,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                     child: Stack(
                       children: [
                         Container(
-                          width: MediaQuery.of(context).size.width / 2,
+                          width: MediaQuery.of(context).size.width / 2 > 200 ? MediaQuery.of(context).size.width / 2 : 200,
                           color: Colors.black26,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 60),

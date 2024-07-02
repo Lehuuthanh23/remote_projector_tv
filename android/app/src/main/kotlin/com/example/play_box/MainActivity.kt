@@ -210,15 +210,19 @@ class MainActivity : FlutterActivity() {
         val usbPaths = mutableListOf<String>()
         val storageDirectory = File("/storage")
 
-        if (storageDirectory.exists() && storageDirectory.isDirectory) {
-            val directories = storageDirectory.listFiles { file -> file.isDirectory }
-            if (directories != null) {
-                for (dir in directories) {
-                    if (File(dir, "Android").exists()) {
-                        usbPaths.add(dir.absolutePath)
+        try {
+            if (storageDirectory.exists() && storageDirectory.isDirectory) {
+                val directories = storageDirectory.listFiles { file -> file.isDirectory }
+                if (directories != null) {
+                    for (dir in directories) {
+                        if (File(dir, "Android").exists()) {
+                            usbPaths.add(dir.absolutePath)
+                        }
                     }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return usbPaths

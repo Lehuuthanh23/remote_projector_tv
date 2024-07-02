@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:play_box/app/app_sp.dart';
-import 'package:play_box/app/app_sp_key.dart';
+import 'package:flutter/services.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:stacked/stacked.dart';
 
@@ -42,10 +41,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return ViewModelBuilder<LoginViewModel>.reactive(
       disposeViewModel: false,
-      viewModelBuilder: () => LoginViewModel(),
-      onViewModelReady: (viewModel) {
-        viewModel.viewContext = context;
-      },
+      viewModelBuilder: () => LoginViewModel(viewContext: context),
+      onViewModelReady: (viewModel) {},
       builder: (context, viewModel, child) {
         return SafeArea(
           child: Scaffold(
@@ -94,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                               TextFormField(
                                 focusNode: _emailFocusNode,
                                 controller: viewModel.emailController,
+                                textInputAction: TextInputAction.next,
                                 decoration:
                                     const InputDecoration(labelText: 'Email'),
                                 validator: (value) {
@@ -110,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                                 decoration: const InputDecoration(
                                     labelText: 'Mật khẩu'),
                                 obscureText: true,
+                                onFieldSubmitted: (_) => viewModel.login(),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Xin hãy nhập mật khẩu';
@@ -117,14 +116,14 @@ class _LoginPageState extends State<LoginPage> {
                                   return null;
                                 },
                               ),
-                              viewModel.errorMessagee != null
+                              viewModel.errorMessage != null
                                   ? const SizedBox(height: 16.0)
                                   : const SizedBox(height: 16),
-                              if (viewModel.errorMessagee != null)
+                              if (viewModel.errorMessage != null)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 16.0),
                                   child: Text(
-                                    viewModel.errorMessagee!,
+                                    viewModel.errorMessage!,
                                     style: const TextStyle(color: Colors.red),
                                   ),
                                 ),
@@ -137,8 +136,9 @@ class _LoginPageState extends State<LoginPage> {
                                     horizontal: 30, vertical: 10),
                               ),
                               ButtomCustom(
-                                onPressed: () =>
-                                    print('Nhấn thoát'), //viewModel.login(),
+                                onPressed: () {
+                                  SystemNavigator.pop();
+                                },
                                 title: "THOÁT",
                                 textSize: 20,
                                 color: Colors.black,
