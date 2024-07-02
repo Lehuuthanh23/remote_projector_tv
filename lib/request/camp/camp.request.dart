@@ -42,7 +42,7 @@ class CampRequest {
     });
 
     final response = await dio.get(
-      '${Api.hostApi}${Api.GetCampBySeriComputerAndCustomerID}/${deviceInfoModel.serialNumber == 'unknown' ? deviceInfoModel.androidId : deviceInfoModel.serialNumber}/${currentUser.customerId}',
+      '${Api.hostApi}${Api.getCampByDevice}/${device.computerId}',
     );
     final responseData = jsonDecode(response.data);
     print(responseData);
@@ -97,6 +97,7 @@ class CampRequest {
   Future<void> addCampaignRunProfile(CampSchedule camp) async {
     User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
     Device device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.computer)));
+
     final formData = FormData.fromMap({
       'customer_id': currentUser.customerId,
       'customer_name': currentUser.customerName,
@@ -108,6 +109,7 @@ class CampRequest {
       'run_time': DateTime.now().toUtc().add(const Duration(hours: 7)),
       'computer_name': device.computerName,
     });
+
     await dio.post(
       AppUtils.createUrl(Api.addCampaignRunProfile),
       options: AppUtils.createOptionsNoCookie(),
