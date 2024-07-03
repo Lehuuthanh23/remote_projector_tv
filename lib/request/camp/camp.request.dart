@@ -76,10 +76,10 @@ class CampRequest {
   Future<List<CampSchedule>> getCampSchedule() async {
     List<CampSchedule> lstCampSchedule = [];
     Device device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.computer)));
-    User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    //User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
     final formData = FormData.fromMap({
       'computer_id': device.computerId,
-      'customer_id': currentUser.customerId,
+      // 'customer_id': currentUser.customerId,
       'work_date': DateTime.now().toIso8601String().split('T').first,
     });
     final response = await dio.post(

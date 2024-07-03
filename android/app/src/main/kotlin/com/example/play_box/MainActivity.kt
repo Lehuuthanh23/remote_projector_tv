@@ -1,6 +1,7 @@
 package com.example.play_box
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -28,8 +29,19 @@ import android.hardware.usb.UsbManager
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
-    private val USB_EVENT_CHANNEL = "com.example.usb/event"
     private var eventSink: EventChannel.EventSink? = null
+
+    companion object {
+        const val TAG = "MainActivity"
+
+        private const val SERIAL_CHANNEL = "com.example.usb/serial"
+        private const val USB_EVENT_CHANNEL = "com.example.usb/event"
+        private const val REQUEST_EXTERNAL_STORAGE = 1
+        private val PERMISSIONS_STORAGE = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        )
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -49,13 +61,14 @@ class MainActivity : FlutterActivity() {
             }
         )
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.usb/serial").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERIAL_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "saveUser" -> {
                     val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
                     sharedPreferencesManager.saveUserIdConnected(argument)
-                    startMyBackgroundService()
-                    Log.d(TAG, "saveUser: $argument")
+                    if (argument != null) {
+                        startMyBackgroundService()
+                    }
                 }
 
                 "saveComputer" -> {
@@ -63,6 +76,9 @@ class MainActivity : FlutterActivity() {
                     val computerId = call.argument<String>(Constants.COMPUTER_ID)
                     sharedPreferencesManager.saveSerialComputer(serialComputer)
                     sharedPreferencesManager.saveIdComputer(computerId)
+                    if (computerId != null && serialComputer != null) {
+                        startMyBackgroundService()
+                    }
                 }
 
                 "clearUser" -> {
@@ -72,6 +88,11 @@ class MainActivity : FlutterActivity() {
                 "getUsbPath" -> {
                     val usbPath = getUsbPath()
                     result.success(usbPath)
+                }
+
+                "getSerial" -> {
+                    val androidId = getDeviceId(this)
+                    result.success(androidId)
                 }
 
                 else -> {
@@ -92,17 +113,6 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
-    }
-
-    companion object {
-        const val TAG = "MainActivity"
-
-        private const val CHANNEL = "com.example.usb/serial"
-        private const val REQUEST_EXTERNAL_STORAGE = 1
-        private val PERMISSIONS_STORAGE = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -226,5 +236,13 @@ class MainActivity : FlutterActivity() {
         }
 
         return usbPaths
+    }
+
+    @SuppressLint("HardwareIds")
+    fun getDeviceId(context: Context): String? {
+        return Settings.Secure.getString(
+            context.contentResolver,
+            Settings.Secure.ANDROID_ID
+        )
     }
 }

@@ -39,7 +39,7 @@ class Api {
   static String getSharedCustomerListByDirId =
       '/home/GetSharedCustomerList_ByDirID';
   static String getCampByDevice = '/home/Getcamp_ByComputerId';
-  static String getAllRunTimeOfComputer = '/home/GetAllRunTimeOfComputer_1';
+  static String getAllRunTimeOfComputer = '/home/GetAllRunTimeOfComputer_4';
   static String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
   static String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
   static String getCampBySeriComputer = '/home/GetCamp_BySeriComputer';

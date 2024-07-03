@@ -46,13 +46,6 @@ class DeviceRequest {
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
         checkConnect = true;
-        final formDataNotify = FormData.fromMap({
-          'customer_id': currentUser.customerId,
-          'title': 'Kết nối thiết bị mới',
-          'descript': 'Kết nối thiết bị mới thành công',
-          'detail': 'Thiết bị ${deviceInfo.model} được thêm thành công',
-          'picture': '',
-        });
 
         //Lưu thiết bị vào bộ nhớ khi kết nối thành công
         DeviceInfoModel deviceInfoModel =

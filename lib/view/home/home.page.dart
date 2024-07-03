@@ -2,12 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
+import 'package:play_box/services/usb.service.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../../view_models/home.vm.dart';
 import '../../widget/buttonCustom.dart';
 import '../timer_clock/timer_clock.dart';
+import '../video_camp/view_camp.dart';
 import 'widget/pop_up_camp_run.dart';
 import 'widget/pop_up_setting.dart';
 
@@ -42,7 +44,6 @@ class _HomePageState extends State<HomePage> {
           child: Scaffold(
             body: Stack(
               children: [
-                // Nền chính của ứng dụng
                 Container(
                   width: double.infinity,
                   height: double.infinity,
@@ -129,6 +130,16 @@ class _HomePageState extends State<HomePage> {
                           ButtomCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
+                            onPressed: () async {
+                              viewModel.nexPlayVideoUSB();
+                            },
+                            title: 'PHÁT VIDEO USB',
+                            isSplashScreen: true,
+                            textSize: 15,
+                          ),
+                          ButtomCustom(
+                            width: 150,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             color: Colors.black,
                             onPressed: () => viewModel.signOut(),
                             title: 'THOÁT',
@@ -189,7 +200,9 @@ class _HomePageState extends State<HomePage> {
                     child: Stack(
                       children: [
                         Container(
-                          width: MediaQuery.of(context).size.width / 2 > 200 ? MediaQuery.of(context).size.width / 2 : 200,
+                          width: MediaQuery.of(context).size.width / 2 > 200
+                              ? MediaQuery.of(context).size.width / 2
+                              : 200,
                           color: Colors.black26,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 60),

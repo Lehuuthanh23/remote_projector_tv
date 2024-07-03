@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 
 import '../models/device/device_info_model.dart';
 
 class DeviceInfoService {
+  static const platform = MethodChannel('com.example.usb/serial');
+
   Future<DeviceInfoModel> getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     DeviceInfoModel deviceInfoModel;
@@ -14,6 +17,7 @@ class DeviceInfoService {
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       String serialNumber = '';
+      String? androidId = await getSerial();
 
       if (androidInfo.version.sdkInt < 29) {
         serialNumber = androidInfo.serialNumber;
@@ -28,7 +32,7 @@ class DeviceInfoService {
         deviceName: androidInfo.device ?? '',
         platform: 'Android',
         serialNumber: serialNumber,
-        androidId: androidInfo.id,
+        androidId: androidId ?? androidInfo.id,
         uuid: androidInfo.id,
       );
     } else if (Platform.isIOS) {
@@ -56,7 +60,19 @@ class DeviceInfoService {
         uuid: 'Unknown',
       );
     }
+
     AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
     return deviceInfoModel;
+  }
+
+  Future<String?> getSerial() async {
+    try {
+      final String? serial = await platform.invokeMethod('getSerial');
+      print('serial: $serial');
+      return serial;
+    } on PlatformException catch (e) {
+      print("Failed to get serial number: '${e.message}'.");
+      return null;
+    }
   }
 }
