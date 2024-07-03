@@ -50,6 +50,9 @@ class HomeViewModel extends BaseViewModel {
     proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
+    bool checkPlayVideo =
+        bool.parse(AppSP.get(AppSPKey.checkPlayVideo) ?? 'false');
+
     print('Giá trị: ${proUN.text}');
     await _fetchPackets();
     await fetchDeviceInfo();
@@ -60,7 +63,7 @@ class HomeViewModel extends BaseViewModel {
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
-
+    playCamp(checkPlayVideo);
     notifyListeners();
   }
 
