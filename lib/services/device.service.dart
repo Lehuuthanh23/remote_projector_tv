@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 
 import '../models/device/device_info_model.dart';
 
 class DeviceInfoService {
+  static const platform = MethodChannel('com.example.serial/serial');
+
   Future<DeviceInfoModel> getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     DeviceInfoModel deviceInfoModel;
@@ -20,6 +23,8 @@ class DeviceInfoService {
       } else {
         serialNumber = 'unknown';
       }
+
+      //print("seri number: ${androidInfo.}");
 
       deviceInfoModel = DeviceInfoModel(
         model: androidInfo.model ?? '',
@@ -56,7 +61,19 @@ class DeviceInfoService {
         uuid: 'Unknown',
       );
     }
+
     AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
     return deviceInfoModel;
+  }
+
+  Future<String?> getSerial() async {
+    try {
+      final String? serial = await platform.invokeMethod('getSerial');
+      print('serial: $serial');
+      return serial;
+    } on PlatformException catch (e) {
+      print("Failed to get serial number: '${e.message}'.");
+      return null;
+    }
   }
 }

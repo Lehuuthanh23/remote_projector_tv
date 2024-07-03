@@ -26,7 +26,6 @@ class ViewCamp extends StatelessWidget {
         viewModel.homeViewModel = homeViewModel;
         viewModel.init();
       },
-      disposeViewModel: false,
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {

@@ -70,14 +70,28 @@ class ViewCampViewModel extends BaseViewModel {
       checkNumberOfPages(context);
       print('Số trang: $routerStackLength');
       getCampSchedule();
-      if (campSchedulesNew.isEmpty) {
+      String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
+      List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString!);
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      if (lstCampScheduleJson
+          .map((e) => CampSchedule.fromJson(e))
+          .where((camp) {
+            DateTime fromTime = stringToDateTime(camp.fromTime);
+            DateTime toTime = stringToDateTime(camp.toTime);
+            return fromTime.isBefore(now) &&
+                toTime.isAfter(now) &&
+                camp.status == '1' &&
+                checkPacket!;
+          })
+          .toList()
+          .isEmpty) {
         if (isPlaying) {
           print('Dừng video');
           isPlaying = false;
           flagPlayCamp = false;
+          _controller?.pause();
+          _controller = null;
           notifyListeners();
-          // _controller?.dispose();
-          //_navigateToADSPage();
         }
       } else {
         print('Chạy video');
@@ -87,9 +101,6 @@ class ViewCampViewModel extends BaseViewModel {
         if (!flagPlayCamp) {
           isPlaying = true;
           notifyListeners();
-          if (routerStackLength == 3) {
-            Navigator.pop(context);
-          }
           _loadNextMedia(campSchedulesNew);
           flagPlayCamp = true;
           notifyListeners();
@@ -114,7 +125,7 @@ class ViewCampViewModel extends BaseViewModel {
     AppSP.set(AppSPKey.checkPlayVideo, 'false');
     checkAlive = false;
     homeViewModel!.notifyListeners();
-    _controller?.dispose();
+    //_controller?.dispose();
     if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
       dio.get(offProjector);
     }
@@ -168,6 +179,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   Future<void> _getUsbPath() async {
     usbPaths = await UsbService().getUsbPath();
+    print('Lấy usb path thành công! : ${usbPaths}');
     notifyListeners();
   }
 
@@ -210,6 +222,7 @@ class ViewCampViewModel extends BaseViewModel {
           currentCampSchedule.status == '1') {
         _waitTime = int.parse(currentCampSchedule.videoDuration);
         try {
+          print('chạy camp');
           await _getUsbPath();
           if (checkShowingImage(currentCampSchedule)) {
             checkImage = true;
@@ -239,13 +252,13 @@ class ViewCampViewModel extends BaseViewModel {
               }
             }
             notifyListeners();
-            var counter = _waitTime - timeStart;
+            var counter = _waitTime;
             Timer.periodic(const Duration(seconds: 1), (timer) {
               counter--;
               if (checkDisconnectUSB == true) {
                 timer.cancel();
                 checkDisconnectUSB = null;
-                _loadNextMedia(campSchedules, timeStart: _waitTime - counter);
+                _loadNextMedia(campSchedules);
               } else if (counter <= 0 || !context.mounted) {
                 timer.cancel();
                 checkDisconnectUSB = null;
@@ -254,8 +267,9 @@ class ViewCampViewModel extends BaseViewModel {
             });
           } else {
             checkImage = false;
-
+            print('chạy camp video');
             if (usbPaths.isEmpty) {
+              print('chạy camp url');
               _controller = VideoPlayerController.networkUrl(
                   Uri.parse(currentCampSchedule.urlYoutube));
             } else {
