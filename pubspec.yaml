@@ -55,6 +55,7 @@ dependencies:
   file_picker: ^8.0.5
   usb_serial: ^0.5.1
   uuid: ^4.4.0
+  wakelock: ^0.4.0
 
 dev_dependencies:
   flutter_test:
