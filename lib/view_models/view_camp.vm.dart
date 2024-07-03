@@ -1,16 +1,26 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:stacked/stacked.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../models/camp/camp_schedule.dart';
-import '../../models/notification/notify_model.dart';
-import '../../request/camp/camp.request.dart';
-import '../../request/notification/notify.request.dart';
+import '../app/app_sp.dart';
+import '../app/app_sp_key.dart';
+import '../app/app_string.dart';
+import '../models/camp/camp_schedule.dart';
+import '../models/notification/notify_model.dart';
+import '../observer/navigator_observer.dart';
+import '../request/camp/camp.request.dart';
+import '../request/notification/notify.request.dart';
+import '../services/usb.service.dart';
+import '../view/video_camp/ads.page.dart';
 import '../view/video_camp/video_downloader.dart';
+import 'home.vm.dart';
 
 class ViewCampViewModel extends BaseViewModel {
   static const platform = MethodChannel('com.example.usb/serial');
@@ -21,10 +31,9 @@ class ViewCampViewModel extends BaseViewModel {
   String _formattedTime = '';
   String get formattedTime => _formattedTime;
 
-  final List<CampSchedule> campSchedulesNew;
   final BuildContext context;
 
-  ViewCampViewModel({required this.campSchedulesNew, required this.context});
+  ViewCampViewModel({required this.context});
 
   List<String> usbPaths = [];
   int currentIndex = 0;
@@ -34,14 +43,102 @@ class ViewCampViewModel extends BaseViewModel {
   bool checkAlive = true;
   bool? checkDisconnectUSB;
   late Timer _timerTimeShowing;
+  bool? checkPacket;
+  List<CampSchedule> campSchedulesNew = [];
+  bool isPlaying = true;
+  bool flagPlayCamp = false;
+  Dio dio = Dio();
+  String proUN = '';
+  String proPW = '';
+  String projectorIP = '';
+  int routerStackLength = 0;
+  HomeViewModel? homeViewModel;
+  String offProjector = '';
+  String onProjector = '';
 
   void init() {
-    _loadNextMedia(campSchedulesNew);
-    _updateTime();
+    checkAlive = true;
+    proUN = AppSP.get(AppSPKey.proUN) ?? '';
+    proPW = AppSP.get(AppSPKey.proPW) ?? '';
+    projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
+    offProjector =
+        'http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0203';
+    onProjector =
+        "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
+
     _timerTimeShowing = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      checkNumberOfPages(context);
+      print('Số trang: $routerStackLength');
+      getCampSchedule();
+      if (campSchedulesNew.isEmpty) {
+        if (isPlaying) {
+          print('Dừng video');
+          isPlaying = false;
+          flagPlayCamp = false;
+          notifyListeners();
+          // _controller?.dispose();
+          //_navigateToADSPage();
+        }
+      } else {
+        print('Chạy video');
+        if (AppSP.get(AppSPKey.turnOnlPJ) == 'true') {
+          dio.get(onProjector);
+        }
+        if (!flagPlayCamp) {
+          isPlaying = true;
+          notifyListeners();
+          if (routerStackLength == 3) {
+            Navigator.pop(context);
+          }
+          _loadNextMedia(campSchedulesNew);
+          flagPlayCamp = true;
+          notifyListeners();
+        }
+      }
       _updateTime();
     });
+
     usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
+  }
+
+  void _navigateToADSPage() {
+    // _controller?.dispose();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ADSPage()),
+      // result: (router) => false,
+    );
+  }
+
+  void popPage() {
+    AppSP.set(AppSPKey.checkPlayVideo, 'false');
+    checkAlive = false;
+    homeViewModel!.notifyListeners();
+    _controller?.dispose();
+    if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+      dio.get(offProjector);
+    }
+  }
+
+  void getCampSchedule() {
+    String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
+    checkPacket = AppString.checkPacket;
+    if (lstCampScheduleString != null &&
+        lstCampScheduleString != '' &&
+        checkPacket != null) {
+      List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
+      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+      campSchedulesNew =
+          lstCampScheduleJson.map((e) => CampSchedule.fromJson(e)).toList();
+      notifyListeners();
+    }
+  }
+
+  void checkNumberOfPages(BuildContext context) {
+    final observer = Navigator.of(context).widget.observers.firstWhere(
+          (o) => o is CustomNavigatorObserver,
+        ) as CustomNavigatorObserver;
+    routerStackLength = observer.routeStack.length;
   }
 
   Future<void> _onUsbEvent(dynamic event) async {
@@ -70,12 +167,7 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   Future<void> _getUsbPath() async {
-    List<String> usbPath = [];
-    var result = await platform.invokeMethod('getUsbPath');
-    for (var path in result) {
-      usbPath.add(path.toString());
-    }
-    usbPaths = usbPath;
+    usbPaths = await UsbService().getUsbPath();
     notifyListeners();
   }
 
@@ -97,10 +189,15 @@ class ViewCampViewModel extends BaseViewModel {
         .add(const Duration(hours: 7));
   }
 
-  Future<void> _loadNextMedia(List<CampSchedule> campSchedules, {int timeStart = 0}) async {
+  Future<void> _loadNextMedia(List<CampSchedule> campSchedules,
+      {int timeStart = 0}) async {
     if (!checkAlive || !context.mounted) return;
-
     _controller?.dispose();
+
+    // if (!isPlaying) {
+    //   _controller?.dispose();
+    //   return;
+    // }
     image = null;
     if (currentIndex < campSchedules.length) {
       CampSchedule currentCampSchedule = campSchedules[currentIndex];
@@ -117,7 +214,8 @@ class ViewCampViewModel extends BaseViewModel {
           if (checkShowingImage(currentCampSchedule)) {
             checkImage = true;
             if (usbPaths.isNotEmpty) {
-              String nameImageSave = currentCampSchedule.urlYoutube.split('/').last;
+              String nameImageSave =
+                  currentCampSchedule.urlYoutube.split('/').last;
               String savePath = '${usbPaths.first}/Images/$nameImageSave';
               Directory imageDir = Directory('${usbPaths.first}/Images');
               if (!imageDir.existsSync()) {
@@ -130,9 +228,11 @@ class ViewCampViewModel extends BaseViewModel {
                 } else {
                   image = File(savePath);
                 }
-              } else if (File('${usbPaths.first}/Images/${currentCampSchedule.urlUsb}')
+              } else if (File(
+                      '${usbPaths.first}/Images/${currentCampSchedule.urlUsb}')
                   .existsSync()) {
-                image = File('${usbPaths.first}/Images/${currentCampSchedule.urlUsb}');
+                image = File(
+                    '${usbPaths.first}/Images/${currentCampSchedule.urlUsb}');
               } else {
                 _loadNextMediaInList(campSchedules);
                 return;
@@ -159,9 +259,10 @@ class ViewCampViewModel extends BaseViewModel {
               _controller = VideoPlayerController.networkUrl(
                   Uri.parse(currentCampSchedule.urlYoutube));
             } else {
-              String nameVideoSave = currentCampSchedule.urlYoutube.split('/').last;
-              String savePath = '${usbPaths.first}/Video/$nameVideoSave';
-              Directory videoDir = Directory('${usbPaths.first}/Video');
+              String nameVideoSave =
+                  currentCampSchedule.urlYoutube.split('/').last;
+              String savePath = '${usbPaths.first}/Videos/$nameVideoSave';
+              Directory videoDir = Directory('${usbPaths.first}/Videos');
 
               if (currentCampSchedule.videoType == 'url') {
                 if (!videoDir.existsSync()) {
@@ -179,7 +280,7 @@ class ViewCampViewModel extends BaseViewModel {
                 }
               } else {
                 String usbPathh =
-                    '${usbPaths.first}/Video/${currentCampSchedule.urlUsb}';
+                    '${usbPaths.first}/Videos/${currentCampSchedule.urlUsb}';
                 if (File(usbPathh).existsSync()) {
                   _controller = VideoPlayerController.file(File(usbPathh));
                 } else {
@@ -248,7 +349,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   bool checkShowingImage(CampSchedule currentCampSchedule) {
     return (currentCampSchedule.videoType == 'url' &&
-        _isImage(currentCampSchedule.urlYoutube)) ||
+            _isImage(currentCampSchedule.urlYoutube)) ||
         (currentCampSchedule.videoType == 'usb' &&
             _isImage(currentCampSchedule.urlUsb));
   }

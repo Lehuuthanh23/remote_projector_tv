@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:play_box/view/video_camp/ads.page.dart';
+import 'package:play_box/view_models/home.vm.dart';
 import 'package:stacked/stacked.dart';
 import 'package:video_player/video_player.dart';
 
@@ -8,27 +10,27 @@ import '../../models/camp/camp_schedule.dart';
 import '../../view_models/view_camp.vm.dart';
 
 class ViewCamp extends StatelessWidget {
-  final List<CampSchedule> campSchedules;
-
-  const ViewCamp({
+  HomeViewModel homeViewModel;
+  ViewCamp({
     super.key,
-    required this.campSchedules,
+    required this.homeViewModel,
   });
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
       viewModelBuilder: () => ViewCampViewModel(
-        campSchedulesNew: campSchedules,
         context: context,
       ),
       onViewModelReady: (viewModel) {
+        viewModel.homeViewModel = homeViewModel;
         viewModel.init();
       },
+      disposeViewModel: false,
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {
-            AppSP.set(AppSPKey.checkPlayVideo, 'false');
+            viewModel.popPage();
             return true;
           },
           child: Scaffold(
@@ -38,36 +40,41 @@ class ViewCamp extends StatelessWidget {
                   color: Colors.black,
                 ),
                 Center(
-                  child: viewModel.checkImage
-                      ? (viewModel.campSchedulesNew[viewModel.currentIndex]
-                                          .videoType ==
-                                      'url' &&
-                                  viewModel.image == null) ||
-                              viewModel.usbPaths.isEmpty
-                          ? Image.network(
-                              viewModel.campSchedulesNew[viewModel.currentIndex]
-                                  .urlYoutube,
-                              fit: BoxFit.fill,
-                            )
-                          : viewModel.image != null
-                              ? Image.file(
-                                  viewModel.image!,
-                                  fit: BoxFit.fill,
-                                )
-                              : Container(
-                                  color: Colors.black,
-                                )
-                      : viewModel.controller != null &&
-                              viewModel.controller!.value.isInitialized
-                          ? AspectRatio(
-                              aspectRatio:
-                                  viewModel.controller!.value.aspectRatio,
-                              child: VideoPlayer(viewModel.controller!),
-                            )
-                          : Container(
-                              color: Colors.black,
-                            ),
-                ),
+                    child: viewModel.isPlaying && viewModel.isPlaying
+                        ? (viewModel.checkImage
+                            ? (viewModel
+                                                .campSchedulesNew[
+                                                    viewModel.currentIndex]
+                                                .videoType ==
+                                            'url' &&
+                                        viewModel.image == null) ||
+                                    viewModel.usbPaths.isEmpty
+                                ? Image.network(
+                                    viewModel
+                                        .campSchedulesNew[
+                                            viewModel.currentIndex]
+                                        .urlYoutube,
+                                    fit: BoxFit.fill,
+                                  )
+                                : viewModel.image != null
+                                    ? Image.file(
+                                        viewModel.image!,
+                                        fit: BoxFit.fill,
+                                      )
+                                    : Container(
+                                        color: Colors.black,
+                                      )
+                            : viewModel.controller != null &&
+                                    viewModel.controller!.value.isInitialized
+                                ? AspectRatio(
+                                    aspectRatio:
+                                        viewModel.controller!.value.aspectRatio,
+                                    child: VideoPlayer(viewModel.controller!),
+                                  )
+                                : Container(
+                                    color: Colors.black,
+                                  ))
+                        : const ADSPage()),
                 Positioned(
                   bottom: 20,
                   right: 20,

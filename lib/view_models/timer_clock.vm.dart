@@ -8,7 +8,10 @@ import 'package:play_box/app/app_string.dart';
 import 'package:play_box/models/camp/camp_schedule.dart';
 import 'package:play_box/request/camp/camp.request.dart';
 import 'package:stacked/stacked.dart';
+import 'package:velocity_x/velocity_x.dart';
 
+import '../observer/navigator_observer.dart';
+import '../view/video_camp/ads.page.dart';
 import '../view/video_camp/view_camp.dart';
 import 'home.vm.dart';
 
@@ -25,6 +28,7 @@ class TimerClockViewModel extends BaseViewModel {
   bool? checkPacket;
   String day = '';
   HomeViewModel? homeViewModel;
+  int routerStackLength = 0;
 
   String get currentTimeFormatted => _formatTime(_currentTime);
 
@@ -67,70 +71,72 @@ class TimerClockViewModel extends BaseViewModel {
       String lstCampScheduleString = jsonEncode(jsonList);
       AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     }
-    String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
-    checkPacket = AppString.checkPacket;
-    if (lstCampScheduleString != null &&
-        lstCampScheduleString != '' &&
-        checkPacket != null) {
-      List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
-      // print('Camp đã lưu: $lstCampScheduleString');
-      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    // String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
+    // checkPacket = AppString.checkPacket;
+    // if (lstCampScheduleString != null &&
+    //     lstCampScheduleString != '' &&
+    //     checkPacket != null) {
+    //   List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
+    //   // print('Camp đã lưu: $lstCampScheduleString');
+    //   DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
 
-      List<CampSchedule> lstCampScheduleNew = lstCampScheduleJson
-          .map((e) => CampSchedule.fromJson(e))
-          .where((camp) {
-        DateTime fromTime = stringToDateTime(camp.fromTime);
-        DateTime toTime = stringToDateTime(camp.toTime);
-        return fromTime.isBefore(now) &&
-            toTime.isAfter(now) &&
-            camp.status == '1' &&
-            checkPacket!;
-      }).toList();
-      if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
-        print('Đúng điều kiện checkplay video');
-        if (lstCampScheduleNew.isEmpty) {
-          if (isPlaying) {
-            if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
-              print('Tắt máy chiếu');
-              dio.get(offProjector);
-            }
-            print('Vào tắt video');
-            Navigator.pop(viewContext);
-            isPlaying = false;
-            flagPlayCamp = false;
-            notifyListeners();
-          }
-        } else {
-          print('Vào play video');
-          if (AppSP.get(AppSPKey.turnOnlPJ) == 'true') {
-            print('Mở máy chiếu');
-            dio.get(onProjector);
-          }
-          if (!flagPlayCamp) {
-            isPlaying = true;
-            notifyListeners();
-            Navigator.push(
-              viewContext,
-              MaterialPageRoute(
-                builder: (context) => ViewCamp(
-                  campSchedules: lstCampScheduleNew,
-                ),
-              ),
-            ).then((_) {
-              flagPlayCamp = false;
-              isPlaying = false;
-              homeViewModel!.notifyListeners();
-              if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
-                print('Tắt máy chiếu');
-                dio.get(offProjector);
-              }
-              notifyListeners();
-            });
-            flagPlayCamp = true;
-          }
-        }
-      }
-    }
+    // List<CampSchedule> lstCampScheduleNew = lstCampScheduleJson
+    //     .map((e) => CampSchedule.fromJson(e))
+    //     .where((camp) {
+    //   DateTime fromTime = stringToDateTime(camp.fromTime);
+    //   DateTime toTime = stringToDateTime(camp.toTime);
+    //   return fromTime.isBefore(now) &&
+    //       toTime.isAfter(now) &&
+    //       camp.status == '1' &&
+    //       checkPacket!;
+    // }).toList();
+    // if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
+    //   print('Đúng điều kiện checkplay video');
+    //   if (lstCampScheduleNew.isEmpty) {
+    //     if (isPlaying) {
+    //       if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+    //         print('Tắt máy chiếu');
+    //         dio.get(offProjector);
+    //       }
+    //       print('Vào tắt video');
+    //       Navigator.pop(viewContext);
+    //       Navigator.push((viewContext),
+    //           MaterialPageRoute(builder: (context) => const ADSPage()));
+    //       isPlaying = false;
+    //       flagPlayCamp = false;
+    //       notifyListeners();
+    //     }
+    //   } else {
+    //     print('Vào play video');
+    //     if (AppSP.get(AppSPKey.turnOnlPJ) == 'true') {
+    //       print('Mở máy chiếu');
+    //       dio.get(onProjector);
+    //     }
+    //     if (!flagPlayCamp) {
+    //       isPlaying = true;
+    //       notifyListeners();
+    //       if (routerStackLength == 2) {
+    //         Navigator.pop(viewContext);
+    //       }
+    //       Navigator.push(
+    //         viewContext,
+    //         MaterialPageRoute(
+    //           builder: (context) => const ViewCamp(),
+    //         ),
+    //       ).then((_) {
+    //         flagPlayCamp = false;
+    //         isPlaying = false;
+    //         homeViewModel!.notifyListeners();
+    //         if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+    //           print('Tắt máy chiếu');
+    //           dio.get(offProjector);
+    //         }
+    //         notifyListeners();
+    //       });
+    //       flagPlayCamp = true;
+    //     }
+    //   }
+    // }
   }
 
   DateTime stringToDateTime(String time) {

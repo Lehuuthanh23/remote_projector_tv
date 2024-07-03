@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:play_box/app/app_string.dart';
+import 'package:play_box/view/video_camp/view_camp.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -18,7 +19,9 @@ import '../request/camp/camp.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
+import '../services/usb.service.dart';
 import '../view/splash/splash.page.dart';
+import '../view/video_camp/view_camp_usb.dart';
 import '../widget/pop_up.dart';
 
 class HomeViewModel extends BaseViewModel {
@@ -57,6 +60,7 @@ class HomeViewModel extends BaseViewModel {
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
+
     notifyListeners();
   }
 
@@ -67,6 +71,25 @@ class HomeViewModel extends BaseViewModel {
 
   void setContext(BuildContext ctx) {
     viewContext = ctx;
+  }
+
+  nexPlayVideoUSB() async {
+    List<String> usbPaths = await UsbService().getUsbPath();
+    if (usbPaths.isEmpty) {
+      showDialog(
+          context: viewContext,
+          builder: (context) => PopUpWidget(
+                icon: Image.asset("assets/images/ic_error.png"),
+                title: 'Không có usb kết nối',
+                leftText: 'Xác nhận',
+                onLeftTap: () {
+                  Navigator.pop(context);
+                },
+              ));
+    } else {
+      Navigator.push(viewContext,
+          MaterialPageRoute(builder: (viewContext) => VideoUSBPage()));
+    }
   }
 
   Future<void> _fetchPackets() async {
@@ -182,6 +205,14 @@ class HomeViewModel extends BaseViewModel {
 
   playCamp(bool check) {
     AppSP.set(AppSPKey.checkPlayVideo, '$check');
+    if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
+      Navigator.push(
+          viewContext,
+          MaterialPageRoute(
+              builder: (context) => ViewCamp(
+                    homeViewModel: this,
+                  )));
+    }
     print('Check play video: ${AppSP.get(AppSPKey.checkPlayVideo)}');
     notifyListeners();
   }
