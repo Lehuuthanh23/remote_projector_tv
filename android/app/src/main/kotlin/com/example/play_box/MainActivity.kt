@@ -66,8 +66,9 @@ class MainActivity : FlutterActivity() {
                 "saveUser" -> {
                     val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
                     sharedPreferencesManager.saveUserIdConnected(argument)
-                    startMyBackgroundService()
-                    Log.d(TAG, "saveUser: $argument")
+                    if (argument != null) {
+                        startMyBackgroundService()
+                    }
                 }
 
                 "saveComputer" -> {
@@ -75,6 +76,9 @@ class MainActivity : FlutterActivity() {
                     val computerId = call.argument<String>(Constants.COMPUTER_ID)
                     sharedPreferencesManager.saveSerialComputer(serialComputer)
                     sharedPreferencesManager.saveIdComputer(computerId)
+                    if (computerId != null && serialComputer != null) {
+                        startMyBackgroundService()
+                    }
                 }
 
                 "clearUser" -> {
