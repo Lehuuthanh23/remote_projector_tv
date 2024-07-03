@@ -8,7 +8,7 @@ import 'package:play_box/app/app_sp_key.dart';
 import '../models/device/device_info_model.dart';
 
 class DeviceInfoService {
-  static const platform = MethodChannel('com.example.serial/serial');
+  static const platform = MethodChannel('com.example.usb/serial');
 
   Future<DeviceInfoModel> getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -17,14 +17,13 @@ class DeviceInfoService {
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       String serialNumber = '';
+      String? androidId = await getSerial();
 
       if (androidInfo.version.sdkInt < 29) {
         serialNumber = androidInfo.serialNumber;
       } else {
         serialNumber = 'unknown';
       }
-
-      //print("seri number: ${androidInfo.}");
 
       deviceInfoModel = DeviceInfoModel(
         model: androidInfo.model ?? '',
@@ -33,7 +32,7 @@ class DeviceInfoService {
         deviceName: androidInfo.device ?? '',
         platform: 'Android',
         serialNumber: serialNumber,
-        androidId: androidInfo.id,
+        androidId: androidId ?? androidInfo.id,
         uuid: androidInfo.id,
       );
     } else if (Platform.isIOS) {
