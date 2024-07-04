@@ -15,6 +15,7 @@ import '../../services/device.service.dart';
 
 class AuthenticationRequest {
   final Dio dio = Dio();
+  DeviceInfoService deviceInfoService = DeviceInfoService();
   String checkError = '';
   DeviceInfoModel? deviceInfo;
   Future<String?> login(BuildContext context, LoginRequestModel user) async {
@@ -64,9 +65,7 @@ class AuthenticationRequest {
       await AppSP.set(AppSPKey.token, userJson['customer_token']);
       await AppSP.set(AppSPKey.user_info, jsonEncode(userJson));
 
-      const platform = MethodChannel('com.example.usb/serial');
-      platform
-          .invokeMethod('saveUser', {AppSPKey.user_info: userJson['customer_id']});
+      await AppUtils.platformChannel.invokeMethod('saveUser', {AppSPKey.user_info: userJson['customer_id']});
     }
     String id = AppSP.get(AppSPKey.token);
     String userInfo = AppSP.get(AppSPKey.user_info);
@@ -99,7 +98,6 @@ class AuthenticationRequest {
   }
 
   Future<void> fetchDeviceInfo() async {
-    DeviceInfoService deviceInfoService = DeviceInfoService();
     deviceInfo = await deviceInfoService.getDeviceInfo();
     print('Name device: ${deviceInfo?.model}');
   }

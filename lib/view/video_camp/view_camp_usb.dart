@@ -4,6 +4,8 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+import '../../app/app_utils.dart';
+
 class VideoUSBPage extends StatefulWidget {
   @override
   _VideoUSBPageState createState() => _VideoUSBPageState();
@@ -15,7 +17,6 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
   int _currentVideoIndex = 0;
   bool isPlaying = false;
   List<String> usbPaths = [];
-  static const platform = MethodChannel('com.example.usb/serial');
 
   @override
   void initState() {
@@ -25,7 +26,7 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
 
   Future<void> _getUsbPath() async {
     List<String> usbPath = [];
-    var result = await platform.invokeMethod('getUsbPath');
+    var result = await AppUtils.platformChannel.invokeMethod('getUsbPath');
     for (var path in result) {
       usbPath.add(path.toString());
     }

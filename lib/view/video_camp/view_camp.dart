@@ -22,25 +22,6 @@ class ViewCamp extends StatefulWidget {
 }
 
 class _ViewCampState extends State<ViewCamp> {
-  static const platform = MethodChannel('com.example.myapp/command');
-
-  @override
-  void initState() {
-    super.initState();
-    platform.setMethodCallHandler(_handleMethodCall);
-  }
-
-  Future<void> _handleMethodCall(MethodCall call) async {
-    print(call.method);
-    switch (call.method) {
-      case 'stopVideo':
-        print("Nhận dừng video");
-      // Trả về kết quả (nếu cần)
-      default:
-        throw MissingPluginException('Not implemented: ${call.method}');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(

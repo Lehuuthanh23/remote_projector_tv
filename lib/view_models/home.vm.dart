@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
+import '../app/app_utils.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../models/device/device_info_model.dart';
@@ -26,6 +29,7 @@ import '../widget/pop_up.dart';
 
 class HomeViewModel extends BaseViewModel {
   late BuildContext viewContext;
+
   CampRequest campRequest = CampRequest();
   bool turnOnlPJ = false;
   bool turnOffPJ = false;
@@ -38,6 +42,7 @@ class HomeViewModel extends BaseViewModel {
   TextEditingController proUN = TextEditingController();
   TextEditingController proPW = TextEditingController();
   TextEditingController projectorIP = TextEditingController();
+  DeviceInfoService deviceInfoService = DeviceInfoService();
   Dio dio = Dio();
   List<PacketModel> packets = [];
   bool isDrawerOpen = false;
@@ -66,6 +71,23 @@ class HomeViewModel extends BaseViewModel {
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     notifyListeners();
+  }
+
+  void setMethodCall(Future<dynamic> Function(MethodCall)? methodCall) {
+    AppUtils.platformChannel.setMethodCallHandler(methodCall ?? _handleMethodCall);
+  }
+
+  Future<void> _handleMethodCall(MethodCall call) async {
+    print('Home call - ${call.method}');
+    switch (call.method) {
+      case 'yourFlutterMethod':
+        String param = call.arguments['yourParameter'];
+        // Thực hiện lệnh Flutter của bạn ở đây
+        print("Received parameter from Kotlin: $param");
+    // Trả về kết quả (nếu cần)
+      default:
+        throw MissingPluginException('Not implemented: ${call.method}');
+    }
   }
 
   void toggleDrawer() {
@@ -123,8 +145,7 @@ class HomeViewModel extends BaseViewModel {
     AppSP.set(AppSPKey.user_info, '');
     AppSP.set(AppSPKey.lstCampSchedule, '');
 
-    const platform = MethodChannel('com.example.usb/serial');
-    platform.invokeMethod('clearUser');
+    await AppUtils.platformChannel.invokeMethod('clearUser');
 
     Navigator.pushAndRemoveUntil(
         viewContext,
@@ -144,7 +165,6 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> fetchDeviceInfo() async {
-    DeviceInfoService deviceInfoService = DeviceInfoService();
     deviceInfo = await deviceInfoService.getDeviceInfo();
     notifyListeners();
   }

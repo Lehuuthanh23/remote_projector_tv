@@ -8,6 +8,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -36,12 +38,12 @@ import io.flutter.embedding.engine.dart.DartExecutor
 class MyBackgroundService : Service() {
     companion object {
         const val TAG = "MyBackgroundService"
+        private const val COMMAND_CHANNEL = "com.example.usb/serial"
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
 
     private lateinit var channel: MethodChannel
-    private val COMMAND_CHANNEL = "com.example.myapp/command"
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
@@ -141,9 +143,25 @@ class MyBackgroundService : Service() {
                 }
             }
 
-             CommandEnum.VIDEO_STOP.command -> {
+            CommandEnum.VIDEO_STOP.command -> {
                 Handler(Looper.getMainLooper()).post {
-                channel.invokeMethod("stopVideo", mapOf("yourParameter" to "Hello from Kotlin"))
+                    channel.invokeMethod("stopVideo", mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+                serviceScope.launch {
+                    val formBody = FormBody.Builder()
+                        .add("return_value", "OK")
+                        .build()
+
+                    apiService.post(
+                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
+                        body = formBody,
+                    )
+                }
+            }
+
+            CommandEnum.VIDEO_PAUSE.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod("pauseVideo", mapOf("yourParameter" to "Hello from Kotlin"))
                 }
                 serviceScope.launch {
                     val formBody = FormBody.Builder()
@@ -198,11 +216,12 @@ class MyBackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         handler.removeCallbacks(checkCommandRunnable)
         handler.removeCallbacks(checkAliveRunnable)
-        handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
-        handler.postDelayed(checkAliveRunnable, CHECK_ALIVE_INTERVAL)
+        handler.post(checkAliveRunnable)
+        handler.post(checkCommandRunnable)
 
         val notification = createNotification()
         startForeground(1001, notification)
+
         return START_STICKY
     }
 

@@ -72,8 +72,7 @@ class DeviceRequest {
         //
         AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
 
-        const platform = MethodChannel('com.example.usb/serial');
-        platform.invokeMethod('saveComputer', {
+        await AppUtils.platformChannel.invokeMethod('saveComputer', {
           AppSPKey.serial_computer: device.serialComputer,
           AppSPKey.computer_id: device.computerId
         });

@@ -69,6 +69,7 @@ class MainActivity : FlutterActivity() {
                     if (argument != null) {
                         startMyBackgroundService()
                     }
+                    result.success("")
                 }
 
                 "saveComputer" -> {
@@ -79,10 +80,12 @@ class MainActivity : FlutterActivity() {
                     if (computerId != null && serialComputer != null) {
                         startMyBackgroundService()
                     }
+                    result.success("")
                 }
 
                 "clearUser" -> {
                     sharedPreferencesManager.clearData()
+                    result.success("")
                 }
 
                 "getUsbPath" -> {
@@ -96,7 +99,7 @@ class MainActivity : FlutterActivity() {
                 }
 
                 else -> {
-                    result.notImplemented()
+                    result.success("")
                 }
             }
         }
