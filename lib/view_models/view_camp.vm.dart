@@ -81,7 +81,7 @@ class ViewCampViewModel extends BaseViewModel {
             return fromTime.isBefore(now) &&
                 toTime.isAfter(now) &&
                 camp.status == '1' &&
-                checkPacket!;
+                AppString.checkPacket;
           })
           .toList()
           .isEmpty) {
@@ -122,7 +122,6 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   void popPage() {
-    AppSP.set(AppSPKey.checkPlayVideo, 'false');
     checkAlive = false;
     homeViewModel!.notifyListeners();
     //_controller?.dispose();
@@ -138,7 +137,6 @@ class ViewCampViewModel extends BaseViewModel {
         lstCampScheduleString != '' &&
         checkPacket != null) {
       List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString);
-      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
       campSchedulesNew =
           lstCampScheduleJson.map((e) => CampSchedule.fromJson(e)).toList();
       notifyListeners();

@@ -24,7 +24,6 @@ class SplashViewModel extends BaseViewModel {
   String projectorIP = '';
 
   Future<void> init(BuildContext context) async {
-    AppSP.set(AppSPKey.checkPlayVideo, "true");
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
     proUN = AppSP.get(AppSPKey.proUN) ?? '';

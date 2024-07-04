@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
       onViewModelReady: (viewModel) async {
         viewModel.viewContext = context;
         await viewModel.initialise();
+        viewModel.playCamp(true);
       },
       builder: (context, viewModel, child) {
         viewModel.viewContext = context;
