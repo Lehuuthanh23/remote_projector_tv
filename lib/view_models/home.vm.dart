@@ -41,6 +41,7 @@ class HomeViewModel extends BaseViewModel {
   Dio dio = Dio();
   List<PacketModel> packets = [];
   bool isDrawerOpen = false;
+  bool playVideo = true;
 
   initialise() async {
     String? info = AppSP.get(AppSPKey.user_info);
@@ -58,12 +59,13 @@ class HomeViewModel extends BaseViewModel {
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
+    // AppSP.set(AppSPKey.checkPlayVideo, "true");
+    playCamp(checkPlayVideo);
     List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
-    playCamp(checkPlayVideo);
     notifyListeners();
   }
 
@@ -207,16 +209,21 @@ class HomeViewModel extends BaseViewModel {
   }
 
   playCamp(bool check) {
-    AppSP.set(AppSPKey.checkPlayVideo, '$check');
-    if (AppSP.get(AppSPKey.checkPlayVideo) == 'true') {
-      Navigator.push(
-          viewContext,
-          MaterialPageRoute(
-              builder: (context) => ViewCamp(
-                    homeViewModel: this,
-                  )));
+    print('Check play camp1');
+    playVideo = check;
+    if (playVideo == true) {
+      print('Check play camp');
+      if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
+        Navigator.push(
+            viewContext,
+            MaterialPageRoute(
+                builder: (context) => ViewCamp(
+                      homeViewModel: this,
+                    )));
+      } else {
+        nexPlayVideoUSB();
+      }
     }
-    print('Check play video: ${AppSP.get(AppSPKey.checkPlayVideo)}');
     notifyListeners();
   }
 }

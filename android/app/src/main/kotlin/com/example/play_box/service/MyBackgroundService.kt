@@ -167,7 +167,9 @@ class MyBackgroundService : Service() {
         handler.removeCallbacks(checkAliveRunnable)
         handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
         handler.postDelayed(checkAliveRunnable, CHECK_ALIVE_INTERVAL)
-
+        if (!isAppRunning(applicationContext)) {
+        openFlutterActivity()
+        }
         val notification = createNotification()
         startForeground(1001, notification)
         return START_STICKY

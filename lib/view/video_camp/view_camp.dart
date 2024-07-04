@@ -30,6 +30,7 @@ class ViewCamp extends StatelessWidget {
         return WillPopScope(
           onWillPop: () async {
             viewModel.popPage();
+            homeViewModel.playVideo = false;
             return true;
           },
           child: Scaffold(

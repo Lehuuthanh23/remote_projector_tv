@@ -127,16 +127,16 @@ class _HomePageState extends State<HomePage> {
                             title: 'CÀI ĐẶT',
                             textSize: 15,
                           ),
-                          ButtomCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            onPressed: () async {
-                              viewModel.nexPlayVideoUSB();
-                            },
-                            title: 'PHÁT VIDEO USB',
-                            isSplashScreen: true,
-                            textSize: 15,
-                          ),
+                          // ButtomCustom(
+                          //   width: 150,
+                          //   padding: const EdgeInsets.symmetric(vertical: 10),
+                          //   onPressed: () async {
+                          //     viewModel.nexPlayVideoUSB();
+                          //   },
+                          //   title: 'PHÁT VIDEO USB',
+                          //   isSplashScreen: true,
+                          //   textSize: 15,
+                          // ),
                           ButtomCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -149,9 +149,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               CupertinoSwitch(
-                                  value: bool.parse(
-                                      AppSP.get(AppSPKey.checkPlayVideo) ??
-                                          'false'),
+                                  value: viewModel.playVideo,
                                   onChanged: (check) =>
                                       viewModel.playCamp(check)),
                               const Text(

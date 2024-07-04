@@ -16,4 +16,5 @@ class AppSPKey {
   static const String projectorIP = 'projectorIP';
   static const String lstCampSchedule = 'lstCampSchedule';
   static const String checkPlayVideo = 'false';
+  static const String typePlayVideo = 'typePlayVideo';
 }
