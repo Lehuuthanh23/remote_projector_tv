@@ -24,6 +24,7 @@ class SplashViewModel extends BaseViewModel {
   String projectorIP = '';
 
   Future<void> init(BuildContext context) async {
+    AppSP.set(AppSPKey.checkPlayVideo, "true");
     token = AppSP.get(AppSPKey.token) ?? "";
     userJson = AppSP.get(AppSPKey.user_info) ?? '';
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
@@ -48,8 +49,8 @@ class SplashViewModel extends BaseViewModel {
       if (currentUser != null && token == currentUser.customerToken) {
         checkLogin = true;
         const platform = MethodChannel('com.example.usb/serial');
-        platform
-            .invokeMethod('saveUser', {AppSPKey.user_info: currentUser.customerId});
+        platform.invokeMethod(
+            'saveUser', {AppSPKey.user_info: currentUser.customerId});
       }
     }
   }

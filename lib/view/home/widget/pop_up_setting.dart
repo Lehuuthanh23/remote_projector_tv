@@ -7,19 +7,27 @@ import '../../../view_models/home.vm.dart';
 import '../../../widget/buttonCustom.dart';
 import 'package:stacked/stacked.dart';
 
-class PopupSettingScreen extends StatelessWidget {
+class PopupSettingScreen extends StatefulWidget {
   const PopupSettingScreen({Key? key, required this.homeVM}) : super(key: key);
   final HomeViewModel homeVM;
 
   @override
+  State<PopupSettingScreen> createState() => _PopupSettingScreenState();
+}
+
+class _PopupSettingScreenState extends State<PopupSettingScreen> {
+  String _selectedSource = "USB";
+  @override
   Widget build(BuildContext context) {
     bool checkConnect = true;
+
     return ViewModelBuilder<HomeViewModel>.reactive(
         disposeViewModel: false,
-        viewModelBuilder: () => homeVM,
+        viewModelBuilder: () => widget.homeVM,
         onViewModelReady: (viewModel) async {
           viewModel.viewContext = context;
           checkConnect = await AppUtils.checkConnect();
+          _selectedSource = AppSP.get(AppSPKey.typePlayVideo);
           viewModel.notifyListeners();
         },
         builder: (context, viewModel, child) {
@@ -77,7 +85,8 @@ class PopupSettingScreen extends StatelessWidget {
                                                   fontSize: 15),
                                             ),
                                             Text(
-                                              homeVM.currentUser.customerName!,
+                                              widget.homeVM.currentUser
+                                                  .customerName!,
                                               style:
                                                   const TextStyle(fontSize: 20),
                                             ),
@@ -106,7 +115,8 @@ class PopupSettingScreen extends StatelessWidget {
                                                   fontSize: 15),
                                             ),
                                             Text(
-                                              homeVM.currentUser.phoneNumber!,
+                                              widget.homeVM.currentUser
+                                                  .phoneNumber!,
                                               style:
                                                   const TextStyle(fontSize: 20),
                                             ),
@@ -139,7 +149,7 @@ class PopupSettingScreen extends StatelessWidget {
                                         TextFormField(
                                           enabled: false,
                                           decoration: InputDecoration(
-                                            labelText: homeVM.deviceInfo!
+                                            labelText: widget.homeVM.deviceInfo!
                                                         .serialNumber ==
                                                     'unknown'
                                                 ? 'ANDROID ID'
@@ -149,11 +159,15 @@ class PopupSettingScreen extends StatelessWidget {
                                             border:
                                                 const UnderlineInputBorder(),
                                           ),
-                                          initialValue: homeVM.deviceInfo!
+                                          initialValue: widget
+                                                      .homeVM
+                                                      .deviceInfo!
                                                       .serialNumber ==
                                                   'unknown'
-                                              ? homeVM.deviceInfo!.androidId
-                                              : homeVM.deviceInfo!.serialNumber,
+                                              ? widget
+                                                  .homeVM.deviceInfo!.androidId
+                                              : widget.homeVM.deviceInfo!
+                                                  .serialNumber,
                                         ),
                                         const SizedBox(height: 10),
                                         TextFormField(
@@ -174,7 +188,7 @@ class PopupSettingScreen extends StatelessWidget {
                                             border: UnderlineInputBorder(),
                                           ),
                                           initialValue:
-                                              homeVM.deviceInfo!.model,
+                                              widget.homeVM.deviceInfo!.model,
                                         ),
                                       ],
                                     ),
@@ -230,51 +244,129 @@ class PopupSettingScreen extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 10),
                                         Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
                                           children: [
-                                            Checkbox(
-                                              checkColor: Colors.amber,
-                                              activeColor: Colors.transparent,
-                                              focusNode: FocusNode(),
-                                              value: homeVM.turnOnlPJ,
-                                              onChanged: (bool? value) {
-                                                homeVM.turnOnl();
-                                              },
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: [
+                                                    Checkbox(
+                                                      checkColor: Colors.amber,
+                                                      activeColor:
+                                                          Colors.transparent,
+                                                      focusNode: FocusNode(),
+                                                      value: widget
+                                                          .homeVM.turnOnlPJ,
+                                                      onChanged: (bool? value) {
+                                                        widget.homeVM.turnOnl();
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Điều khiển mở PJ'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: [
+                                                    Checkbox(
+                                                      checkColor: Colors.amber,
+                                                      activeColor:
+                                                          Colors.transparent,
+                                                      focusNode: FocusNode(),
+                                                      value: widget
+                                                          .homeVM.turnOffPJ,
+                                                      onChanged: (bool? value) {
+                                                        widget.homeVM.turnOff();
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Điều khiển tắt PJ'),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: [
+                                                    Checkbox(
+                                                      checkColor: Colors.amber,
+                                                      activeColor:
+                                                          Colors.transparent,
+                                                      focusNode: FocusNode(),
+                                                      value: widget
+                                                          .homeVM.openOnStartup,
+                                                      onChanged: (bool? value) {
+                                                        widget.homeVM
+                                                            .openOnStart();
+                                                      },
+                                                    ),
+                                                    const Text(
+                                                        'Mở khi khởi động'),
+                                                  ],
+                                                ),
+                                              ],
                                             ),
-                                            const Text('Điều khiển mở PJ'),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Checkbox(
-                                              checkColor: Colors.amber,
-                                              activeColor: Colors.transparent,
-                                              focusNode: FocusNode(),
-                                              value: homeVM.turnOffPJ,
-                                              onChanged: (bool? value) {
-                                                homeVM.turnOff();
-                                              },
+                                            const SizedBox(
+                                              width: 30,
                                             ),
-                                            const Text('Điều khiển tắt PJ'),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Checkbox(
-                                              checkColor: Colors.amber,
-                                              activeColor: Colors.transparent,
-                                              focusNode: FocusNode(),
-                                              value: homeVM.openOnStartup,
-                                              onChanged: (bool? value) {
-                                                homeVM.openOnStart();
-                                              },
-                                            ),
-                                            const Text('Mở khi khởi động'),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const Align(
+                                                      child: Text(
+                                                          'Chạy từ nguồn:')),
+                                                  Column(
+                                                    children: [
+                                                      ListTile(
+                                                        title:
+                                                            const Text('USB'),
+                                                        leading: Radio<String>(
+                                                          value: 'USB',
+                                                          groupValue:
+                                                              _selectedSource,
+                                                          onChanged:
+                                                              (String? value) {
+                                                            setState(() {
+                                                              _selectedSource =
+                                                                  value!;
+                                                              AppSP.set(
+                                                                  AppSPKey
+                                                                      .typePlayVideo,
+                                                                  _selectedSource);
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                      ListTile(
+                                                        title: const Text(
+                                                            'Chiến dịch'),
+                                                        leading: Radio<String>(
+                                                          value: 'Chiendich',
+                                                          groupValue:
+                                                              _selectedSource,
+                                                          onChanged:
+                                                              (String? value) {
+                                                            setState(() {
+                                                              _selectedSource =
+                                                                  value!;
+                                                              AppSP.set(
+                                                                  AppSPKey
+                                                                      .typePlayVideo,
+                                                                  _selectedSource);
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            )
                                           ],
                                         ),
                                       ],
@@ -296,7 +388,9 @@ class PopupSettingScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         color: const Color(0xffEB6E2C),
                         onPressed: () async {
-                          checkConnect ? null : await homeVM.connectDevice();
+                          checkConnect
+                              ? null
+                              : await widget.homeVM.connectDevice();
                         },
                         title: checkConnect ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
                         textSize: 15,
