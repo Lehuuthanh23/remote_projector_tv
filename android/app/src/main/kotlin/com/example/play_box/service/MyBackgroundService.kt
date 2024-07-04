@@ -44,8 +44,16 @@ class MyBackgroundService : Service() {
 
     private lateinit var sharedPreferences: SharedPreferencesManager
 
+    private var first = true
+
     private val checkCommandRunnable = object : Runnable {
         override fun run() {
+            if (first) {
+                first = false
+                if (!isAppRunning(applicationContext)) {
+                    openFlutterActivity()
+                }
+            }
             checkCommandList()
 
             handler.postDelayed(this, CHECK_COMMAND_INTERVAL)
@@ -167,9 +175,7 @@ class MyBackgroundService : Service() {
         handler.removeCallbacks(checkAliveRunnable)
         handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
         handler.postDelayed(checkAliveRunnable, CHECK_ALIVE_INTERVAL)
-        if (!isAppRunning(applicationContext)) {
-        openFlutterActivity()
-        }
+
         val notification = createNotification()
         startForeground(1001, notification)
         return START_STICKY
