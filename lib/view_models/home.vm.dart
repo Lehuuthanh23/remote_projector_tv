@@ -51,16 +51,15 @@ class HomeViewModel extends BaseViewModel {
     proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
-    bool checkPlayVideo =
-        bool.parse(AppSP.get(AppSPKey.checkPlayVideo) ?? 'false');
+    // bool checkPlayVideo =
+    //     bool.parse(AppSP.get(AppSPKey.checkPlayVideo) ?? 'false');
 
     print('Giá trị: ${proUN.text}');
-    await _fetchPackets();
+
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
     // AppSP.set(AppSPKey.checkPlayVideo, "true");
-    playCamp(checkPlayVideo);
     List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
@@ -91,6 +90,7 @@ class HomeViewModel extends BaseViewModel {
                   Navigator.pop(context);
                 },
               ));
+      playVideo = false;
     } else {
       Navigator.push(viewContext,
           MaterialPageRoute(builder: (viewContext) => VideoUSBPage()));
@@ -208,18 +208,21 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  playCamp(bool check) {
+  playCamp(bool check) async {
     print('Check play camp1');
     playVideo = check;
     if (playVideo == true) {
       print('Check play camp');
       if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
-        Navigator.push(
-            viewContext,
-            MaterialPageRoute(
-                builder: (context) => ViewCamp(
-                      homeViewModel: this,
-                    )));
+        await _fetchPackets();
+        if (AppString.checkPacket) {
+          Navigator.push(
+              viewContext,
+              MaterialPageRoute(
+                  builder: (context) => ViewCamp(
+                        homeViewModel: this,
+                      )));
+        }
       } else {
         nexPlayVideoUSB();
       }
