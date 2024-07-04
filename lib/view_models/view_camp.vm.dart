@@ -25,6 +25,7 @@ import 'home.vm.dart';
 class ViewCampViewModel extends BaseViewModel {
   static const platform = MethodChannel('com.example.usb/serial');
   static const usbEventChannel = EventChannel('com.example.usb/event');
+ // static const platformCommand = MethodChannel('com.example.myapp/command');
 
   VideoPlayerController? _controller;
   VideoPlayerController? get controller => _controller;
@@ -57,6 +58,10 @@ class ViewCampViewModel extends BaseViewModel {
   String onProjector = '';
 
   void init() {
+    //Nghe command tắt video
+    //platformCommand.setMethodCallHandler(_handleMethodCall);
+    //
+
     checkAlive = true;
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
     proPW = AppSP.get(AppSPKey.proPW) ?? '';
@@ -108,7 +113,6 @@ class ViewCampViewModel extends BaseViewModel {
       }
       _updateTime();
     });
-
     usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
   }
 
@@ -157,6 +161,20 @@ class ViewCampViewModel extends BaseViewModel {
     } else if (event == 'USB_CONNECTED') {
       checkDisconnectUSB = false;
       await _getUsbPath();
+    }
+  }
+
+  Future<void> _handleMethodCall(MethodCall call) async {
+    print('Nhận lệnh tắt video: (${call.method})');
+    switch (call.method) {
+      case 'stopVideo':
+        {
+          print('Nhận lệnh tắt video');
+          popPage();
+          Navigator.pop(context);
+        }
+      default:
+        throw MissingPluginException('Not implemented: ${call.method}');
     }
   }
 

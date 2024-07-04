@@ -28,6 +28,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.dart.DartExecutor
 
 class MyBackgroundService : Service() {
     companion object {
@@ -35,6 +39,9 @@ class MyBackgroundService : Service() {
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
+
+    private lateinit var channel: MethodChannel
+    private val COMMAND_CHANNEL = "com.example.myapp/command"
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
@@ -55,7 +62,6 @@ class MyBackgroundService : Service() {
                 }
             }
             checkCommandList()
-
             handler.postDelayed(this, CHECK_COMMAND_INTERVAL)
         }
     }
@@ -63,7 +69,6 @@ class MyBackgroundService : Service() {
     private val checkAliveRunnable = object : Runnable {
         override fun run() {
             checkAlive()
-
             handler.postDelayed(this, CHECK_ALIVE_INTERVAL)
         }
     }
@@ -132,8 +137,23 @@ class MyBackgroundService : Service() {
                         url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
                         body = formBody,
                     )
-
                     openFlutterActivity()
+                }
+            }
+
+             CommandEnum.VIDEO_STOP.command -> {
+                Handler(Looper.getMainLooper()).post {
+                channel.invokeMethod("stopVideo", mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+                serviceScope.launch {
+                    val formBody = FormBody.Builder()
+                        .add("return_value", "OK")
+                        .build()
+
+                    apiService.post(
+                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
+                        body = formBody,
+                    )
                 }
             }
 
@@ -156,6 +176,11 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
+        val flutterEngine = FlutterEngine(this)
+        flutterEngine.dartExecutor.executeDartEntrypoint(
+            DartExecutor.DartEntrypoint.createDefault()
+        )
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, COMMAND_CHANNEL)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "my_service_channel"
             val channelName = "My Service Channel"

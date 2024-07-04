@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 import 'observer/navigator_observer.dart';
+import 'services/usb.service.dart';
 import 'view_models/home.vm.dart';
 import 'view/splash/splash.page.dart';
 import 'app/di.dart';
@@ -20,6 +22,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final CustomNavigatorObserver _navigatorObserver = CustomNavigatorObserver();
+  
 
   @override
   Widget build(BuildContext context) {
