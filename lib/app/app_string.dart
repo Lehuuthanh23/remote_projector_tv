@@ -6,5 +6,5 @@ class AppString {
   static const String stopVideo = 'VIDEO_STOP';
   static const String restartVideo = 'VIDEO_RESTART';
   static const String playFromUSB = 'VIDEO_FROMUSB';
-  static const String playFrom = 'VIDEO_FROMCAMP';
+  static const String playFromCamp = 'VIDEO_FROMCAMP';
 }
