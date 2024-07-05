@@ -63,6 +63,7 @@ class HomeViewModel extends BaseViewModel {
   bool turnOnlPJ = false;
   bool turnOffPJ = false;
   bool openOnStartup = false;
+  bool? pauseVideo;
 
   Future<void> initialise() async {
     methodChannel.setMethodCallHandler(_handleMethodCall);
@@ -110,17 +111,18 @@ class HomeViewModel extends BaseViewModel {
 
   void setCallback(ValueChanged<String>? callback) {
     callbackCommand = callback;
+    pauseVideo = null;
   }
 
-  Future<void> _handleMethodCall(MethodCall call) async {
+  Future<String?> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case AppString.stopVideo:
         callbackCommand?.call(AppString.stopVideo);
-        break;
+        return 'OK';
 
       case AppString.pauseVideo:
         callbackCommand?.call(AppString.pauseVideo);
-        break;
+        return pauseVideo == true ? 'PAUSE' : 'CONTINUE';
 
       case AppString.restartVideo:
         if (callbackCommand != null) {
@@ -130,7 +132,7 @@ class HomeViewModel extends BaseViewModel {
         await getCampSchedule();
         playCamp(true);
 
-        break;
+        return 'OK';
 
       case AppString.playFromUSB:
         AppSP.set(AppSPKey.typePlayVideo, 'USB');
@@ -139,8 +141,11 @@ class HomeViewModel extends BaseViewModel {
           callbackCommand!.call(AppString.stopVideo);
         }
 
-        playCamp(true);
-        break;
+        Future.delayed(const Duration(seconds: 1), () {
+          playCamp(true);
+        });
+
+        return 'OK';
 
       case AppString.playFromCamp:
         AppSP.set(AppSPKey.typePlayVideo, 'Chiendich');
@@ -149,10 +154,15 @@ class HomeViewModel extends BaseViewModel {
           callbackCommand!.call(AppString.stopVideo);
         }
 
-        await getCampSchedule();
-        playCamp(true);
-        break;
+        Future.delayed(const Duration(seconds: 1), () async {
+          await getCampSchedule();
+          playCamp(true);
+        });
+
+        return 'OK';
     }
+
+    return null;
   }
 
   void toggleDrawer() {

@@ -136,6 +136,8 @@ class ViewCampViewModel extends BaseViewModel {
   void onCommandInvoke(String command) {
     if (command == AppString.pauseVideo) {
       pauseVideo = !pauseVideo;
+      homeViewModel.pauseVideo = pauseVideo;
+
       if (pauseVideo) {
         _controller?.pause();
       } else {

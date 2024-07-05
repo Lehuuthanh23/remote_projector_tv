@@ -123,47 +123,57 @@ open class MyBackgroundService : Service() {
                 }
             }
 
-            CommandEnum.VIDEO_STOP.command -> {
-                Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(CommandEnum.VIDEO_STOP.command, mapOf("yourParameter" to "Hello from Kotlin"))
-                }
+            CommandEnum.VIDEO_STOP.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_STOP,
+                command.cmdId
+            )
 
-                replayCommand(value = "OK", commandId = command.cmdId)
-            }
+            CommandEnum.VIDEO_PAUSE.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_PAUSE,
+                command.cmdId
+            )
 
-            CommandEnum.VIDEO_PAUSE.command -> {
-                Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(CommandEnum.VIDEO_PAUSE.command, mapOf("yourParameter" to "Hello from Kotlin"))
-                }
+            CommandEnum.VIDEO_RESTART.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_RESTART,
+                command.cmdId
+            )
 
-                replayCommand(value = "OK", commandId = command.cmdId)
-            }
+            CommandEnum.VIDEO_FROMUSB.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_FROMUSB,
+                command.cmdId
+            )
 
-            CommandEnum.VIDEO_RESTART.command -> {
-                Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(CommandEnum.VIDEO_RESTART.command, mapOf("yourParameter" to "Hello from Kotlin"))
-                }
-
-                replayCommand(value = "OK", commandId = command.cmdId)
-            }
-
-            CommandEnum.VIDEO_FROMUSB.command -> {
-                Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(CommandEnum.VIDEO_FROMUSB.command, mapOf("yourParameter" to "Hello from Kotlin"))
-                }
-
-                replayCommand(value = "OK", commandId = command.cmdId)
-            }
-
-            CommandEnum.VIDEO_FROMCAMP.command -> {
-                Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(CommandEnum.VIDEO_FROMCAMP.command, mapOf("yourParameter" to "Hello from Kotlin"))
-                }
-
-                replayCommand(value = "OK", commandId = command.cmdId)
-            }
+            CommandEnum.VIDEO_FROMCAMP.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_FROMCAMP,
+                command.cmdId
+            )
 
             else -> {}
+        }
+    }
+
+    private fun invokeCommandToFlutter(commandEnum: CommandEnum, commandId: String?) {
+        Handler(Looper.getMainLooper()).post {
+            channel.invokeMethod(
+                commandEnum.command,
+                mapOf("command" to commandEnum.command),
+                object : MethodChannel.Result {
+                    override fun success(result: Any?) {
+                        val returnValue: String? = result?.toString()
+
+                        if (returnValue != null) {
+                            replayCommand(value = returnValue, commandId = commandId)
+                        }
+                    }
+
+                    override fun error(
+                        errorCode: String,
+                        errorMessage: String?,
+                        errorDetails: Any?
+                    ) {}
+
+                    override fun notImplemented() {}
+                })
         }
     }
 
@@ -180,6 +190,7 @@ open class MyBackgroundService : Service() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun isAppRunning(context: Context): Boolean {
         val activityClass = MainActivity::class.java
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
