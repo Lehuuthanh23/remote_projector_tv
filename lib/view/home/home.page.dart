@@ -4,6 +4,7 @@ import 'package:play_box/main.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../app/app_utils.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/buttonCustom.dart';
 import '../timer_clock/timer_clock.dart';
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
       disposeViewModel: false,
-      viewModelBuilder: () => MyApp.homeViewModel,
+      viewModelBuilder: () => HomeViewModel(),
       onViewModelReady: (viewModel) async {
         viewModel.viewContext = context;
         await viewModel.initialise();
