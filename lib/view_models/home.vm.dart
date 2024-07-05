@@ -122,7 +122,7 @@ class HomeViewModel extends BaseViewModel {
 
       case AppString.pauseVideo:
         callbackCommand?.call(AppString.pauseVideo);
-        return pauseVideo == true ? 'PAUSE' : 'CONTINUE';
+        return pauseVideo == true ? 'PAUSE_VIDEO' : 'CONTINUE_VIDEO';
 
       case AppString.restartVideo:
         if (callbackCommand != null) {
