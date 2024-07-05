@@ -26,7 +26,6 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
         viewModelBuilder: () => widget.homeVM,
         onViewModelReady: (viewModel) async {
           _selectedSource = AppSP.get(AppSPKey.typePlayVideo);
-          viewModel.viewContext = context;
           checkConnect = await AppUtils.checkConnect();
           viewModel.notifyListeners();
         },
@@ -208,7 +207,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                 nextFocusNode:
                                                     viewModel.focusNodeProPW,
                                                 label: 'ProUN',
-                                                controller: viewModel.proUN,
+                                                controller: viewModel.proUNController,
                                                 enabled: (AppSP.get(AppSPKey
                                                                 .proUN) ??
                                                             '') !=
@@ -223,9 +222,9 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                 focusNode:
                                                     viewModel.focusNodeProPW,
                                                 nextFocusNode:
-                                                    viewModel.focusProjectorIP,
+                                                    viewModel.focusNodeProIP,
                                                 label: 'ProPW',
-                                                controller: viewModel.proPW,
+                                                controller: viewModel.proPWController,
                                                 enabled: (AppSP.get(AppSPKey
                                                                 .proPW) ??
                                                             '') !=
@@ -238,12 +237,12 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                             Expanded(
                                               child: TextFieldSetting(
                                                 focusNode:
-                                                    viewModel.focusProjectorIP,
+                                                    viewModel.focusNodeProIP,
                                                 nextFocusNode:
-                                                    viewModel.focusOpenPJ,
+                                                    viewModel.focusNodeOpenPJ,
                                                 label: 'ProjectorIP',
                                                 controller:
-                                                    viewModel.projectorIP,
+                                                    viewModel.proIPController,
                                                 enabled: (AppSP.get(AppSPKey
                                                                 .projectorIP) ??
                                                             '') !=
@@ -270,7 +269,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       activeColor:
                                                           Colors.transparent,
                                                       focusNode:
-                                                          viewModel.focusOpenPJ,
+                                                          viewModel.focusNodeOpenPJ,
                                                       value: widget
                                                           .homeVM.turnOnlPJ,
                                                       onChanged: (bool? value) {
@@ -290,7 +289,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       activeColor:
                                                           Colors.transparent,
                                                       focusNode: viewModel
-                                                          .focusClosePJ,
+                                                          .focusNodeClosePJ,
                                                       value: widget
                                                           .homeVM.turnOffPJ,
                                                       onChanged: (bool? value) {
@@ -310,7 +309,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       activeColor:
                                                           Colors.transparent,
                                                       focusNode: viewModel
-                                                          .focusOpenOnStart,
+                                                          .focusNodeOpenOnStart,
                                                       value: widget
                                                           .homeVM.openOnStartup,
                                                       onChanged: (bool? value) {
@@ -342,7 +341,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                             const Text('USB'),
                                                         leading: Radio<String>(
                                                           focusNode: viewModel
-                                                              .focusUSB,
+                                                              .focusNodeUSB,
                                                           value: 'USB',
                                                           groupValue:
                                                               _selectedSource,
@@ -367,7 +366,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                           groupValue:
                                                               _selectedSource,
                                                           focusNode: viewModel
-                                                              .focusCamp,
+                                                              .focusNodeCamp,
                                                           onChanged:
                                                               (String? value) {
                                                             setState(() {

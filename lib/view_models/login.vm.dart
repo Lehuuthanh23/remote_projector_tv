@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:play_box/view_models/home.vm.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/convert_md5.dart';
@@ -8,36 +7,52 @@ import '../request/authentication/authentication.request.dart';
 import '../view/home/home.page.dart';
 
 class LoginViewModel extends BaseViewModel {
-  final BuildContext viewContext;
+  LoginViewModel({required this.context});
 
-  LoginViewModel({required this.viewContext});
+  final BuildContext context;
+
+  AuthenticationRequest request = AuthenticationRequest();
 
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  AuthenticationRequest request = AuthenticationRequest();
-  String? errorMessage;
+
   FocusNode emailFocusNode = FocusNode();
   FocusNode passwordFocusNode = FocusNode();
   FocusNode loginButtonFocusNode = FocusNode();
   FocusNode exitButtonFocusNode = FocusNode();
 
-  Future<void> login() async {
+  String? errorMessage;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
+    loginButtonFocusNode.dispose();
+    exitButtonFocusNode.dispose();
+
+    super.dispose();
+  }
+
+  Future<void> handleLogin() async {
     if (!formKey.currentState!.validate()) {
       return;
     }
-    print('Nhấn đăng nhập');
+
     final email = emailController.text;
     final password = convertToMD5(passwordController.text);
 
     final user = LoginRequestModel(email: email, password: password);
-    final error = await request.login(viewContext, user);
-    print('Làm xong đăng nhập');
+    final error = await request.login(context, user);
+
     if (error != null) {
       errorMessage = error;
-    } else if (viewContext.mounted) {
+    } else if (context.mounted) {
       Navigator.pushAndRemoveUntil(
-        viewContext,
+        context,
         MaterialPageRoute(builder: (context) => const HomePage()),
         (route) => false,
       );

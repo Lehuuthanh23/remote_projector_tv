@@ -4,15 +4,18 @@ import '../../view_models/home.vm.dart';
 import '../../view_models/timer_clock.vm.dart';
 
 class TimerClock extends StatelessWidget {
-  HomeViewModel homeViewModel;
-  TimerClock({required this.homeViewModel});
+  final HomeViewModel homeViewModel;
+
+  const TimerClock({super.key, required this.homeViewModel});
+
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<TimerClockViewModel>.reactive(
-      viewModelBuilder: () => TimerClockViewModel(),
+      viewModelBuilder: () => TimerClockViewModel(
+        viewContext: context,
+        homeViewModel: homeViewModel,
+      ),
       onViewModelReady: (model) {
-        model.homeViewModel = homeViewModel;
-        model.viewContext = context;
         model.initialize();
       },
       builder: (context, model, child) => Center(

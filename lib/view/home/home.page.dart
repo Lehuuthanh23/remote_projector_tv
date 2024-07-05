@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:play_box/main.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
-import '../../app/app_utils.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/buttonCustom.dart';
 import '../timer_clock/timer_clock.dart';
@@ -23,14 +21,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
       disposeViewModel: false,
-      viewModelBuilder: () => HomeViewModel(),
+      viewModelBuilder: () => HomeViewModel(context: context),
       onViewModelReady: (viewModel) async {
-        viewModel.viewContext = context;
         await viewModel.initialise();
         viewModel.playCamp(true);
       },
       builder: (context, viewModel, child) {
-        viewModel.viewContext = context;
         return SafeArea(
           child: Scaffold(
             body: Stack(
@@ -118,16 +114,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             title: 'CÀI ĐẶT',
                             textSize: 15,
                           ),
-                          // ButtomCustom(
-                          //   width: 150,
-                          //   padding: const EdgeInsets.symmetric(vertical: 10),
-                          //   onPressed: () async {
-                          //     viewModel.nexPlayVideoUSB();
-                          //   },
-                          //   title: 'PHÁT VIDEO USB',
-                          //   isSplashScreen: true,
-                          //   textSize: 15,
-                          // ),
                           ButtomCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -178,7 +164,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                 // Drawer tùy chỉnh
                 AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 500),
                   left: viewModel.isDrawerOpen
                       ? 0
                       : -MediaQuery.of(context).size.width,
@@ -189,9 +175,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: Stack(
                       children: [
                         Container(
-                          width: MediaQuery.of(context).size.width / 2 > 200
+                          width: MediaQuery.of(context).size.width > MediaQuery.of(context).size.height
                               ? MediaQuery.of(context).size.width / 2
-                              : 200,
+                              : MediaQuery.of(context).size.width,
                           color: Colors.black26,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 60),
@@ -261,7 +247,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 ),
                 // Nút mở Drawer
                 AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 500),
                   left: viewModel.isDrawerOpen ? -50 : 10,
                   top: 20,
                   child: AnimatedOpacity(

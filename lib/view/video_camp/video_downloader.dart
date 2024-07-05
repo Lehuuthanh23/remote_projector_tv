@@ -1,13 +1,7 @@
 import 'dart:isolate';
-import 'dart:ui';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
 
 class VideoDownloader {
-  static const String _isolateName = "video_downloader_isolate";
-
   static void downloadVideo(SendPort sendPort) async {
     final port = ReceivePort();
     sendPort.send(port.sendPort);
