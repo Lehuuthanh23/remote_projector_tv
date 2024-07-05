@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:play_box/view_models/home.vm.dart';
-import 'package:velocity_x/velocity_x.dart';
 import 'package:video_player/video_player.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 import '../../app/app_string.dart';
 import '../../app/app_utils.dart';
+import '../../view_models/home.vm.dart';
 
 class VideoUSBPage extends StatefulWidget {
   final HomeViewModel homeViewModel;
 
-  const VideoUSBPage({super.key, required this.homeViewModel});
+  const VideoUSBPage({
+    super.key,
+    required this.homeViewModel,
+  });
 
   @override
   State<VideoUSBPage> createState() => _VideoUSBPageState();
@@ -20,10 +20,12 @@ class VideoUSBPage extends StatefulWidget {
 
 class _VideoUSBPageState extends State<VideoUSBPage> {
   late VideoPlayerController _controller;
+
   List<File> _videoFiles = [];
+  List<String> usbPaths = [];
+
   int _currentVideoIndex = 0;
   bool isPlaying = false;
-  List<String> usbPaths = [];
 
   @override
   void initState() {
@@ -32,6 +34,17 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
     widget.homeViewModel.setCallback(onCommandInvoke);
 
     _loadVideos();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    _videoFiles.clear();
+    usbPaths.clear();
+    widget.homeViewModel.setCallback(null);
+
+    super.dispose();
   }
 
   void onCommandInvoke(String command) {
@@ -108,14 +121,6 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
         setState(() {});
         _controller.play();
       });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    widget.homeViewModel.setCallback(null);
-
-    super.dispose();
   }
 
   @override

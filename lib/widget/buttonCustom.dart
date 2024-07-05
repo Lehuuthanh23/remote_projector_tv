@@ -14,7 +14,7 @@ class ButtomCustom extends StatefulWidget {
   final FocusNode? focusNode;
 
   const ButtomCustom({
-    Key? key,
+    super.key,
     required this.onPressed,
     this.isSplashScreen,
     required this.title,
@@ -25,10 +25,10 @@ class ButtomCustom extends StatefulWidget {
     this.color,
     this.width,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
-  _ButtomCustomState createState() => _ButtomCustomState();
+  State<ButtomCustom> createState() => _ButtomCustomState();
 }
 
 class _ButtomCustomState extends State<ButtomCustom> {

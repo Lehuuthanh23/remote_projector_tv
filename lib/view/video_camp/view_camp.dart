@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:play_box/view/video_camp/ads.page.dart';
-import 'package:play_box/view_models/home.vm.dart';
 import 'package:stacked/stacked.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../app/app_sp.dart';
-import '../../app/app_sp_key.dart';
-import '../../models/camp/camp_schedule.dart';
+import '../../view_models/home.vm.dart';
 import '../../view_models/view_camp.vm.dart';
+import 'ads.page.dart';
 
 class ViewCamp extends StatefulWidget {
   HomeViewModel homeViewModel;
+
   ViewCamp({
     super.key,
     required this.homeViewModel,

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ADSPage extends StatelessWidget {
-  const ADSPage({
-    super.key,
-  });
+  const ADSPage({super.key});
 
   @override
   Widget build(BuildContext context) {

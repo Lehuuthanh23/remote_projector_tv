@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:play_box/app/app_string.dart';
-import 'package:play_box/view/video_camp/view_camp.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
+import '../app/app_string.dart';
 import '../app/app_utils.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
@@ -22,44 +20,51 @@ import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
 import '../services/usb.service.dart';
 import '../view/splash/splash.page.dart';
+import '../view/video_camp/view_camp.dart';
 import '../view/video_camp/view_camp_usb.dart';
 import '../widget/pop_up.dart';
 
 class HomeViewModel extends BaseViewModel {
-  late BuildContext viewContext;
+  HomeViewModel({required this.context});
+
+  final BuildContext context;
 
   final MethodChannel methodChannel =
       const MethodChannel('com.example.usb/serial');
-  CampRequest campRequest = CampRequest();
-  bool turnOnlPJ = false;
-  bool turnOffPJ = false;
-  bool openOnStartup = false;
-  List<CampModel> camps = [];
-  List<CampSchedule> lstCampSchedule = [];
-  User currentUser = User();
-  DeviceInfoModel? deviceInfo;
-  DeviceRequest deviceRequest = DeviceRequest();
-  TextEditingController proUN = TextEditingController();
-  TextEditingController proPW = TextEditingController();
-  TextEditingController projectorIP = TextEditingController();
-  DeviceInfoService deviceInfoService = DeviceInfoService();
-  Dio dio = Dio();
-  List<PacketModel> packets = [];
-  bool isDrawerOpen = false;
-  bool playVideo = true;
+
+  final CampRequest _campRequest = CampRequest();
+  final DeviceRequest _deviceRequest = DeviceRequest();
+  final DeviceInfoService _deviceInfoService = DeviceInfoService();
+
+  TextEditingController proUNController = TextEditingController();
+  TextEditingController proPWController = TextEditingController();
+  TextEditingController proIPController = TextEditingController();
 
   final focusNodeProUN = FocusNode();
   final focusNodeProPW = FocusNode();
-  final focusProjectorIP = FocusNode();
-  final focusOpenPJ = FocusNode();
-  final focusClosePJ = FocusNode();
-  final focusOpenOnStart = FocusNode();
-  final focusUSB = FocusNode();
-  final focusCamp = FocusNode();
+  final focusNodeProIP = FocusNode();
+  final focusNodeOpenPJ = FocusNode();
+  final focusNodeClosePJ = FocusNode();
+  final focusNodeOpenOnStart = FocusNode();
+  final focusNodeUSB = FocusNode();
+  final focusNodeCamp = FocusNode();
 
   ValueChanged<String>? callbackCommand;
 
-  initialise() async {
+  List<CampModel> camps = [];
+  List<CampSchedule> lstCampSchedule = [];
+  List<PacketModel> packets = [];
+
+  User currentUser = User();
+  DeviceInfoModel? deviceInfo;
+
+  bool isDrawerOpen = false;
+  bool playVideo = true;
+  bool turnOnlPJ = false;
+  bool turnOffPJ = false;
+  bool openOnStartup = false;
+
+  Future<void> initialise() async {
     methodChannel.setMethodCallHandler(_handleMethodCall);
 
     String? info = AppSP.get(AppSPKey.user_info);
@@ -68,21 +73,39 @@ class HomeViewModel extends BaseViewModel {
       await AppUtils.platformChannel.invokeMethod(
           'saveUser', {AppSPKey.user_info: currentUser.customerId});
     }
-    proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
-    proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
-    projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
-
-    print('Giá trị: ${proUN.text}');
+    proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
+    proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
+    proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
 
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
-    List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
-    List<Map<String, dynamic>> jsonList =
-        lstCampSchedule.map((camp) => camp.toJson()).toList();
-    String lstCampScheduleString = jsonEncode(jsonList);
-    AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
+
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    proUNController.dispose();
+    proPWController.dispose();
+    proIPController.dispose();
+
+    focusNodeProUN.dispose();
+    focusNodeProPW.dispose();
+    focusNodeProIP.dispose();
+    focusNodeOpenPJ.dispose();
+    focusNodeClosePJ.dispose();
+    focusNodeOpenOnStart.dispose();
+    focusNodeUSB.dispose();
+    focusNodeCamp.dispose();
+
+    camps.clear();
+    lstCampSchedule.clear();
+    packets.clear();
+
+    callbackCommand = null;
+
+    super.dispose();
   }
 
   void setCallback(ValueChanged<String>? callback) {
@@ -94,49 +117,75 @@ class HomeViewModel extends BaseViewModel {
       case AppString.stopVideo:
         callbackCommand?.call(AppString.stopVideo);
         break;
+
       case AppString.pauseVideo:
         callbackCommand?.call(AppString.pauseVideo);
         break;
+
       case AppString.restartVideo:
+        if (callbackCommand != null) {
+          callbackCommand?.call(AppString.stopVideo);
+        }
+
+        await getCampSchedule();
+        playCamp(true);
 
         break;
+
       case AppString.playFromUSB:
+        AppSP.set(AppSPKey.typePlayVideo, 'USB');
 
+        if (callbackCommand != null) {
+          callbackCommand!.call(AppString.stopVideo);
+        }
+
+        playCamp(true);
         break;
-      case AppString.playFromCamp:
 
+      case AppString.playFromCamp:
+        AppSP.set(AppSPKey.typePlayVideo, 'Chiendich');
+
+        if (callbackCommand != null) {
+          callbackCommand!.call(AppString.stopVideo);
+        }
+
+        await getCampSchedule();
+        playCamp(true);
         break;
     }
   }
-
 
   void toggleDrawer() {
     isDrawerOpen = !isDrawerOpen;
     notifyListeners();
   }
 
-  void setContext(BuildContext ctx) {
-    viewContext = ctx;
-  }
-
-  nexPlayVideoUSB() async {
+  Future<void> nexPlayVideoUSB() async {
     List<String> usbPaths = await UsbService().getUsbPath();
-    if (usbPaths.isEmpty && viewContext.mounted) {
+    if (usbPaths.isEmpty && context.mounted) {
       showDialog(
-          context: viewContext,
-          builder: (context) => PopUpWidget(
-                icon: Image.asset("assets/images/ic_error.png"),
-                title: 'Không có usb kết nối',
-                leftText: 'Xác nhận',
-                onLeftTap: () {
-                  Navigator.pop(context);
-                },
-              ),
+        context: context,
+        builder: (context) {
+          Future.delayed(const Duration(seconds: 3), () {
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_error.png"),
+            title: 'Không có usb kết nối',
+            leftText: 'Xác nhận',
+            onLeftTap: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
       );
       playVideo = false;
-    } else if (viewContext.mounted) {
+    } else if (context.mounted) {
       Navigator.push(
-        viewContext,
+        context,
         MaterialPageRoute(
             builder: (viewContext) => VideoUSBPage(homeViewModel: this)),
       );
@@ -153,59 +202,73 @@ class HomeViewModel extends BaseViewModel {
 
   void _showExpiredDialog() {
     showDialog(
-        context: viewContext,
-        builder: (context) => PopUpWidget(
-              icon: Image.asset("assets/images/ic_error.png"),
-              title: 'Gói cước hết hạn',
-              leftText: 'Xác nhận',
-              onLeftTap: () {
-                Navigator.pop(context);
-              },
-            ),
+      context: context,
+      builder: (context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        });
+
+        return PopUpWidget(
+          icon: Image.asset("assets/images/ic_error.png"),
+          title: 'Gói cước hết hạn',
+          leftText: 'Xác nhận',
+          onLeftTap: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 
-  signOut() async {
+  Future<void> signOut() async {
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.user_info, '');
     AppSP.set(AppSPKey.lstCampSchedule, '');
 
     await AppUtils.platformChannel.invokeMethod('clearUser');
 
-    if (viewContext.mounted) {
+    if (context.mounted) {
       Navigator.pushAndRemoveUntil(
-          viewContext,
+          context,
           MaterialPageRoute(
             builder: (context) => const SplashPage(),
-          ), (router) => false);
+          ),
+          (router) => false);
     }
   }
 
-  getMyCamp() async {
-    camps = await campRequest.getAllCampByIdCustomer();
+  Future<void> getMyCamp() async {
+    camps = await _campRequest.getAllCampByIdCustomer();
     notifyListeners();
   }
 
-  getCampSchedule() async {
-    lstCampSchedule = await campRequest.getCampSchedule();
+  Future<void> getCampSchedule() async {
+    lstCampSchedule = await _campRequest.getCampSchedule();
+
+    List<Map<String, dynamic>> jsonList =
+    lstCampSchedule.map((camp) => camp.toJson()).toList();
+    String lstCampScheduleString = jsonEncode(jsonList);
+    AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
   }
 
   Future<void> fetchDeviceInfo() async {
-    deviceInfo = await deviceInfoService.getDeviceInfo();
+    deviceInfo = await _deviceInfoService.getDeviceInfo();
     notifyListeners();
   }
 
   Future<void> connectDevice() async {
     bool checkConnect =
-        await deviceRequest.connectDevice(deviceInfo!, currentUser);
-    if (viewContext.mounted) {
+        await _deviceRequest.connectDevice(deviceInfo!, currentUser);
+    if (context.mounted) {
       if (checkConnect) {
-        Navigator.pop(viewContext);
-        AppSP.set(AppSPKey.proPW, proPW.text);
-        AppSP.set(AppSPKey.proUN, proUN.text);
-        AppSP.set(AppSPKey.projectorIP, projectorIP.text);
+        Navigator.pop(context);
+        AppSP.set(AppSPKey.proPW, proPWController.text);
+        AppSP.set(AppSPKey.proUN, proUNController.text);
+        AppSP.set(AppSPKey.projectorIP, proIPController.text);
         showDialog(
-          context: viewContext,
+          context: context,
           builder: (BuildContext context) {
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_success.png"),
@@ -219,7 +282,7 @@ class HomeViewModel extends BaseViewModel {
         );
       } else {
         showDialog(
-          context: viewContext,
+          context: context,
           builder: (BuildContext context) {
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_error.png"),
@@ -235,37 +298,32 @@ class HomeViewModel extends BaseViewModel {
     }
   }
 
-  turnOnl() {
+  void turnOnl() {
     turnOnlPJ = !turnOnlPJ;
     AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());
-    print('Giá trị lưu mở pj: ${AppSP.get(AppSPKey.turnOnlPJ)}');
     notifyListeners();
   }
 
-  turnOff() {
+  void turnOff() {
     turnOffPJ = !turnOffPJ;
     AppSP.set(AppSPKey.turnOfflPJ, turnOffPJ.toString());
-    print('Giá trị lưu tắt pj: ${AppSP.get(AppSPKey.turnOfflPJ)}');
     notifyListeners();
   }
 
-  openOnStart() {
+  void openOnStart() {
     openOnStartup = !openOnStartup;
     AppSP.set(AppSPKey.openPJOnStartup, openOnStartup.toString());
-    print('Giá trị mở khi khởi động: ${AppSP.get(AppSPKey.openPJOnStartup)}');
     notifyListeners();
   }
 
-  playCamp(bool check) async {
-    print('Check play camp1');
+  Future<void> playCamp(bool check) async {
     playVideo = check;
     if (playVideo == true) {
-      print('Check play camp');
       if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
         await _fetchPackets();
-        if (AppString.checkPacket && viewContext.mounted) {
+        if (AppString.checkPacket && context.mounted) {
           Navigator.push(
-              viewContext,
+              context,
               MaterialPageRoute(
                   builder: (context) => ViewCamp(
                         homeViewModel: this,
