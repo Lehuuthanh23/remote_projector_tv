@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:play_box/view_models/home.vm.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -14,6 +16,10 @@ import '../view/authentication/login.page.dart';
 import '../view/home/home.page.dart';
 
 class SplashViewModel extends BaseViewModel {
+  BuildContext context;
+
+  SplashViewModel({required this.context});
+
   bool checkLogin = false;
   String token = "";
   String userJson = "";
@@ -55,22 +61,15 @@ class SplashViewModel extends BaseViewModel {
   }
 
   void _navigateToNextPage(BuildContext context) {
-    Future.wait([
-      Future.delayed(const Duration(seconds: 1)),
-      _checkLogin(),
-    ]).then((_) async {
-      if (checkLogin) {
-        await AppUtils.platformChannel.invokeMethod(
-            'saveUser', {AppSPKey.user_info: idCustomer});
-        if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const HomePage()),
-                  (router) => false);
-        }
-      } else {
+    _checkLogin();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-            (router) => false);
+            MaterialPageRoute(
+                builder: (context) => checkLogin
+                    ? const HomePage()
+                    : const LoginPage()),
+                (router) => false);
       }
     });
   }

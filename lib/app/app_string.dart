@@ -1,8 +1,10 @@
 class AppString {
   AppString._();
   static bool checkPacket = false;
-  static String restartApp = 'RESTART_APP';
-  static String restartDevice = 'RESTART_DEVICE';
-  static String getTimeNow = 'GET_TIMENOW';
-  static String setTimeNow = 'SET_TIMENOW';
+
+  static const String pauseVideo = 'VIDEO_PAUSE';
+  static const String stopVideo = 'VIDEO_STOP';
+  static const String restartVideo = 'VIDEO_RESTART';
+  static const String playFromUSB = 'VIDEO_FROMUSB';
+  static const String playFrom = 'VIDEO_FROMCAMP';
 }

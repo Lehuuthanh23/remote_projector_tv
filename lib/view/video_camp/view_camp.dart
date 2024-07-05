@@ -27,9 +27,9 @@ class _ViewCampState extends State<ViewCamp> {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
       viewModelBuilder: () => ViewCampViewModel(
         context: context,
+        homeViewModel: widget.homeViewModel,
       ),
       onViewModelReady: (viewModel) {
-        viewModel.homeViewModel = widget.homeViewModel;
         viewModel.init();
       },
       builder: (context, viewModel, child) {

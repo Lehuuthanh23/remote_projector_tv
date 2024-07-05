@@ -23,7 +23,6 @@ class ADSPage extends StatelessWidget {
       alignment: Alignment.center,
       child: Center(
         child: SizedBox(
-          height: MediaQuery.of(context).size.height / 2,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

@@ -32,6 +32,8 @@ import '../widget/pop_up.dart';
 class HomeViewModel extends BaseViewModel {
   late BuildContext viewContext;
 
+  final MethodChannel methodChannel =
+      const MethodChannel('com.example.usb/serial');
   CampRequest campRequest = CampRequest();
   bool turnOnlPJ = false;
   bool turnOffPJ = false;
@@ -49,6 +51,7 @@ class HomeViewModel extends BaseViewModel {
   List<PacketModel> packets = [];
   bool isDrawerOpen = false;
   bool playVideo = true;
+
   ValueNotifier<String> currentCommand = ValueNotifier('hahaha');
   final focusNodeProUN = FocusNode();
   final focusNodeProPW = FocusNode();
@@ -59,29 +62,52 @@ class HomeViewModel extends BaseViewModel {
   final focusUSB = FocusNode();
   final focusCamp = FocusNode();
 
+  ValueChanged<String>? callbackCommand;
+
+
   initialise() async {
+    methodChannel.setMethodCallHandler(_handleMethodCall);
+
     String? info = AppSP.get(AppSPKey.user_info);
     if (info != null) {
       currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+      await AppUtils.platformChannel.invokeMethod(
+          'saveUser', {AppSPKey.user_info: currentUser.customerId});
     }
     proUN.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPW.text = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP.text = AppSP.get(AppSPKey.projectorIP) ?? '';
-    // bool checkPlayVideo =
-    //     bool.parse(AppSP.get(AppSPKey.checkPlayVideo) ?? 'false');
 
     print('Giá trị: ${proUN.text}');
 
     await fetchDeviceInfo();
     await getMyCamp();
     await getCampSchedule();
-    // AppSP.set(AppSPKey.checkPlayVideo, "true");
     List<CampSchedule> lstCampSchedule = await CampRequest().getCampSchedule();
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
     notifyListeners();
+  }
+
+
+  void setCallback(ValueChanged<String>? callback) {
+    callbackCommand = callback;
+  }
+
+  Future<void> _handleMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case AppString.stopVideo:
+        callbackCommand?.call(AppString.stopVideo);
+        break;
+      case AppString.pauseVideo:
+        callbackCommand?.call(AppString.pauseVideo);
+        break;
+      case AppString.restartVideo:
+
+        break;
+    }
   }
 
 
@@ -96,7 +122,7 @@ class HomeViewModel extends BaseViewModel {
 
   nexPlayVideoUSB() async {
     List<String> usbPaths = await UsbService().getUsbPath();
-    if (usbPaths.isEmpty) {
+    if (usbPaths.isEmpty && viewContext.mounted) {
       showDialog(
           context: viewContext,
           builder: (context) => PopUpWidget(
@@ -106,11 +132,15 @@ class HomeViewModel extends BaseViewModel {
                 onLeftTap: () {
                   Navigator.pop(context);
                 },
-              ));
+              ),
+      );
       playVideo = false;
-    } else {
-      Navigator.push(viewContext,
-          MaterialPageRoute(builder: (viewContext) => VideoUSBPage()));
+    } else if (viewContext.mounted) {
+      Navigator.push(
+        viewContext,
+        MaterialPageRoute(
+            builder: (viewContext) => VideoUSBPage(homeViewModel: this)),
+      );
     }
   }
 
@@ -132,7 +162,8 @@ class HomeViewModel extends BaseViewModel {
               onLeftTap: () {
                 Navigator.pop(context);
               },
-            ));
+            ),
+    );
   }
 
   signOut() async {
@@ -142,12 +173,13 @@ class HomeViewModel extends BaseViewModel {
 
     await AppUtils.platformChannel.invokeMethod('clearUser');
 
-    Navigator.pushAndRemoveUntil(
-        viewContext,
-        MaterialPageRoute(
-          builder: (context) => const SplashPage(),
-        ),
-        (router) => false);
+    if (viewContext.mounted) {
+      Navigator.pushAndRemoveUntil(
+          viewContext,
+          MaterialPageRoute(
+            builder: (context) => const SplashPage(),
+          ), (router) => false);
+    }
   }
 
   getMyCamp() async {
@@ -167,38 +199,40 @@ class HomeViewModel extends BaseViewModel {
   Future<void> connectDevice() async {
     bool checkConnect =
         await deviceRequest.connectDevice(deviceInfo!, currentUser);
-    if (checkConnect) {
-      Navigator.pop(viewContext);
-      AppSP.set(AppSPKey.proPW, proPW.text);
-      AppSP.set(AppSPKey.proUN, proUN.text);
-      AppSP.set(AppSPKey.projectorIP, projectorIP.text);
-      showDialog(
-        context: viewContext,
-        builder: (BuildContext context) {
-          return PopUpWidget(
-            icon: Image.asset("assets/images/ic_success.png"),
-            title: 'Kết nối thành công',
-            leftText: 'Xác nhận',
-            onLeftTap: () {
-              Navigator.pop(context);
-            },
-          );
-        },
-      );
-    } else {
-      showDialog(
-        context: viewContext,
-        builder: (BuildContext context) {
-          return PopUpWidget(
-            icon: Image.asset("assets/images/ic_error.png"),
-            title: 'Kết nối thất bại',
-            leftText: 'Xác nhận',
-            onLeftTap: () {
-              Navigator.pop(context);
-            },
-          );
-        },
-      );
+    if (viewContext.mounted) {
+      if (checkConnect) {
+        Navigator.pop(viewContext);
+        AppSP.set(AppSPKey.proPW, proPW.text);
+        AppSP.set(AppSPKey.proUN, proUN.text);
+        AppSP.set(AppSPKey.projectorIP, projectorIP.text);
+        showDialog(
+          context: viewContext,
+          builder: (BuildContext context) {
+            return PopUpWidget(
+              icon: Image.asset("assets/images/ic_success.png"),
+              title: 'Kết nối thành công',
+              leftText: 'Xác nhận',
+              onLeftTap: () {
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: viewContext,
+          builder: (BuildContext context) {
+            return PopUpWidget(
+              icon: Image.asset("assets/images/ic_error.png"),
+              title: 'Kết nối thất bại',
+              leftText: 'Xác nhận',
+              onLeftTap: () {
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      }
     }
   }
 
@@ -230,7 +264,7 @@ class HomeViewModel extends BaseViewModel {
       print('Check play camp');
       if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
         await _fetchPackets();
-        if (AppString.checkPacket) {
+        if (AppString.checkPacket && viewContext.mounted) {
           Navigator.push(
               viewContext,
               MaterialPageRoute(

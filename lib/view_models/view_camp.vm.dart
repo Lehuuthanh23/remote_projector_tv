@@ -31,8 +31,9 @@ class ViewCampViewModel extends BaseViewModel {
   String get formattedTime => _formattedTime;
 
   final BuildContext context;
+  final HomeViewModel homeViewModel;
 
-  ViewCampViewModel({required this.context});
+  ViewCampViewModel({required this.context, required this.homeViewModel});
 
   List<String> usbPaths = [];
   int currentIndex = 0;
@@ -51,9 +52,9 @@ class ViewCampViewModel extends BaseViewModel {
   String proPW = '';
   String projectorIP = '';
   int routerStackLength = 0;
-  HomeViewModel? homeViewModel;
   String offProjector = '';
   String onProjector = '';
+  bool pause = false;
 
   void init() {
     checkAlive = true;
@@ -108,6 +109,23 @@ class ViewCampViewModel extends BaseViewModel {
       _updateTime();
     });
     usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
+
+    homeViewModel.setCallback(onCommandInvoke);
+  }
+
+  void onCommandInvoke(String command) {
+    print('Command: $command');
+    if (command == AppString.pauseVideo) {
+      pause = !pause;
+      if (pause) {
+        _controller?.pause();
+      } else {
+        _controller?.play();
+      }
+    } else if (command == AppString.stopVideo) {
+      Navigator.pop(context);
+      popPage();
+    }
   }
 
   void _navigateToADSPage() {
@@ -121,7 +139,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   void popPage() {
     checkAlive = false;
-    homeViewModel!.notifyListeners();
+    homeViewModel.notifyListeners();
     //_controller?.dispose();
     if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
       dio.get(offProjector);
@@ -163,6 +181,8 @@ class ViewCampViewModel extends BaseViewModel {
     checkAlive = false;
     _controller?.dispose();
     _timerTimeShowing.cancel();
+    homeViewModel.setCallback(null);
+
     super.dispose();
   }
 
@@ -250,7 +270,7 @@ class ViewCampViewModel extends BaseViewModel {
             notifyListeners();
             var counter = _waitTime;
             Timer.periodic(const Duration(seconds: 1), (timer) {
-              counter--;
+              counter -= pause ? 0 : 1;
               if (checkDisconnectUSB == true) {
                 timer.cancel();
                 checkDisconnectUSB = null;
@@ -308,7 +328,7 @@ class ViewCampViewModel extends BaseViewModel {
             notifyListeners();
             var counter = _waitTime - timeStart;
             Timer.periodic(const Duration(seconds: 1), (timer) {
-              counter--;
+              counter -= pause ? 0 : 1;
               if (checkDisconnectUSB == true) {
                 timer.cancel();
                 checkDisconnectUSB = null;

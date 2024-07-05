@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
+import '../../app/app_utils.dart';
+import '../../view_models/home.vm.dart';
 import '../../view_models/splash.vm.dart';
 
 class SplashPage extends StatefulWidget {
@@ -14,7 +16,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<SplashViewModel>.reactive(
-      viewModelBuilder: () => SplashViewModel(),
+      viewModelBuilder: () => SplashViewModel(context: context),
       onViewModelReady: (viewModel) async {
         await viewModel.init(context);
       },

@@ -8,8 +8,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -30,15 +28,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.embedding.engine.dart.DartExecutor
 
-class MyBackgroundService : Service() {
+open class MyBackgroundService : Service() {
     companion object {
-        const val TAG = "MyBackgroundService"
-        private const val COMMAND_CHANNEL = "com.example.usb/serial"
+        private const val TAG = "MyBackgroundService"
+        private const val COMMAND_CHANNEL = "com.example.app/command"
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
@@ -117,65 +112,71 @@ class MyBackgroundService : Service() {
             CommandEnum.GET_TIME_NOW.command -> {
                 val timeString = getCurrentTime()
 
-                serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", timeString)
-                        .build()
-
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
-                }
+                replayCommand(value = timeString, commandId = command.cmdId)
             }
 
             CommandEnum.RESTART_APP.command -> {
                 serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", "OK")
-                        .build()
+                    replayCommand(value = "OK", commandId = command.cmdId)
 
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
                     openFlutterActivity()
                 }
             }
 
             CommandEnum.VIDEO_STOP.command -> {
                 Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod("stopVideo", mapOf("yourParameter" to "Hello from Kotlin"))
+                    channel.invokeMethod(CommandEnum.VIDEO_STOP.command, mapOf("yourParameter" to "Hello from Kotlin"))
                 }
-                serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", "OK")
-                        .build()
 
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
-                }
+                replayCommand(value = "OK", commandId = command.cmdId)
             }
 
             CommandEnum.VIDEO_PAUSE.command -> {
                 Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod("pauseVideo", mapOf("yourParameter" to "Hello from Kotlin"))
+                    channel.invokeMethod(CommandEnum.VIDEO_PAUSE.command, mapOf("yourParameter" to "Hello from Kotlin"))
                 }
-                serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", "OK")
-                        .build()
 
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_RESTART.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_RESTART.command, mapOf("yourParameter" to "Hello from Kotlin"))
                 }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_FROMUSB.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_FROMUSB.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_FROMCAMP.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_FROMCAMP.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
             }
 
             else -> {}
+        }
+    }
+
+    private fun replayCommand(value: String, commandId: String?) {
+        serviceScope.launch {
+            val formBody = FormBody.Builder()
+                .add("return_value", value)
+                .build()
+
+            apiService.post(
+                url = "${AppApi.REPLY_COMMAND}/$commandId",
+                body = formBody,
+            )
         }
     }
 
@@ -194,11 +195,7 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
-        val flutterEngine = FlutterEngine(this)
-        flutterEngine.dartExecutor.executeDartEntrypoint(
-            DartExecutor.DartEntrypoint.createDefault()
-        )
-        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, COMMAND_CHANNEL)
+        channel = MainActivity.channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "my_service_channel"
             val channelName = "My Service Channel"
@@ -217,7 +214,7 @@ class MyBackgroundService : Service() {
         handler.removeCallbacks(checkCommandRunnable)
         handler.removeCallbacks(checkAliveRunnable)
         handler.post(checkAliveRunnable)
-        handler.post(checkCommandRunnable)
+        handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
 
         val notification = createNotification()
         startForeground(1001, notification)
