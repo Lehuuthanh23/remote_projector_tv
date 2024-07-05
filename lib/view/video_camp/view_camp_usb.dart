@@ -18,7 +18,7 @@ class VideoUSBPage extends StatefulWidget {
   State<VideoUSBPage> createState() => _VideoUSBPageState();
 }
 
-class _VideoUSBPageState extends State<VideoUSBPage> {
+class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver {
   late VideoPlayerController _controller;
 
   List<File> _videoFiles = [];
@@ -29,15 +29,17 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
 
   @override
   void initState() {
-    super.initState();
-
+    WidgetsBinding.instance.addObserver(this);
     widget.homeViewModel.setCallback(onCommandInvoke);
 
     _loadVideos();
+
+    super.initState();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
 
     _videoFiles.clear();
@@ -45,6 +47,19 @@ class _VideoUSBPageState extends State<VideoUSBPage> {
     widget.homeViewModel.setCallback(null);
 
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      _controller.pause();
+    } else if (state == AppLifecycleState.resumed) {
+      if (isPlaying) {
+        _controller.play();
+      }
+    }
   }
 
   void onCommandInvoke(String command) {

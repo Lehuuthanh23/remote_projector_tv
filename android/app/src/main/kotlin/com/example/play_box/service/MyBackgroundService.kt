@@ -153,6 +153,11 @@ open class MyBackgroundService : Service() {
     }
 
     private fun invokeCommandToFlutter(commandEnum: CommandEnum, commandId: String?) {
+        if (!isAppRunning(applicationContext)) {
+            replayCommand(value = "APP_NOT_SHOW", commandId = commandId)
+
+            return
+        }
         Handler(Looper.getMainLooper()).post {
             channel.invokeMethod(
                 commandEnum.command,

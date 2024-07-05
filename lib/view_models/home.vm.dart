@@ -118,11 +118,17 @@ class HomeViewModel extends BaseViewModel {
     switch (call.method) {
       case AppString.stopVideo:
         callbackCommand?.call(AppString.stopVideo);
-        return 'OK';
+        return callbackCommand == null
+            ? AppString.notPlayVideo
+            : AppString.successCommand;
 
       case AppString.pauseVideo:
         callbackCommand?.call(AppString.pauseVideo);
-        return pauseVideo == true ? 'PAUSE_VIDEO' : 'CONTINUE_VIDEO';
+        return pauseVideo == null
+            ? AppString.notPlayVideo
+            : pauseVideo == true
+                ? AppString.pauseVideoReturn
+                : AppString.continueVideo;
 
       case AppString.restartVideo:
         if (callbackCommand != null) {
@@ -132,7 +138,7 @@ class HomeViewModel extends BaseViewModel {
         await getCampSchedule();
         playCamp(true);
 
-        return 'OK';
+        return AppString.successCommand;
 
       case AppString.playFromUSB:
         AppSP.set(AppSPKey.typePlayVideo, 'USB');
@@ -145,7 +151,7 @@ class HomeViewModel extends BaseViewModel {
           playCamp(true);
         });
 
-        return 'OK';
+        return AppString.successCommand;
 
       case AppString.playFromCamp:
         AppSP.set(AppSPKey.typePlayVideo, 'Chiendich');
@@ -159,7 +165,7 @@ class HomeViewModel extends BaseViewModel {
           playCamp(true);
         });
 
-        return 'OK';
+        return AppString.successCommand;
     }
 
     return null;
@@ -258,7 +264,7 @@ class HomeViewModel extends BaseViewModel {
     lstCampSchedule = await _campRequest.getCampSchedule();
 
     List<Map<String, dynamic>> jsonList =
-    lstCampSchedule.map((camp) => camp.toJson()).toList();
+        lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
     AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
   }

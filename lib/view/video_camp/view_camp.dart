@@ -18,14 +18,42 @@ class ViewCamp extends StatefulWidget {
   State<ViewCamp> createState() => _ViewCampState();
 }
 
-class _ViewCampState extends State<ViewCamp> {
+class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
+  late ViewCampViewModel viewCampViewModel;
+
+  @override
+  void initState() {
+    viewCampViewModel = ViewCampViewModel(
+      context: context,
+      homeViewModel: widget.homeViewModel,
+    );
+    WidgetsBinding.instance.addObserver(this);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      viewCampViewModel.pauseVideo = true;
+    } else if (state == AppLifecycleState.resumed) {
+      viewCampViewModel.pauseVideo = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
-      viewModelBuilder: () => ViewCampViewModel(
-        context: context,
-        homeViewModel: widget.homeViewModel,
-      ),
+      viewModelBuilder: () => viewCampViewModel,
       onViewModelReady: (viewModel) {
         viewModel.init();
       },
