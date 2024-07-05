@@ -6,7 +6,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:play_box/app/app_string.dart';
+import 'package:play_box/view/home/home.page.dart';
 import 'package:play_box/view/video_camp/view_camp.dart';
 import 'package:stacked/stacked.dart';
 
@@ -47,6 +49,15 @@ class HomeViewModel extends BaseViewModel {
   List<PacketModel> packets = [];
   bool isDrawerOpen = false;
   bool playVideo = true;
+  ValueNotifier<String> currentCommand = ValueNotifier('hahaha');
+  final focusNodeProUN = FocusNode();
+  final focusNodeProPW = FocusNode();
+  final focusProjectorIP = FocusNode();
+  final focusOpenPJ = FocusNode();
+  final focusClosePJ = FocusNode();
+  final focusOpenOnStart = FocusNode();
+  final focusUSB = FocusNode();
+  final focusCamp = FocusNode();
 
   initialise() async {
     String? info = AppSP.get(AppSPKey.user_info);
@@ -73,22 +84,6 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  void setMethodCall(Future<dynamic> Function(MethodCall)? methodCall) {
-    AppUtils.platformChannel.setMethodCallHandler(methodCall ?? _handleMethodCall);
-  }
-
-  Future<void> _handleMethodCall(MethodCall call) async {
-    print('Home call - ${call.method}');
-    switch (call.method) {
-      case 'yourFlutterMethod':
-        String param = call.arguments['yourParameter'];
-        // Thực hiện lệnh Flutter của bạn ở đây
-        print("Received parameter from Kotlin: $param");
-    // Trả về kết quả (nếu cần)
-      default:
-        throw MissingPluginException('Not implemented: ${call.method}');
-    }
-  }
 
   void toggleDrawer() {
     isDrawerOpen = !isDrawerOpen;

@@ -16,17 +16,22 @@ class LoginViewModel extends BaseViewModel {
   final passwordController = TextEditingController();
   AuthenticationRequest request = AuthenticationRequest();
   String? errorMessage;
+  FocusNode emailFocusNode = FocusNode();
+  FocusNode passwordFocusNode = FocusNode();
+  FocusNode loginButtonFocusNode = FocusNode();
+  FocusNode exitButtonFocusNode = FocusNode();
 
   Future<void> login() async {
     if (!formKey.currentState!.validate()) {
       return;
     }
+    print('Nhấn đăng nhập');
     final email = emailController.text;
     final password = convertToMD5(passwordController.text);
 
     final user = LoginRequestModel(email: email, password: password);
     final error = await request.login(viewContext, user);
-
+    print('Làm xong đăng nhập');
     if (error != null) {
       errorMessage = error;
     } else if (viewContext.mounted) {
@@ -36,7 +41,6 @@ class LoginViewModel extends BaseViewModel {
         (route) => false,
       );
     }
-
     notifyListeners();
   }
 }
