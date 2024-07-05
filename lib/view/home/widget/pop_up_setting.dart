@@ -203,6 +203,10 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                           children: [
                                             Expanded(
                                               child: TextFieldSetting(
+                                                focusNode:
+                                                    viewModel.focusNodeProUN,
+                                                nextFocusNode:
+                                                    viewModel.focusNodeProPW,
                                                 label: 'ProUN',
                                                 controller: viewModel.proUN,
                                                 enabled: (AppSP.get(AppSPKey
@@ -216,6 +220,10 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                             const SizedBox(width: 16),
                                             Expanded(
                                               child: TextFieldSetting(
+                                                focusNode:
+                                                    viewModel.focusNodeProPW,
+                                                nextFocusNode:
+                                                    viewModel.focusProjectorIP,
                                                 label: 'ProPW',
                                                 controller: viewModel.proPW,
                                                 enabled: (AppSP.get(AppSPKey
@@ -229,6 +237,10 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                             const SizedBox(width: 16),
                                             Expanded(
                                               child: TextFieldSetting(
+                                                focusNode:
+                                                    viewModel.focusProjectorIP,
+                                                nextFocusNode:
+                                                    viewModel.focusOpenPJ,
                                                 label: 'ProjectorIP',
                                                 controller:
                                                     viewModel.projectorIP,
@@ -257,7 +269,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       checkColor: Colors.amber,
                                                       activeColor:
                                                           Colors.transparent,
-                                                      focusNode: FocusNode(),
+                                                      focusNode:
+                                                          viewModel.focusOpenPJ,
                                                       value: widget
                                                           .homeVM.turnOnlPJ,
                                                       onChanged: (bool? value) {
@@ -276,7 +289,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       checkColor: Colors.amber,
                                                       activeColor:
                                                           Colors.transparent,
-                                                      focusNode: FocusNode(),
+                                                      focusNode: viewModel
+                                                          .focusClosePJ,
                                                       value: widget
                                                           .homeVM.turnOffPJ,
                                                       onChanged: (bool? value) {
@@ -295,7 +309,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       checkColor: Colors.amber,
                                                       activeColor:
                                                           Colors.transparent,
-                                                      focusNode: FocusNode(),
+                                                      focusNode: viewModel
+                                                          .focusOpenOnStart,
                                                       value: widget
                                                           .homeVM.openOnStartup,
                                                       onChanged: (bool? value) {
@@ -326,6 +341,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                         title:
                                                             const Text('USB'),
                                                         leading: Radio<String>(
+                                                          focusNode: viewModel
+                                                              .focusUSB,
                                                           value: 'USB',
                                                           groupValue:
                                                               _selectedSource,
@@ -349,6 +366,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                           value: 'Chiendich',
                                                           groupValue:
                                                               _selectedSource,
+                                                          focusNode: viewModel
+                                                              .focusCamp,
                                                           onChanged:
                                                               (String? value) {
                                                             setState(() {
@@ -422,17 +441,26 @@ class TextFieldSetting extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.enabled,
+    required this.focusNode,
+    required this.nextFocusNode,
   });
   final TextEditingController controller;
   final String label;
   final bool enabled;
+  final FocusNode focusNode;
+  final FocusNode nextFocusNode;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      focusNode: enabled ? FocusNode() : null,
+      focusNode: enabled ? focusNode : null,
       readOnly: !enabled,
       cursorColor: Colors.black,
+      onFieldSubmitted: (_) {
+        if (enabled) {
+          FocusScope.of(context).requestFocus(nextFocusNode);
+        }
+      },
       decoration: InputDecoration(
         labelText: label,
         hintText: '',

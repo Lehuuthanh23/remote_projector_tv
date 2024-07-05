@@ -6,7 +6,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:play_box/app/app_string.dart';
+import 'package:play_box/view/home/home.page.dart';
 import 'package:play_box/view/video_camp/view_camp.dart';
 import 'package:stacked/stacked.dart';
 
@@ -49,7 +51,19 @@ class HomeViewModel extends BaseViewModel {
   List<PacketModel> packets = [];
   bool isDrawerOpen = false;
   bool playVideo = true;
+
+  ValueNotifier<String> currentCommand = ValueNotifier('hahaha');
+  final focusNodeProUN = FocusNode();
+  final focusNodeProPW = FocusNode();
+  final focusProjectorIP = FocusNode();
+  final focusOpenPJ = FocusNode();
+  final focusClosePJ = FocusNode();
+  final focusOpenOnStart = FocusNode();
+  final focusUSB = FocusNode();
+  final focusCamp = FocusNode();
+
   ValueChanged<String>? callbackCommand;
+
 
   initialise() async {
     methodChannel.setMethodCallHandler(_handleMethodCall);
@@ -77,6 +91,7 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+
   void setCallback(ValueChanged<String>? callback) {
     callbackCommand = callback;
   }
@@ -94,6 +109,7 @@ class HomeViewModel extends BaseViewModel {
         break;
     }
   }
+
 
   void toggleDrawer() {
     isDrawerOpen = !isDrawerOpen;

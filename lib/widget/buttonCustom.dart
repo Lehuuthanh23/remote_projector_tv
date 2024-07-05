@@ -11,6 +11,7 @@ class ButtomCustom extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final Color? color;
   final double? width;
+  final FocusNode? focusNode;
 
   const ButtomCustom({
     Key? key,
@@ -23,6 +24,7 @@ class ButtomCustom extends StatefulWidget {
     this.margin,
     this.color,
     this.width,
+    this.focusNode,
   }) : super(key: key);
 
   @override
@@ -36,7 +38,7 @@ class _ButtomCustomState extends State<ButtomCustom> {
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -53,7 +55,7 @@ class _ButtomCustomState extends State<ButtomCustom> {
   @override
   Widget build(BuildContext context) {
     return Focus(
-      focusNode: _focusNode,
+      focusNode: widget.focusNode ?? _focusNode,
       onKey: (FocusNode node, RawKeyEvent event) {
         if (event is RawKeyDownEvent &&
             (event.logicalKey == LogicalKeyboardKey.select ||

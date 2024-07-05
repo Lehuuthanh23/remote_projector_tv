@@ -14,31 +14,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late FocusNode _emailFocusNode;
-  late FocusNode _passwordFocusNode;
-  late FocusNode _loginButtonFocusNode;
-  late FocusNode _exitButtonFocusNode;
-
-  @override
-  void initState() {
-    _emailFocusNode = FocusNode();
-    _passwordFocusNode = FocusNode();
-    _loginButtonFocusNode = FocusNode();
-    _exitButtonFocusNode = FocusNode();
-
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    _loginButtonFocusNode.dispose();
-    _exitButtonFocusNode.dispose();
-
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<LoginViewModel>.reactive(
@@ -82,73 +57,79 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: MediaQuery.of(context).size.width / 3),
-                      child: FocusTraversalGroup(
-                        policy: WidgetOrderTraversalPolicy(),
-                        child: Form(
-                          key: viewModel.formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              TextFormField(
-                                focusNode: _emailFocusNode,
-                                controller: viewModel.emailController,
-                                textInputAction: TextInputAction.next,
-                                decoration:
-                                    const InputDecoration(labelText: 'Email'),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Xin hãy nhập email';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16.0),
-                              TextFormField(
-                                focusNode: _passwordFocusNode,
-                                controller: viewModel.passwordController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Mật khẩu'),
-                                obscureText: true,
-                                onFieldSubmitted: (_) => viewModel.login(),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Xin hãy nhập mật khẩu';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              viewModel.errorMessage != null
-                                  ? const SizedBox(height: 16.0)
-                                  : const SizedBox(height: 16),
-                              if (viewModel.errorMessage != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 16.0),
-                                  child: Text(
-                                    viewModel.errorMessage!,
-                                    style: const TextStyle(color: Colors.red),
-                                  ),
+                      child: Form(
+                        key: viewModel.formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextFormField(
+                              focusNode: viewModel.emailFocusNode,
+                              controller: viewModel.emailController,
+                              // textInputAction: TextInputAction.next,
+                              decoration:
+                                  const InputDecoration(labelText: 'Email'),
+                              onFieldSubmitted: (_) {
+                                FocusScope.of(context)
+                                    .requestFocus(viewModel.passwordFocusNode);
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Xin hãy nhập email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16.0),
+                            TextFormField(
+                              onFieldSubmitted: (_) {
+                                FocusScope.of(context).requestFocus(
+                                    viewModel.loginButtonFocusNode);
+                              },
+                              focusNode: viewModel.passwordFocusNode,
+                              controller: viewModel.passwordController,
+                              decoration:
+                                  const InputDecoration(labelText: 'Mật khẩu'),
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Xin hãy nhập mật khẩu';
+                                }
+                                return null;
+                              },
+                            ),
+                            viewModel.errorMessage != null
+                                ? const SizedBox(height: 16.0)
+                                : const SizedBox(height: 16),
+                            if (viewModel.errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
+                                child: Text(
+                                  viewModel.errorMessage!,
+                                  style: const TextStyle(color: Colors.red),
                                 ),
-                              ButtomCustom(
-                                isSplashScreen: true,
-                                onPressed: () => viewModel.login(),
-                                title: "ĐĂNG NHẬP",
-                                textSize: 20,
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 10),
                               ),
-                              ButtomCustom(
-                                onPressed: () {
-                                  SystemNavigator.pop();
-                                },
-                                title: "THOÁT",
-                                textSize: 20,
-                                color: Colors.black,
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 30, vertical: 10),
-                              ),
-                            ],
-                          ),
+                            ButtomCustom(
+                              focusNode: viewModel.loginButtonFocusNode,
+                              isSplashScreen: true,
+                              onPressed: () => viewModel.login(),
+                              title: "ĐĂNG NHẬP",
+                              textSize: 20,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 10),
+                            ),
+                            ButtomCustom(
+                              focusNode: viewModel.exitButtonFocusNode,
+                              onPressed: () {
+                                SystemNavigator.pop();
+                              },
+                              title: "THOÁT",
+                              textSize: 20,
+                              color: Colors.black,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 10),
+                            ),
+                          ],
                         ),
                       ),
                     ),
