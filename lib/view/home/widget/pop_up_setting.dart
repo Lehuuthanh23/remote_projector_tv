@@ -25,7 +25,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
         disposeViewModel: false,
         viewModelBuilder: () => widget.homeVM,
         onViewModelReady: (viewModel) async {
-          _selectedSource = AppSP.get(AppSPKey.typePlayVideo);
+          _selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
           checkConnect = await AppUtils.checkConnect();
           viewModel.notifyListeners();
         },
@@ -207,7 +207,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                 nextFocusNode:
                                                     viewModel.focusNodeProPW,
                                                 label: 'ProUN',
-                                                controller: viewModel.proUNController,
+                                                controller:
+                                                    viewModel.proUNController,
                                                 enabled: (AppSP.get(AppSPKey
                                                                 .proUN) ??
                                                             '') !=
@@ -224,7 +225,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                 nextFocusNode:
                                                     viewModel.focusNodeProIP,
                                                 label: 'ProPW',
-                                                controller: viewModel.proPWController,
+                                                controller:
+                                                    viewModel.proPWController,
                                                 enabled: (AppSP.get(AppSPKey
                                                                 .proPW) ??
                                                             '') !=
@@ -268,8 +270,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                       checkColor: Colors.amber,
                                                       activeColor:
                                                           Colors.transparent,
-                                                      focusNode:
-                                                          viewModel.focusNodeOpenPJ,
+                                                      focusNode: viewModel
+                                                          .focusNodeOpenPJ,
                                                       value: widget
                                                           .homeVM.turnOnlPJ,
                                                       onChanged: (bool? value) {
