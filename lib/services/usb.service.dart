@@ -1,12 +1,9 @@
-import 'package:flutter/services.dart';
+import 'package:play_box/app/app_utils.dart';
 
 class UsbService {
-  static const platform = MethodChannel('com.example.usb/serial');
-  static const usbEventChannel = EventChannel('com.example.usb/event');
-
   Future<List<String>> getUsbPath() async {
     List<String> usbPath = [];
-    var result = await platform.invokeMethod('getUsbPath');
+    var result = await AppUtils.platformChannel.invokeMethod('getUsbPath');
     for (var path in result) {
       usbPath.add(path.toString());
     }

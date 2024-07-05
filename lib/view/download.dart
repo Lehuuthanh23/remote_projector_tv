@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 
+import '../app/app_utils.dart';
 import 'video_camp/video_downloader.dart';
 
 class VideoDownloaderScreen extends StatefulWidget {
@@ -16,12 +17,11 @@ class _VideoDownloaderScreenState extends State<VideoDownloaderScreen> {
   TextEditingController _urlController = TextEditingController();
   double _progress = 0.0;
   String _progressString = "0%";
-  static const platform = MethodChannel('com.example.usb/serial');
   List<String> usbPath = [];
   String urlVideo = 'https://web5sao.net/media/SamsungGalaxy-S24-Ultra.mp4';
   Future<void> _getUsbPath() async {
     try {
-      var result = await platform.invokeMethod('getUsbPath');
+      var result = await AppUtils.platformChannel.invokeMethod('getUsbPath');
       for (var path in result) {
         usbPath.add(path.toString());
       }

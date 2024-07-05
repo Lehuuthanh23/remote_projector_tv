@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:play_box/view/video_camp/ads.page.dart';
 import 'package:play_box/view_models/home.vm.dart';
 import 'package:stacked/stacked.dart';
@@ -9,7 +10,7 @@ import '../../app/app_sp_key.dart';
 import '../../models/camp/camp_schedule.dart';
 import '../../view_models/view_camp.vm.dart';
 
-class ViewCamp extends StatelessWidget {
+class ViewCamp extends StatefulWidget {
   HomeViewModel homeViewModel;
   ViewCamp({
     super.key,
@@ -17,20 +18,25 @@ class ViewCamp extends StatelessWidget {
   });
 
   @override
+  State<ViewCamp> createState() => _ViewCampState();
+}
+
+class _ViewCampState extends State<ViewCamp> {
+  @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
       viewModelBuilder: () => ViewCampViewModel(
         context: context,
+        homeViewModel: widget.homeViewModel,
       ),
       onViewModelReady: (viewModel) {
-        viewModel.homeViewModel = homeViewModel;
         viewModel.init();
       },
       builder: (context, viewModel, child) {
         return WillPopScope(
           onWillPop: () async {
             viewModel.popPage();
-            homeViewModel.playVideo = false;
+            widget.homeViewModel.playVideo = false;
             return true;
           },
           child: Scaffold(

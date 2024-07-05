@@ -1,16 +1,20 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 
 import '../constants/api.dart';
 import '../models/device/device_info_model.dart';
 import '../models/device/device_model.dart';
 import '../models/user/user.dart';
 import '../request/device/device.request.dart';
+import '../view_models/home.vm.dart';
 import 'app_sp.dart';
 import 'app_sp_key.dart';
 
 class AppUtils {
+  static const platformChannel = MethodChannel('com.example.usb/serial');
+
   //http url
   static String createUrl(String toMerge) {
     return '${Api.hostApi}$toMerge';

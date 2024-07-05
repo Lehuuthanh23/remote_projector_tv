@@ -3,6 +3,7 @@ package com.example.play_box
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -41,6 +42,9 @@ class MainActivity : FlutterActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
+
+        lateinit var channel: MethodChannel
+        lateinit var flutterEngine: FlutterEngine
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -61,7 +65,10 @@ class MainActivity : FlutterActivity() {
             }
         )
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERIAL_CHANNEL).setMethodCallHandler { call, result ->
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERIAL_CHANNEL)
+        flutterEngine.also { MainActivity.flutterEngine = it }
+
+        channel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "saveUser" -> {
                     val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
@@ -69,6 +76,7 @@ class MainActivity : FlutterActivity() {
                     if (argument != null) {
                         startMyBackgroundService()
                     }
+                    result.success("")
                 }
 
                 "saveComputer" -> {
@@ -79,10 +87,12 @@ class MainActivity : FlutterActivity() {
                     if (computerId != null && serialComputer != null) {
                         startMyBackgroundService()
                     }
+                    result.success("")
                 }
 
                 "clearUser" -> {
                     sharedPreferencesManager.clearData()
+                    result.success("")
                 }
 
                 "getUsbPath" -> {
@@ -96,7 +106,7 @@ class MainActivity : FlutterActivity() {
                 }
 
                 else -> {
-                    result.notImplemented()
+                    result.success("")
                 }
             }
         }
@@ -195,12 +205,25 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun startMyBackgroundService() {
-        val serviceIntent = Intent(this, MyBackgroundService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
+        if (!isMyServiceRunning(MyBackgroundService::class.java, this)) {
+            val serviceIntent = Intent(this, MyBackgroundService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
         }
+    }
+
+    private fun isMyServiceRunning(serviceClass: Class<*>?, context: Context): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val services = activityManager.getRunningServices(Int.MAX_VALUE)
+        for (runningService in services) {
+            if (serviceClass?.name == runningService.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun verifyStoragePermissions(activity: Activity) {

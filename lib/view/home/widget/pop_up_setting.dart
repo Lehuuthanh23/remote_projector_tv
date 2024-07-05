@@ -25,9 +25,9 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
         disposeViewModel: false,
         viewModelBuilder: () => widget.homeVM,
         onViewModelReady: (viewModel) async {
+          _selectedSource = AppSP.get(AppSPKey.typePlayVideo);
           viewModel.viewContext = context;
           checkConnect = await AppUtils.checkConnect();
-          _selectedSource = AppSP.get(AppSPKey.typePlayVideo);
           viewModel.notifyListeners();
         },
         builder: (context, viewModel, child) {

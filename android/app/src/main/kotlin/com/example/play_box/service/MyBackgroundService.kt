@@ -28,13 +28,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
+import io.flutter.plugin.common.MethodChannel
 
-class MyBackgroundService : Service() {
+open class MyBackgroundService : Service() {
     companion object {
-        const val TAG = "MyBackgroundService"
+        private const val TAG = "MyBackgroundService"
+        private const val COMMAND_CHANNEL = "com.example.app/command"
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
+
+    private lateinit var channel: MethodChannel
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
@@ -55,7 +59,6 @@ class MyBackgroundService : Service() {
                 }
             }
             checkCommandList()
-
             handler.postDelayed(this, CHECK_COMMAND_INTERVAL)
         }
     }
@@ -63,7 +66,6 @@ class MyBackgroundService : Service() {
     private val checkAliveRunnable = object : Runnable {
         override fun run() {
             checkAlive()
-
             handler.postDelayed(this, CHECK_ALIVE_INTERVAL)
         }
     }
@@ -110,34 +112,71 @@ class MyBackgroundService : Service() {
             CommandEnum.GET_TIME_NOW.command -> {
                 val timeString = getCurrentTime()
 
-                serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", timeString)
-                        .build()
-
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
-                }
+                replayCommand(value = timeString, commandId = command.cmdId)
             }
 
             CommandEnum.RESTART_APP.command -> {
                 serviceScope.launch {
-                    val formBody = FormBody.Builder()
-                        .add("return_value", "OK")
-                        .build()
-
-                    apiService.post(
-                        url = "${AppApi.REPLY_COMMAND}/${command.cmdId}",
-                        body = formBody,
-                    )
+                    replayCommand(value = "OK", commandId = command.cmdId)
 
                     openFlutterActivity()
                 }
             }
 
+            CommandEnum.VIDEO_STOP.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_STOP.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_PAUSE.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_PAUSE.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_RESTART.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_RESTART.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_FROMUSB.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_FROMUSB.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
+            CommandEnum.VIDEO_FROMCAMP.command -> {
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(CommandEnum.VIDEO_FROMCAMP.command, mapOf("yourParameter" to "Hello from Kotlin"))
+                }
+
+                replayCommand(value = "OK", commandId = command.cmdId)
+            }
+
             else -> {}
+        }
+    }
+
+    private fun replayCommand(value: String, commandId: String?) {
+        serviceScope.launch {
+            val formBody = FormBody.Builder()
+                .add("return_value", value)
+                .build()
+
+            apiService.post(
+                url = "${AppApi.REPLY_COMMAND}/$commandId",
+                body = formBody,
+            )
         }
     }
 
@@ -156,6 +195,7 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
+        channel = MainActivity.channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "my_service_channel"
             val channelName = "My Service Channel"
@@ -173,11 +213,12 @@ class MyBackgroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         handler.removeCallbacks(checkCommandRunnable)
         handler.removeCallbacks(checkAliveRunnable)
+        handler.post(checkAliveRunnable)
         handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
-        handler.postDelayed(checkAliveRunnable, CHECK_ALIVE_INTERVAL)
 
         val notification = createNotification()
         startForeground(1001, notification)
+
         return START_STICKY
     }
 

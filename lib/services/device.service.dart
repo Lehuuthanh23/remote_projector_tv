@@ -5,11 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 
+import '../app/app_utils.dart';
 import '../models/device/device_info_model.dart';
 
 class DeviceInfoService {
-  static const platform = MethodChannel('com.example.usb/serial');
-
   Future<DeviceInfoModel> getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     DeviceInfoModel deviceInfoModel;
@@ -67,7 +66,7 @@ class DeviceInfoService {
 
   Future<String?> getSerial() async {
     try {
-      final String? serial = await platform.invokeMethod('getSerial');
+      String? serial = await AppUtils.platformChannel.invokeMethod('getSerial');
       print('serial: $serial');
       return serial;
     } on PlatformException catch (e) {

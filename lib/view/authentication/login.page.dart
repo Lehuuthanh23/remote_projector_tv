@@ -21,11 +21,12 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     _loginButtonFocusNode = FocusNode();
     _exitButtonFocusNode = FocusNode();
+
+    super.initState();
   }
 
   @override
@@ -34,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     _passwordFocusNode.dispose();
     _loginButtonFocusNode.dispose();
     _exitButtonFocusNode.dispose();
+
     super.dispose();
   }
 
