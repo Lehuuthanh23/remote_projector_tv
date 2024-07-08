@@ -65,6 +65,7 @@ class _ButtomCustomState extends State<ButtomCustom> {
         }
         return KeyEventResult.ignored;
       },
+      autofocus: true,
       child: GestureDetector(
         onTap: () => widget.onPressed(),
         child: Container(

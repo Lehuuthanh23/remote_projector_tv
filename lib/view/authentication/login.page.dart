@@ -68,10 +68,10 @@ class _LoginPageState extends State<LoginPage> {
                                 focusNode: viewModel.emailFocusNode,
                                 controller: viewModel.emailController,
                                 decoration:
-                                const InputDecoration(labelText: 'Email'),
+                                    const InputDecoration(labelText: 'Email'),
                                 onFieldSubmitted: (_) {
-                                  FocusScope.of(context)
-                                      .requestFocus(viewModel.passwordFocusNode);
+                                  FocusScope.of(context).requestFocus(
+                                      viewModel.passwordFocusNode);
                                 },
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -88,8 +88,8 @@ class _LoginPageState extends State<LoginPage> {
                                 },
                                 focusNode: viewModel.passwordFocusNode,
                                 controller: viewModel.passwordController,
-                                decoration:
-                                const InputDecoration(labelText: 'Mật khẩu'),
+                                decoration: const InputDecoration(
+                                    labelText: 'Mật khẩu'),
                                 obscureText: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -133,6 +133,19 @@ class _LoginPageState extends State<LoginPage> {
                                   vertical: 10,
                                 ),
                               ),
+                              TextButton(
+                                  onPressed: () {
+                                    FocusScope.of(context)
+                                        .requestFocus(viewModel.emailFocusNode);
+                                  },
+                                  child: const Text(
+                                    'Nhập lại email',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: Colors.white),
+                                  ))
                             ],
                           ),
                         ),
