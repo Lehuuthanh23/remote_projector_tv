@@ -37,17 +37,26 @@ android {
         applicationId = "com.example.play_box"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdk = 19
+        minSdk = 21
         targetSdk = 34
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            storeFile file("gtglobal-key.jks")
+            storePassword 'AbCd1234'
+            keyAlias 'key-tvbox'
+            keyPassword 'AbCd1234'
+        }
+    }
+
     buildTypes {
         release {
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
