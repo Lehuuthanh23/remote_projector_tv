@@ -7,9 +7,9 @@ import '../../view_models/view_camp.vm.dart';
 import 'ads.page.dart';
 
 class ViewCamp extends StatefulWidget {
-  HomeViewModel homeViewModel;
+  final HomeViewModel homeViewModel;
 
-  ViewCamp({
+  const ViewCamp({
     super.key,
     required this.homeViewModel,
   });
@@ -111,17 +111,13 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                   right: 20,
                   child: Container(
                     color: Colors.black.withOpacity(0.5),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          viewModel.formattedTime,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                          ),
-                        ),
-                      ],
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      viewModel.formattedTime,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
                     ),
                   ),
                 ),

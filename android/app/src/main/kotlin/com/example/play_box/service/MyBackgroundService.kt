@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.play_box.MainActivity
 import com.example.play_box.R
@@ -32,8 +31,6 @@ import io.flutter.plugin.common.MethodChannel
 
 open class MyBackgroundService : Service() {
     companion object {
-        private const val TAG = "MyBackgroundService"
-        private const val COMMAND_CHANNEL = "com.example.app/command"
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
     }
@@ -84,7 +81,11 @@ open class MyBackgroundService : Service() {
     }
 
     private fun checkCommandList() {
-        if (!sharedPreferences.getUserIdConnected().isNullOrBlank()) {
+        val customerId = sharedPreferences.getUserIdConnected()
+        val idComputer = sharedPreferences.getIdComputer()
+        if (!customerId.isNullOrBlank() &&
+            !idComputer.isNullOrBlank()
+        ) {
             serviceScope.launch {
                 val serialComputer: String? = sharedPreferences.getSerialComputer()
                 if (serialComputer != null) {
@@ -97,7 +98,6 @@ open class MyBackgroundService : Service() {
                             JSON.decodeToList(response["cmd_list"], Array<CommandModel>::class.java)
                         if (commandList.isNotEmpty()) {
                             for (item in commandList) {
-                                Log.d(TAG, "checkCommandList: ${item.cmdId} - ${item.cmdCode}")
                                 invokeCommand(item)
                             }
                         }
@@ -116,11 +116,9 @@ open class MyBackgroundService : Service() {
             }
 
             CommandEnum.RESTART_APP.command -> {
-                serviceScope.launch {
-                    replayCommand(value = "OK", commandId = command.cmdId)
+                replayCommand(value = "OK", commandId = command.cmdId)
 
-                    openFlutterActivity()
-                }
+                openFlutterActivity()
             }
 
             CommandEnum.VIDEO_STOP.command -> invokeCommandToFlutter(
@@ -147,6 +145,20 @@ open class MyBackgroundService : Service() {
                 CommandEnum.VIDEO_FROMCAMP,
                 command.cmdId
             )
+
+            CommandEnum.DELETE_DEVICE.command -> {
+                sharedPreferences.saveIdComputer(null)
+                sharedPreferences.saveSerialComputer(null)
+                replayCommand(value = "OK", commandId = command.cmdId)
+                stopSelf()
+
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(
+                        CommandEnum.DELETE_DEVICE.command,
+                        mapOf("command" to CommandEnum.DELETE_DEVICE.command)
+                    )
+                }
+            }
 
             else -> {}
         }
@@ -175,7 +187,8 @@ open class MyBackgroundService : Service() {
                         errorCode: String,
                         errorMessage: String?,
                         errorDetails: Any?
-                    ) {}
+                    ) {
+                    }
 
                     override fun notImplemented() {}
                 })
@@ -208,10 +221,16 @@ open class MyBackgroundService : Service() {
         val i = Intent(this, MainActivity::class.java)
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(i)
+
+        handler.postDelayed({
+            channel = MainActivity.channel
+        }, 2 * 1000L)
     }
 
     override fun onCreate() {
         channel = MainActivity.channel
+        sharedPreferences = SharedPreferencesManager(applicationContext)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "my_service_channel"
             val channelName = "My Service Channel"
@@ -222,7 +241,7 @@ open class MyBackgroundService : Service() {
                 NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
-        sharedPreferences = SharedPreferencesManager(applicationContext)
+
         super.onCreate()
     }
 

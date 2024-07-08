@@ -79,10 +79,7 @@ class HomeViewModel extends BaseViewModel {
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
 
     await fetchDeviceInfo();
-    await getMyCamp();
-    await getCampSchedule();
-
-    notifyListeners();
+    getValue();
   }
 
   @override
@@ -107,6 +104,13 @@ class HomeViewModel extends BaseViewModel {
     callbackCommand = null;
 
     super.dispose();
+  }
+
+  Future<void> getValue() async {
+    await getMyCamp();
+    await getCampSchedule();
+
+    notifyListeners();
   }
 
   void setCallback(ValueChanged<String>? callback) {
@@ -166,6 +170,17 @@ class HomeViewModel extends BaseViewModel {
         });
 
         return AppString.successCommand;
+
+      case AppString.deleteDevice:
+        if (callbackCommand != null) {
+          callbackCommand!.call(AppString.stopVideo);
+        }
+
+        AppSP.set(AppSPKey.computer, '');
+        AppSP.set(AppSPKey.lstCampSchedule, '[]');
+
+        getValue();
+        break;
     }
 
     return null;
@@ -241,7 +256,7 @@ class HomeViewModel extends BaseViewModel {
   Future<void> signOut() async {
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.user_info, '');
-    AppSP.set(AppSPKey.lstCampSchedule, '');
+    AppSP.set(AppSPKey.lstCampSchedule, '[]');
 
     await AppUtils.platformChannel.invokeMethod('clearUser');
 

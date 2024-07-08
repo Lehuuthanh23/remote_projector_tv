@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/services.dart';
-import 'package:play_box/models/device/device_info_model.dart';
-import 'package:play_box/models/device/device_model.dart';
+import 'package:velocity_x/velocity_x.dart';
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
 import '../../app/app_utils.dart';
@@ -11,6 +9,8 @@ import '../../constants/api.dart';
 import '../../models/camp/camp_model.dart';
 import '../../models/camp/camp_schedule.dart';
 import '../../models/camp/time_run_model.dart';
+import '../../models/device/device_info_model.dart';
+import '../../models/device/device_model.dart';
 import '../../models/user/user.dart';
 import '../device/device.request.dart';
 
@@ -20,41 +20,45 @@ class CampRequest {
   Future<List<CampModel>> getAllCampByIdCustomer() async {
     List<CampModel> lstCamp = [];
     User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    String? deviceString = AppSP.get(AppSPKey.device);
+
+    if (deviceString.isEmptyOrNull) return [];
+
     DeviceInfoModel deviceInfoModel =
-        DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
+        DeviceInfoModel.fromJson(jsonDecode(deviceString!));
     DeviceRequest deviceRequest = DeviceRequest();
     List<Device> lstDevice =
-        await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
-    Device? device = lstDevice
-        .where((device) =>
-            device.serialComputer ==
+        (await deviceRequest.getDeviceByCustomerId(currentUser.customerId!)).where((device) =>
+        device.serialComputer ==
             (deviceInfoModel.serialNumber == 'unknown'
                 ? deviceInfoModel.androidId
                 : deviceInfoModel.serialNumber))
-        .toList()
-        .first;
-    AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
+            .toList();
+    Device? device = lstDevice.isNotEmpty ? lstDevice.first : null;
+    AppSP.set(AppSPKey.computer, device!= null ? jsonEncode(device.toJson()) : '');
 
-    await AppUtils.platformChannel.invokeMethod('saveComputer', {
-      AppSPKey.serial_computer: device.serialComputer,
-      AppSPKey.computer_id: device.computerId
-    });
+    if (device != null) {
+      await AppUtils.platformChannel.invokeMethod('saveComputer', {
+        AppSPKey.serial_computer: device.serialComputer,
+        AppSPKey.computer_id: device.computerId
+      });
 
-    final response = await dio.get(
-      '${Api.hostApi}${Api.getCampByDevice}/${device.computerId}',
-    );
-    final responseData = jsonDecode(response.data);
-    print(responseData);
-    List<dynamic> campList = responseData['Camp_list'];
+      final response = await dio.get(
+        '${Api.hostApi}${Api.getCampByDevice}/${device.computerId}',
+      );
+      final responseData = jsonDecode(response.data);
+      List<dynamic> campList = responseData['Camp_list'];
 
-    if (campList.isNotEmpty) {
-      lstCamp = campList.map((e) => CampModel.fromJson(e)).toList();
+      if (campList.isNotEmpty) {
+        lstCamp = campList.map((e) => CampModel.fromJson(e)).toList();
+      }
+
+      // Get TimeRunModel for each CampModel
+      for (var camp in lstCamp) {
+        camp.lstTimeRun = await getTimeRunCampById(camp.campaignId);
+      }
     }
 
-    // Get TimeRunModel for each CampModel
-    for (var camp in lstCamp) {
-      camp.lstTimeRun = await getTimeRunCampById(camp.campaignId);
-    }
     return lstCamp;
   }
 
@@ -74,7 +78,11 @@ class CampRequest {
 
   Future<List<CampSchedule>> getCampSchedule() async {
     List<CampSchedule> lstCampSchedule = [];
-    Device device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.computer)));
+    String? deviceString = AppSP.get(AppSPKey.computer);
+
+    if (deviceString.isEmptyOrNull) return [];
+
+    Device device = Device.fromJson(jsonDecode(deviceString!));
     //User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
     final formData = FormData.fromMap({
       'computer_id': device.computerId,

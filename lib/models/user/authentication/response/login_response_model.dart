@@ -16,7 +16,6 @@ class LoginResponseModel {
 
     if (json['info'] != 0 && json['status'] == 1) {
       var infoList = json['info'] as List;
-      print('info list: $infoList');
       infoObjs = infoList.map((infoJson) => User.fromJson(infoJson)).toList();
     }
 

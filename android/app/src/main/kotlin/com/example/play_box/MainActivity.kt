@@ -12,7 +12,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -33,8 +32,6 @@ class MainActivity : FlutterActivity() {
     private var eventSink: EventChannel.EventSink? = null
 
     companion object {
-        const val TAG = "MainActivity"
-
         private const val SERIAL_CHANNEL = "com.example.usb/serial"
         private const val USB_EVENT_CHANNEL = "com.example.usb/event"
         private const val REQUEST_EXTERNAL_STORAGE = 1
@@ -50,12 +47,21 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        EventChannel(flutterEngine.dartExecutor.binaryMessenger, USB_EVENT_CHANNEL).setStreamHandler(
+        EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            USB_EVENT_CHANNEL
+        ).setStreamHandler(
             object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     eventSink = events
-                    registerReceiver(usbReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED))
-                    registerReceiver(usbReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
+                    registerReceiver(
+                        usbReceiver,
+                        IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+                    )
+                    registerReceiver(
+                        usbReceiver,
+                        IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED)
+                    )
                 }
 
                 override fun onCancel(arguments: Any?) {
@@ -118,6 +124,7 @@ class MainActivity : FlutterActivity() {
                 UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
                     eventSink?.success("USB_CONNECTED")
                 }
+
                 UsbManager.ACTION_USB_DEVICE_DETACHED -> {
                     eventSink?.success("USB_DISCONNECTED")
                 }
@@ -205,7 +212,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun startMyBackgroundService() {
-        if (!isMyServiceRunning(MyBackgroundService::class.java, this)) {
+        if (checkStartService()) {
             val serviceIntent = Intent(this, MyBackgroundService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent)
@@ -214,6 +221,12 @@ class MainActivity : FlutterActivity() {
             }
         }
     }
+
+    private fun checkStartService() = !isMyServiceRunning(
+        MyBackgroundService::class.java,
+        this
+    ) && sharedPreferencesManager.getUserIdConnected() != null
+            && sharedPreferencesManager.getIdComputer() != null
 
     private fun isMyServiceRunning(serviceClass: Class<*>?, context: Context): Boolean {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

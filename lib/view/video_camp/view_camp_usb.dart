@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:io';
 
@@ -20,6 +23,9 @@ class VideoUSBPage extends StatefulWidget {
 
 class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver {
   late VideoPlayerController _controller;
+  late Timer _timerTimeShowing;
+
+  String _formattedTime = '';
 
   List<File> _videoFiles = [];
   List<String> usbPaths = [];
@@ -31,7 +37,9 @@ class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     widget.homeViewModel.setCallback(onCommandInvoke);
-
+    _timerTimeShowing = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      _updateTime();
+    });
     _loadVideos();
 
     super.initState();
@@ -44,6 +52,7 @@ class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver
 
     _videoFiles.clear();
     usbPaths.clear();
+    _timerTimeShowing.cancel();
     widget.homeViewModel.setCallback(null);
 
     super.dispose();
@@ -138,18 +147,45 @@ class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver
       });
   }
 
+  void _updateTime() {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final formattedTime = DateFormat('HH:mm:ss').format(now);
+    setState(() {
+      _formattedTime = formattedTime;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
+      body: Container(
+        color: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: _controller.value.isInitialized
+                  ? AspectRatio(
                 aspectRatio: _controller.value.aspectRatio,
                 child: VideoPlayer(_controller),
-              )
-            : Container(
-                color: Colors.black,
+              ) : null,
+            ),
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  _formattedTime,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
               ),
+            ),
+          ],
+        ),
       ),
     );
   }

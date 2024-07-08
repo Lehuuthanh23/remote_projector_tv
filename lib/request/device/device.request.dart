@@ -32,7 +32,7 @@ class DeviceRequest {
       'center_id': '5',
       'location': '',
       'customer_id': currentUser.customerId,
-      'type': 'chia sẻ',
+      'type': 'chủ sở hữu',
       'id_dir': '',
       'time_end': ''
     });
@@ -42,7 +42,6 @@ class DeviceRequest {
         data: formData,
         options: AppUtils.createOptionsNoCookie(),
       );
-      print('Body thêm device: ${response.data}');
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
         checkConnect = true;
@@ -78,11 +77,10 @@ class DeviceRequest {
         });
         //
       } else {
-        print('Lỗi khi thêm device: ${response.data}');
         checkConnect = false;
       }
     } catch (e) {
-      print('Lỗi: $e');
+      return checkConnect;
     }
     return checkConnect;
   }

@@ -2,6 +2,7 @@ class AppString {
   AppString._();
   static bool checkPacket = false;
 
+  static const String deleteDevice = 'DELETE_DEVICE';
   static const String pauseVideo = 'VIDEO_PAUSE';
   static const String stopVideo = 'VIDEO_STOP';
   static const String restartVideo = 'VIDEO_RESTART';

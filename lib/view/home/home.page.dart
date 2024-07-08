@@ -188,8 +188,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               return Material(
                                 color: Colors.transparent,
                                 child: InkWell(
-                                  onTap: () => print(
-                                      'Nhấn vào camp: ${camp.campaignName}'),
+                                  onTap: () {},
                                   child: Container(
                                     margin: const EdgeInsets.only(top: 20),
                                     padding: const EdgeInsets.all(20),

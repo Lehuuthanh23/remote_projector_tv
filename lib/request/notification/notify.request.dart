@@ -13,7 +13,6 @@ import '../../models/user/user.dart';
 class NotifyRequest {
   final Dio dio = Dio();
   addNotify(Notify notify) async {
-    print('Vào thêm thông báo');
     User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
     final formDataNotify = FormData.fromMap({
       'customer_id': currentUser.customerId,
@@ -27,6 +26,5 @@ class NotifyRequest {
       data: formDataNotify,
       options: AppUtils.createOptionsNoCookie(),
     );
-    print('Thêm thông báo: ${respone.data}');
   }
 }

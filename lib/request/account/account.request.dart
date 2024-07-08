@@ -21,7 +21,6 @@ class AccountRequest {
           '${Api.hostApi}${Api.getCustomer}/${userData.customerId}',
         );
         final responseData = jsonDecode(response.data);
-        print('responseData: $responseData');
 
         UserResponseModel customerResponse =
             UserResponseModel.fromJson(responseData);
@@ -31,15 +30,12 @@ class AccountRequest {
           return updatedUser;
         } else {
           // Handle case where no user information is returned from the API
-          print('Không có dữ liệu user từ API');
           return userData; // Return original stored user data
         }
       } else {
-        print('Không có dữ liệu user từ SharedPreferences');
         return null;
       }
     } catch (e) {
-      print('Error fetching customer: $e');
       return null;
     }
   }
@@ -57,7 +53,6 @@ class AccountRequest {
       return updatedUser;
     } else {
       // Handle case where no user information is returned from the API
-      print('Không có dữ liệu user từ API');
       return null;
     }
   }
@@ -67,17 +62,14 @@ class AccountRequest {
       '${Api.hostApi}${Api.getCustomerByEmail}/$email',
     );
     final responseData = jsonDecode(response.data);
-    print('Body lấy customer: ${responseData.toString()}');
     UserResponseModel customerResponse =
         UserResponseModel.fromJson(responseData);
     if (customerResponse.userList.isNotEmpty) {
       User updatedUser = customerResponse.userList.first;
       updatedUser.email = email;
-      print('Đúng điều kiện: ${updatedUser.customerName}');
       return updatedUser;
     } else {
       // Handle case where no user information is returned from the API
-      print('Không có dữ liệu user từ API');
       return null;
     }
   }
@@ -101,8 +93,6 @@ class AccountRequest {
       user.password = newPassword;
       AppSP.set(AppSPKey.user_info, user.toJson());
       AppSP.set(AppSPKey.token, user.password);
-    } else {
-      print('Lỗi: ${responseData.toString()}');
     }
     return checkChange;
   }

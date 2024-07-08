@@ -67,10 +67,8 @@ class DeviceInfoService {
   Future<String?> getSerial() async {
     try {
       String? serial = await AppUtils.platformChannel.invokeMethod('getSerial');
-      print('serial: $serial');
       return serial;
     } on PlatformException catch (e) {
-      print("Failed to get serial number: '${e.message}'.");
       return null;
     }
   }

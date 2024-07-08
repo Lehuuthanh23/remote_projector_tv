@@ -79,7 +79,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   color: const Color(0xffEB6E2C),
                   onPressed: () {
-                    widget.vm.initialise();
+                    widget.vm.getValue();
                   },
                   title: 'NẠP LẠI',
                   textSize: 15,

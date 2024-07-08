@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:play_box/app/app_sp.dart';
-import 'package:play_box/app/app_sp_key.dart';
-import 'package:play_box/app/app_utils.dart';
-import '../../../view_models/home.vm.dart';
-import '../../../widget/buttonCustom.dart';
 import 'package:stacked/stacked.dart';
 
+import '../../../app/app_sp.dart';
+import '../../../app/app_sp_key.dart';
+import '../../../app/app_utils.dart';
+import '../../../view_models/home.vm.dart';
+import '../../../widget/buttonCustom.dart';
+
 class PopupSettingScreen extends StatefulWidget {
-  const PopupSettingScreen({Key? key, required this.homeVM}) : super(key: key);
+  const PopupSettingScreen({super.key, required this.homeVM});
+
   final HomeViewModel homeVM;
 
   @override
@@ -17,10 +18,10 @@ class PopupSettingScreen extends StatefulWidget {
 
 class _PopupSettingScreenState extends State<PopupSettingScreen> {
   String _selectedSource = "USB";
+  bool? checkConnect;
+
   @override
   Widget build(BuildContext context) {
-    bool checkConnect = true;
-
     return ViewModelBuilder<HomeViewModel>.reactive(
         disposeViewModel: false,
         viewModelBuilder: () => widget.homeVM,
@@ -406,13 +407,15 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                       ButtomCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: const Color(0xffEB6E2C),
+                        color: checkConnect == null
+                            ? const Color(0xff9a9a9a)
+                            : const Color(0xffEB6E2C),
                         onPressed: () async {
-                          checkConnect
+                          checkConnect != false
                               ? null
                               : await widget.homeVM.connectDevice();
                         },
-                        title: checkConnect ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
+                        title: checkConnect == true ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
                         textSize: 15,
                       ),
                       ButtomCustom(
@@ -445,11 +448,13 @@ class TextFieldSetting extends StatelessWidget {
     required this.focusNode,
     required this.nextFocusNode,
   });
+
   final TextEditingController controller;
   final String label;
   final bool enabled;
   final FocusNode focusNode;
   final FocusNode nextFocusNode;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(

@@ -19,8 +19,6 @@ class _LoginPageState extends State<LoginPage> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
-    print('w:$width - h:$height');
-
     return ViewModelBuilder<LoginViewModel>.reactive(
       viewModelBuilder: () => LoginViewModel(context: context),
       onViewModelReady: (viewModel) {},
