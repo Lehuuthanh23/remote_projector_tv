@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
@@ -25,9 +26,9 @@ class PacketRequest {
       if (packet.deleted != 'y') {
         DateTime now = DateTime.now();
         DateTime validDate = DateTime.parse(
-            packet.validDate! == '' ? now.toString() : packet.validDate!);
+            packet.validDate.isEmptyOrNull ? now.toString() : packet.validDate!);
         DateTime expireDate = DateTime.parse(
-            packet.expireDate! == '' ? now.toString() : packet.expireDate!);
+            packet.expireDate.isEmptyOrNull ? now.toString() : packet.expireDate!);
         return validDate.isBefore(now) && expireDate.isAfter(now);
       } else {
         return false;

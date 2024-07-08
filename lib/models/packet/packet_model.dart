@@ -10,18 +10,17 @@ class PacketModel {
   String description;
   String detail;
   String customerId;
-  String pay;
+  String? pay;
   String createdDate;
   String createdBy;
   String lastMDFBy;
   String lastMDFDate;
   String deleted;
   String registerDate;
-  String paymentDate;
+  String? paymentDate;
   String? validDate;
-  String typePay;
+  String? typePay;
   String packetId;
-  String type;
 
   PacketModel({
     this.monthQty,
@@ -35,18 +34,17 @@ class PacketModel {
     required this.description,
     required this.detail,
     required this.customerId,
-    required this.pay,
+    this.pay,
     required this.createdDate,
     required this.createdBy,
     required this.lastMDFBy,
     required this.lastMDFDate,
     required this.deleted,
     required this.registerDate,
-    required this.paymentDate,
+    this.paymentDate,
     this.validDate,
-    required this.typePay,
+    this.typePay,
     required this.packetId,
-    required this.type,
   });
 
   factory PacketModel.fromJson(Map<String, dynamic> json) {
@@ -73,7 +71,6 @@ class PacketModel {
       validDate: json['valid_date'],
       typePay: json['type_pay'],
       packetId: json['packet_id'],
-      type: json['type'],
     );
   }
 }

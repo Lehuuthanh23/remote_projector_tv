@@ -243,7 +243,7 @@ class HomeViewModel extends BaseViewModel {
 
         return PopUpWidget(
           icon: Image.asset("assets/images/ic_error.png"),
-          title: 'Gói cước hết hạn',
+          title: 'Không có gói cước hiệu lực',
           leftText: 'Xác nhận',
           onLeftTap: () {
             Navigator.of(context).pop();
