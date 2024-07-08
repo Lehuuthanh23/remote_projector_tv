@@ -145,6 +145,7 @@ class ViewCampViewModel extends BaseViewModel {
       }
     } else if (command == AppString.stopVideo) {
       popPage();
+      homeViewModel.playVideo = false;
       Navigator.pop(context);
     }
   }
