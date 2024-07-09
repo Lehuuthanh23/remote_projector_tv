@@ -4,7 +4,7 @@ import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
 import '../../view_models/home.vm.dart';
-import '../../widget/buttonCustom.dart';
+import '../../widget/button_custom.dart';
 import '../timer_clock/timer_clock.dart';
 import 'widget/pop_up_camp_run.dart';
 import 'widget/pop_up_setting.dart';
@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          ButtomCustom(
+                          ButtonCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             isSplashScreen: true,
@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             title: 'DANH SÁCH CAMP',
                             textSize: 15,
                           ),
-                          ButtomCustom(
+                          ButtonCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             isSplashScreen: true,
@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             title: 'CÀI ĐẶT',
                             textSize: 15,
                           ),
-                          ButtomCustom(
+                          ButtonCustom(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             color: Colors.black,
@@ -146,7 +146,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-                // Màn hình tối mờ khi Drawer mở
                 if (viewModel.isDrawerOpen)
                   Positioned.fill(
                     child: WillPopScope(
@@ -162,7 +161,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       ),
                     ),
                   ),
-                // Drawer tùy chỉnh
                 AnimatedPositioned(
                   duration: const Duration(milliseconds: 500),
                   left: viewModel.isDrawerOpen

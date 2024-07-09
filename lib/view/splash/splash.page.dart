@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
-import '../../app/app_utils.dart';
-import '../../view_models/home.vm.dart';
+import '../../constants/app_color.dart';
 import '../../view_models/splash.vm.dart';
 
 class SplashPage extends StatefulWidget {
@@ -28,8 +27,8 @@ class _SplashPageState extends State<SplashPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFEB6E2C),
-                  Color(0xFFFABD1D),
+                  AppColor.appBarStart,
+                  AppColor.appBarEnd,
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,

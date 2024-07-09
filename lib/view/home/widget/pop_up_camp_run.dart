@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../../models/camp/camp_model.dart';
 import '../../../view_models/home.vm.dart';
-import '../../../widget/buttonCustom.dart';
+import '../../../widget/button_custom.dart';
 import 'camp_card.dart';
 
 class PopupCampRunScreen extends StatefulWidget {
   final List<CampModel> camps;
   final HomeViewModel vm;
-  const PopupCampRunScreen({Key? key, required this.camps, required this.vm})
-      : super(key: key);
+
+  const PopupCampRunScreen({
+    super.key,
+    required this.camps,
+    required this.vm,
+  });
 
   @override
   State<PopupCampRunScreen> createState() => _PopupCampRunScreenState();
@@ -74,7 +78,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ButtomCustom(
+                ButtonCustom(
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   color: const Color(0xffEB6E2C),
@@ -84,7 +88,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                   title: 'NẠP LẠI',
                   textSize: 15,
                 ),
-                ButtomCustom(
+                ButtonCustom(
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   color: Colors.black,

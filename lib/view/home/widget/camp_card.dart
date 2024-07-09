@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 import '../../../models/camp/camp_model.dart';
@@ -9,11 +7,14 @@ class CampCard extends StatefulWidget {
   final CampModel camp;
   final FocusNode focusNode;
 
-  const CampCard({Key? key, required this.camp, required this.focusNode})
-      : super(key: key);
+  const CampCard({
+    super.key,
+    required this.camp,
+    required this.focusNode,
+  });
 
   @override
-  _CampCardState createState() => _CampCardState();
+  State<CampCard> createState() => _CampCardState();
 }
 
 class _CampCardState extends State<CampCard> {

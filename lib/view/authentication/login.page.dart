@@ -4,7 +4,7 @@ import 'package:velocity_x/velocity_x.dart';
 import 'package:stacked/stacked.dart';
 
 import '../../view_models/login.vm.dart';
-import '../../widget/buttonCustom.dart';
+import '../../widget/button_custom.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                                     style: const TextStyle(color: Colors.red),
                                   ),
                                 ),
-                              ButtomCustom(
+                              ButtonCustom(
                                 focusNode: viewModel.loginButtonFocusNode,
                                 isSplashScreen: true,
                                 onPressed: () => viewModel.handleLogin(),
@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                                   vertical: 10,
                                 ),
                               ),
-                              ButtomCustom(
+                              ButtonCustom(
                                 focusNode: viewModel.exitButtonFocusNode,
                                 onPressed: () {
                                   SystemNavigator.pop();
@@ -134,18 +134,20 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               TextButton(
-                                  onPressed: () {
-                                    FocusScope.of(context)
-                                        .requestFocus(viewModel.emailFocusNode);
-                                  },
-                                  child: const Text(
-                                    'Nhập lại email',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white),
-                                  ))
+                                onPressed: () {
+                                  FocusScope.of(context)
+                                      .requestFocus(viewModel.emailFocusNode);
+                                },
+                                child: const Text(
+                                  'Nhập lại email',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),

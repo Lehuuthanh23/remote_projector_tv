@@ -153,7 +153,7 @@ class ViewCampViewModel extends BaseViewModel {
   void popPage() {
     checkAlive = false;
     homeViewModel.notifyListeners();
-    if (AppSP.get(AppSPKey.turnOfflPJ) == 'true') {
+    if (AppSP.get(AppSPKey.turnOffPJ) == 'true') {
       _dio.get(offProjector);
     }
   }

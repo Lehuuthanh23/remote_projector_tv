@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/services.dart';
-import 'package:play_box/app/app_sp.dart';
-import 'package:play_box/app/app_sp_key.dart';
 
+import '../app/app_sp.dart';
+import '../app/app_sp_key.dart';
 import '../app/app_utils.dart';
 import '../models/device/device_info_model.dart';
 
@@ -68,8 +67,8 @@ class DeviceInfoService {
     try {
       String? serial = await AppUtils.platformChannel.invokeMethod('getSerial');
       return serial;
-    } on PlatformException catch (e) {
-      return null;
-    }
+    } catch (_) {}
+
+    return null;
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ButtomCustom extends StatefulWidget {
+class ButtonCustom extends StatefulWidget {
   final Function onPressed;
   final bool? isSplashScreen;
   final String title;
@@ -13,7 +13,7 @@ class ButtomCustom extends StatefulWidget {
   final double? width;
   final FocusNode? focusNode;
 
-  const ButtomCustom({
+  const ButtonCustom({
     super.key,
     required this.onPressed,
     this.isSplashScreen,
@@ -28,10 +28,10 @@ class ButtomCustom extends StatefulWidget {
   });
 
   @override
-  State<ButtomCustom> createState() => _ButtomCustomState();
+  State<ButtonCustom> createState() => _ButtonCustomState();
 }
 
-class _ButtomCustomState extends State<ButtomCustom> {
+class _ButtonCustomState extends State<ButtonCustom> {
   late FocusNode _focusNode;
   bool _isFocused = false;
 
@@ -56,8 +56,8 @@ class _ButtomCustomState extends State<ButtomCustom> {
   Widget build(BuildContext context) {
     return Focus(
       focusNode: widget.focusNode ?? _focusNode,
-      onKey: (FocusNode node, RawKeyEvent event) {
-        if (event is RawKeyDownEvent &&
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
             (event.logicalKey == LogicalKeyboardKey.select ||
                 event.logicalKey == LogicalKeyboardKey.enter)) {
           widget.onPressed();
