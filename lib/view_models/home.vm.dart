@@ -68,11 +68,11 @@ class HomeViewModel extends BaseViewModel {
   Future<void> initialise() async {
     methodChannel.setMethodCallHandler(_handleMethodCall);
 
-    String? info = AppSP.get(AppSPKey.user_info);
+    String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
-      currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+      currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
       await AppUtils.platformChannel.invokeMethod(
-          'saveUser', {AppSPKey.user_info: currentUser.customerId});
+          'saveUser', {AppSPKey.userInfo: currentUser.customerId});
     }
     proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
@@ -255,7 +255,7 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> signOut() async {
     AppSP.set(AppSPKey.token, '');
-    AppSP.set(AppSPKey.user_info, '');
+    AppSP.set(AppSPKey.userInfo, '');
     AppSP.set(AppSPKey.lstCampSchedule, '[]');
 
     await AppUtils.platformChannel.invokeMethod('clearUser');
@@ -337,7 +337,7 @@ class HomeViewModel extends BaseViewModel {
 
   void turnOff() {
     turnOffPJ = !turnOffPJ;
-    AppSP.set(AppSPKey.turnOfflPJ, turnOffPJ.toString());
+    AppSP.set(AppSPKey.turnOffPJ, turnOffPJ.toString());
     notifyListeners();
   }
 

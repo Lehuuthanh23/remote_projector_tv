@@ -31,7 +31,7 @@ class SplashViewModel extends BaseViewModel {
 
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
-    userJson = AppSP.get(AppSPKey.user_info) ?? '';
+    userJson = AppSP.get(AppSPKey.userInfo) ?? '';
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
     proPW = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';

@@ -8,30 +8,20 @@ import '../models/device/device_info_model.dart';
 import '../models/device/device_model.dart';
 import '../models/user/user.dart';
 import '../request/device/device.request.dart';
-import '../view_models/home.vm.dart';
 import 'app_sp.dart';
 import 'app_sp_key.dart';
 
 class AppUtils {
   static const platformChannel = MethodChannel('com.example.usb/serial');
 
-  //http url
+  /// Add base host to url
   static String createUrl(String toMerge) {
     return '${Api.hostApi}$toMerge';
   }
 
+  /// Add base host and id user to url
   static String createUrlWithUserId(String toMerge, String userId) {
     return '${Api.hostApi}$toMerge$userId';
-  }
-
-  //option when send api
-  static Options createOptionsWithCookie(String cookieData) {
-    return Options(
-      headers: {
-        'Cookie': 'PHPSESSID=$cookieData',
-        'Content-Type': 'multipart/form-data',
-      },
-    );
   }
 
   static Options createOptionsNoCookie() {
@@ -42,8 +32,9 @@ class AppUtils {
     );
   }
 
+  /// Check if device is connect to user
   static Future<bool> checkConnect() async {
-    User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.user_info)));
+    User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
     DeviceInfoModel deviceInfoModel =
         DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
     DeviceRequest deviceRequest = DeviceRequest();
@@ -62,14 +53,4 @@ class AppUtils {
       return false;
     }
   }
-  //get user id
-  // static Future<String> getUserIdFromLocal() async {
-  //   var storedUserInfo = await AppSP.retrieveItem(AppSPKey.user_info);
-  //   if (storedUserInfo != null) {
-  //     final User userData = User.fromJson(storedUserInfo);
-  //     return userData.customerId ?? "";
-  //   } else {
-  //     return "";
-  //   }
-  // }
 }

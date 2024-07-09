@@ -5,7 +5,7 @@ import '../../../app/app_sp.dart';
 import '../../../app/app_sp_key.dart';
 import '../../../app/app_utils.dart';
 import '../../../view_models/home.vm.dart';
-import '../../../widget/buttonCustom.dart';
+import '../../../widget/button_custom.dart';
 
 class PopupSettingScreen extends StatefulWidget {
   const PopupSettingScreen({super.key, required this.homeVM});
@@ -404,7 +404,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ButtomCustom(
+                      ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         color: checkConnect == null
@@ -418,7 +418,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                         title: checkConnect == true ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
                         textSize: 15,
                       ),
-                      ButtomCustom(
+                      ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         color: Colors.black,

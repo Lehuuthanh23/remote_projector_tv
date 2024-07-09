@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'observer/navigator_observer.dart';
 import 'view/splash/splash.page.dart';
 import 'app/di.dart';
@@ -22,7 +23,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Remote Projector',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

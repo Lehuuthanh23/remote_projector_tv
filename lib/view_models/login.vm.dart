@@ -46,7 +46,7 @@ class LoginViewModel extends BaseViewModel {
     final password = convertToMD5(passwordController.text);
 
     final user = LoginRequestModel(email: email, password: password);
-    final error = await request.login(context, user);
+    final error = await request.login(user);
 
     if (error != null) {
       errorMessage = error;

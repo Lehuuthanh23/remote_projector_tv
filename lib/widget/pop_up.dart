@@ -35,7 +35,10 @@ class PopUpWidget extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xffFABD1D), Color(0xffEB6E2C)],
+                colors: [
+                  AppColor.appBarEnd,
+                  AppColor.appBarStart,
+                ],
               ),
               borderRadius: BorderRadius.all(Radius.circular(6))),
           child: Column(

@@ -9,10 +9,7 @@ import 'ads.page.dart';
 class ViewCamp extends StatefulWidget {
   final HomeViewModel homeViewModel;
 
-  const ViewCamp({
-    super.key,
-    required this.homeViewModel,
-  });
+  const ViewCamp({super.key, required this.homeViewModel});
 
   @override
   State<ViewCamp> createState() => _ViewCampState();
