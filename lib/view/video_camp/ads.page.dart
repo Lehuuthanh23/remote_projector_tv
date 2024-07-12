@@ -40,7 +40,7 @@ class ADSPage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               const Text(
-                '02822 112 342',
+                '0907 859 668',
                 style: TextStyle(
                   decoration: TextDecoration.none,
                   fontWeight: FontWeight.bold,

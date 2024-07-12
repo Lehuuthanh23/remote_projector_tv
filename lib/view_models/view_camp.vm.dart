@@ -35,6 +35,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   VideoPlayerController? _controller;
   VideoPlayerController? get controller => _controller;
+  bool isDrawerOpen = false;
 
   String _formattedTime = '';
   String get formattedTime => _formattedTime;
@@ -43,7 +44,6 @@ class ViewCampViewModel extends BaseViewModel {
 
   List<String> usbPaths = [];
   List<CampSchedule> campSchedulesNew = [];
-
   File? image;
   String proUN = '';
   String proPW = '';
@@ -61,6 +61,7 @@ class ViewCampViewModel extends BaseViewModel {
   bool pauseVideo = false;
   bool checkImage = false;
   bool checkAlive = true;
+  FocusNode drawerFocus = FocusNode();
 
   void init() {
     checkAlive = true;
@@ -131,6 +132,11 @@ class ViewCampViewModel extends BaseViewModel {
     homeViewModel.setCallback(null);
 
     super.dispose();
+  }
+
+  toggleDrawer() {
+    isDrawerOpen = !isDrawerOpen;
+    notifyListeners();
   }
 
   void onCommandInvoke(String command) {
