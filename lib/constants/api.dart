@@ -1,4 +1,7 @@
 class Api {
+  // Config
+  static const String configApi = 'https://gtglobal.com.vn/config6789.php';
+
   // Host URL
   static String hostApi = 'https://api6789.web5sao.net';
 

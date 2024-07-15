@@ -149,8 +149,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                         TextFormField(
                                           enabled: false,
                                           decoration: InputDecoration(
-                                            labelText: widget.homeVM.deviceInfo!
-                                                        .serialNumber ==
+                                            labelText: widget.homeVM.deviceInfo?.serialNumber ==
                                                     'unknown'
                                                 ? 'ANDROID ID'
                                                 : 'SERI NUMBER',
@@ -161,13 +160,11 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                           ),
                                           initialValue: widget
                                                       .homeVM
-                                                      .deviceInfo!
-                                                      .serialNumber ==
+                                                      .deviceInfo?.serialNumber ==
                                                   'unknown'
                                               ? widget
                                                   .homeVM.deviceInfo!.androidId
-                                              : widget.homeVM.deviceInfo!
-                                                  .serialNumber,
+                                              : widget.homeVM.deviceInfo?.serialNumber,
                                         ),
                                         const SizedBox(height: 10),
                                         TextFormField(
@@ -188,7 +185,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                             border: UnderlineInputBorder(),
                                           ),
                                           initialValue:
-                                              widget.homeVM.deviceInfo!.model,
+                                              widget.homeVM.deviceInfo?.model,
                                         ),
                                       ],
                                     ),
