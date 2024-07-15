@@ -6,4 +6,5 @@ object Constants {
     const val USER_ID_CONNECTED = "user_info"
     const val SERIAL_COMPUTER = "serial_computer"
     const val COMPUTER_ID = "computer_id"
+    const val HOST = "host"
 }

@@ -26,6 +26,7 @@ import com.example.play_box.service.MyBackgroundService
 import com.example.play_box.utils.Constants
 import com.example.play_box.utils.SharedPreferencesManager
 import android.hardware.usb.UsbManager
+import com.example.play_box.utils.AppApi
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
@@ -109,6 +110,15 @@ class MainActivity : FlutterActivity() {
                 "getSerial" -> {
                     val androidId = getDeviceId(this)
                     result.success(androidId)
+                }
+
+                "setHost" -> {
+                    val host = call.argument<String>(Constants.HOST)
+                    if (host != null) {
+                        AppApi.BASE_URL = host
+                    }
+                    sharedPreferencesManager.saveHost(host)
+                    result.success("")
                 }
 
                 else -> {

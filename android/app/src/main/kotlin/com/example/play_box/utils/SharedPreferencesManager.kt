@@ -92,4 +92,10 @@ class SharedPreferencesManager(context: Context) {
     }
 
     fun getUserIdConnected(): String? = retrieveStringByKey(Constants.USER_ID_CONNECTED)
+
+    fun saveHost(host: String?) {
+        saveStringByKey(Constants.HOST, host)
+    }
+
+    fun getHost(): String? = retrieveStringByKey(Constants.HOST)
 }

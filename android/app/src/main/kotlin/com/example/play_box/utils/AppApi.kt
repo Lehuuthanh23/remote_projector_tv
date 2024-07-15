@@ -1,7 +1,7 @@
 package com.example.play_box.utils
 
 object AppApi {
-    const val BASE_URL = "https://api6789.web5sao.net/"
+    var BASE_URL = "https://api6789.web5sao.net/"
 
     const val GET_NEW_COMMANDS = "home/GetNewCommands_BySeriComputer"
     const val REPLY_COMMAND = "home/ReplyCommand"
