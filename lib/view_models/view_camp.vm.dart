@@ -376,17 +376,17 @@ class ViewCampViewModel extends BaseViewModel {
   void _onMediaFinished(List<CampSchedule> campSchedules) {
     CampSchedule currentCampSchedule = campSchedules[currentIndex];
     CampRequest campRequest = CampRequest();
-    NotifyRequest notifyRequest = NotifyRequest();
+    //NotifyRequest notifyRequest = NotifyRequest();
 
     campRequest.addCampaignRunProfile(currentCampSchedule);
 
-    Notify notify = Notify(
+    /*Notify notify = Notify(
       title: 'Chạy chiến dịch',
       descript: 'Chạy chiến dịch ${currentCampSchedule.campaignName}',
       detail: 'Chạy chiến dịch ${currentCampSchedule.campaignName}',
       picture: '',
     );
-    notifyRequest.addNotify(notify);
+    notifyRequest.addNotify(notify);*/
 
     _loadNextMediaInList(campSchedules);
   }
