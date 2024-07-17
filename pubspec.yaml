@@ -54,7 +54,8 @@ dependencies:
   permission_handler: ^11.3.1
   file_picker: ^8.0.5
   usb_serial: ^0.5.1
-  uuid: ^4.4.0
+  firebase_core: ^2.3.0
+  firebase_messaging: ^14.0.0
 
 dev_dependencies:
   flutter_test:

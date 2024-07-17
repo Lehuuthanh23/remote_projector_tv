@@ -26,4 +26,7 @@ class Api {
 
   // Notification URL
   static String insertNotify = '/home/InsertNotify';
+
+  // Command URL
+  static String replyCommand = '/home/ReplyCommand';
 }

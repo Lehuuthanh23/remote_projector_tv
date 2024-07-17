@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
@@ -15,6 +16,7 @@ import '../models/device/device_info_model.dart';
 import '../models/packet/packet_model.dart';
 import '../models/user/user.dart';
 import '../request/camp/camp.request.dart';
+import '../request/command/command.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
@@ -35,6 +37,7 @@ class HomeViewModel extends BaseViewModel {
   final CampRequest _campRequest = CampRequest();
   final DeviceRequest _deviceRequest = DeviceRequest();
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
+  final CommandRequest _commandRequest = CommandRequest();
 
   TextEditingController proUNController = TextEditingController();
   TextEditingController proPWController = TextEditingController();
@@ -57,6 +60,7 @@ class HomeViewModel extends BaseViewModel {
 
   User currentUser = User();
   DeviceInfoModel? deviceInfo;
+  String? currentTimeFormatted;
 
   bool isDrawerOpen = false;
   bool playVideo = true;
@@ -66,8 +70,6 @@ class HomeViewModel extends BaseViewModel {
   bool? pauseVideo;
 
   Future<void> initialise() async {
-    methodChannel.setMethodCallHandler(_handleMethodCall);
-
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
       currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
@@ -80,6 +82,9 @@ class HomeViewModel extends BaseViewModel {
 
     await fetchDeviceInfo();
     getValue();
+    await _getTokenAndSendToServer();
+    _setupTokenRefreshListener();
+    _setupForegroundMessageListener();
   }
 
   @override
@@ -106,20 +111,52 @@ class HomeViewModel extends BaseViewModel {
     super.dispose();
   }
 
-  Future<void> getValue() async {
-    await getMyCamp();
-    await getCampSchedule();
-
-    notifyListeners();
+  Future<void> _getTokenAndSendToServer() async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? token = await messaging.getToken();
+      print(token);
+      if (token != null) {
+        _sendTokenToServer(token);
+      }
+    } catch (_) {}
   }
 
-  void setCallback(ValueChanged<String>? callback) {
-    callbackCommand = callback;
-    pauseVideo = null;
+  void _sendTokenToServer(String token) {
+
   }
 
-  Future<String?> _handleMethodCall(MethodCall call) async {
-    switch (call.method) {
+  void _setupTokenRefreshListener() {
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      _sendTokenToServer(newToken);
+    });
+  }
+
+  void _setupForegroundMessageListener() {
+    FirebaseMessaging.onMessage.listen(_onMessageReceive);
+  }
+
+  Future<void> _onMessageReceive(RemoteMessage message) async {
+    String? commandId = message.data['cmd_id'];
+    String? command = message.data['cmd_code'];
+
+    if (command != null && commandId != null) {
+      String? replyContent = await onCommandChecked(command);
+      if (replyContent != null) {
+        await _commandRequest.replyCommand(commandId, replyContent);
+      }
+    }
+  }
+
+  Future<String?> onCommandChecked(String? command) async {
+    switch (command) {
+      case AppString.getTimeNow:
+        return currentTimeFormatted;
+
+      case AppString.restartApp:
+        AppUtils.channelRestart.invokeMethod('restartApp');
+        return AppString.successCommand;
+
       case AppString.stopVideo:
         callbackCommand?.call(AppString.stopVideo);
         return callbackCommand == null
@@ -131,8 +168,8 @@ class HomeViewModel extends BaseViewModel {
         return pauseVideo == null
             ? AppString.notPlayVideo
             : pauseVideo == true
-                ? AppString.pauseVideoReturn
-                : AppString.continueVideo;
+            ? AppString.pauseVideoReturn
+            : AppString.continueVideo;
 
       case AppString.restartVideo:
         if (callbackCommand != null) {
@@ -180,10 +217,23 @@ class HomeViewModel extends BaseViewModel {
         AppSP.set(AppSPKey.lstCampSchedule, '[]');
 
         getValue();
-        break;
-    }
+        return null;
 
-    return null;
+      default:
+        return null;
+    }
+  }
+
+  Future<void> getValue() async {
+    await getMyCamp();
+    await getCampSchedule();
+
+    notifyListeners();
+  }
+
+  void setCallback(ValueChanged<String>? callback) {
+    callbackCommand = callback;
+    pauseVideo = null;
   }
 
   void toggleDrawer() {

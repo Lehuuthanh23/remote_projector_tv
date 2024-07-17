@@ -4,35 +4,39 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import android.content.pm.PackageManager
-import android.app.AlertDialog
+import com.example.play_box.service.MyBackgroundService
+import com.example.play_box.utils.AppApi
+import com.example.play_box.utils.Constants
+import com.example.play_box.utils.RestartPlugin
+import com.example.play_box.utils.SharedPreferencesManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
-import com.example.play_box.service.MyBackgroundService
-import com.example.play_box.utils.Constants
-import com.example.play_box.utils.SharedPreferencesManager
-import android.hardware.usb.UsbManager
-import com.example.play_box.utils.AppApi
+
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
     private var eventSink: EventChannel.EventSink? = null
 
     companion object {
+        private const val TAG = "MainActivity"
         private const val SERIAL_CHANNEL = "com.example.usb/serial"
         private const val USB_EVENT_CHANNEL = "com.example.usb/event"
         private const val REQUEST_EXTERNAL_STORAGE = 1
@@ -42,11 +46,11 @@ class MainActivity : FlutterActivity() {
         )
 
         lateinit var channel: MethodChannel
-        lateinit var flutterEngine: FlutterEngine
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        flutterEngine.plugins.add(RestartPlugin())
 
         EventChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -73,7 +77,6 @@ class MainActivity : FlutterActivity() {
         )
 
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERIAL_CHANNEL)
-        flutterEngine.also { MainActivity.flutterEngine = it }
 
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -110,6 +113,10 @@ class MainActivity : FlutterActivity() {
                 "getSerial" -> {
                     val androidId = getDeviceId(this)
                     result.success(androidId)
+                }
+
+                "restartApp" -> {
+                    Log.d(TAG, "configureFlutterEngine: Reatsrt");
                 }
 
                 "setHost" -> {

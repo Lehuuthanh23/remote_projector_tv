@@ -13,6 +13,7 @@ import 'app_sp_key.dart';
 
 class AppUtils {
   static const platformChannel = MethodChannel('com.example.usb/serial');
+  static const channelRestart = MethodChannel('restart');
 
   /// Add base host to url
   static String createUrl(String toMerge) {

@@ -45,6 +45,7 @@ class TimerClockViewModel extends BaseViewModel {
 
   Future<void> _updateTime() async {
     _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
+    homeViewModel.currentTimeFormatted = currentTimeFormatted;
     notifyListeners();
     day = AppSP.get(AppSPKey.day) ?? '';
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
