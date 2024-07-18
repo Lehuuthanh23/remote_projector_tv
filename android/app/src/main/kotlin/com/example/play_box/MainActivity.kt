@@ -169,6 +169,24 @@ class MainActivity : FlutterActivity() {
         startMyBackgroundService()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        MyBackgroundService.isAppRunning = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        MyBackgroundService.isAppRunning = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        MyBackgroundService.isAppRunning = false
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     private fun showPermissionDialog() {
         val builder = AlertDialog.Builder(this)
@@ -231,6 +249,7 @@ class MainActivity : FlutterActivity() {
     private fun startMyBackgroundService() {
         if (checkStartService()) {
             val serviceIntent = Intent(this, MyBackgroundService::class.java)
+            MyBackgroundService.isAppRunning = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent)
             } else {

@@ -25,6 +25,7 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDDm3vrWSzs2_EyCLFLNMz-udrw1DoC4CA',
     appId: '1:469868592109:android:de63ac62600292b5ddc5e4',
@@ -32,4 +33,5 @@ class DefaultFirebaseOptions {
     projectId: 'remote-projector-27649',
     storageBucket: 'remote-projector-27649.appspot.com',
   );
+
 }

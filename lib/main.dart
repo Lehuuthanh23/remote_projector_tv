@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:play_box/app/app_sp.dart';
+import 'package:play_box/app/app_sp_key.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 import 'app/app_string.dart';
 import 'observer/navigator_observer.dart';
@@ -23,17 +26,20 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   String? command = message.data['cmd_code'];
 
   if (command != null && commandId != null) {
-    String replyContent;
+    String? replyContent;
+
     if (command == AppString.getTimeNow) {
       DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
       replyContent = DateFormat('HH:mm:ss').format(now);
     } else if (command == AppString.restartApp) {
-
-      replyContent = AppString.successCommand;
+      replyContent = null;
     } else {
       replyContent = AppString.notPlayVideo;
     }
-    CommandRequest().replyCommand(commandId, replyContent);
+
+    if (replyContent != null) {
+      CommandRequest().replyCommand(commandId, replyContent);
+    }
   }
 }
 

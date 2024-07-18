@@ -81,8 +81,8 @@ class HomeViewModel extends BaseViewModel {
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
 
     await fetchDeviceInfo();
-    getValue();
     await _getTokenAndSendToServer();
+    await getValue();
     _setupTokenRefreshListener();
     _setupForegroundMessageListener();
   }
@@ -115,20 +115,15 @@ class HomeViewModel extends BaseViewModel {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
-      print(token);
       if (token != null) {
-        _sendTokenToServer(token);
+        _deviceRequest.updateDeviceFirebaseToken(token);
       }
     } catch (_) {}
   }
 
-  void _sendTokenToServer(String token) {
-
-  }
-
   void _setupTokenRefreshListener() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      _sendTokenToServer(newToken);
+      _deviceRequest.updateDeviceFirebaseToken(newToken);
     });
   }
 
@@ -304,6 +299,8 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> signOut() async {
+    await _deviceRequest.updateDeviceFirebaseToken('');
+
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.userInfo, '');
     AppSP.set(AppSPKey.lstCampSchedule, '[]');
@@ -348,6 +345,7 @@ class HomeViewModel extends BaseViewModel {
         AppSP.set(AppSPKey.proPW, proPWController.text);
         AppSP.set(AppSPKey.proUN, proUNController.text);
         AppSP.set(AppSPKey.projectorIP, proIPController.text);
+        _getTokenAndSendToServer();
         showDialog(
           context: context,
           builder: (BuildContext context) {

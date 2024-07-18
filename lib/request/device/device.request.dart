@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
@@ -100,5 +101,21 @@ class DeviceRequest {
     } catch (_) {}
 
     return lstAllDevice;
+  }
+
+  Future<void> updateDeviceFirebaseToken(String token) async {
+    String? deviceString = AppSP.get(AppSPKey.computer);
+
+    if (!deviceString.isEmptyOrNull) {
+      try {
+        Device device = Device.fromJson(jsonDecode(deviceString!));
+
+        final response = await _dio.get(
+          '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
+        );
+
+        print(response);
+      } catch(_) {}
+    }
   }
 }

@@ -6,7 +6,7 @@ class Api {
   static String hostApi = 'https://api6789.web5sao.net';
 
   // Authentication & User Fetch URL
-  static String login = '/home/login';
+  static const String login = '/home/login';
   static String getCustomer = '/home/GetInfoCustomer_ById';
   static String getCustomerByEmail = '/home/GetInfoCustomer_ByEmail';
   static String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
@@ -29,4 +29,7 @@ class Api {
 
   // Command URL
   static String replyCommand = '/home/ReplyCommand';
+
+  // Firebase
+  static const String updateDeviceFirebaseToken = '/home/UpdateComputerToken_ById';
 }

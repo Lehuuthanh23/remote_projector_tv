@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import com.example.play_box.MainActivity
 import com.example.play_box.R
 import com.example.play_box.base.api.ApiService
+import com.example.play_box.model.command.CommandEnum
 import com.example.play_box.model.command.CommandModel
 import com.example.play_box.utils.AppApi
 import com.example.play_box.utils.JSON
@@ -24,12 +25,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import okhttp3.FormBody
 
 class MyBackgroundService : Service() {
     companion object {
         private const val CHECK_ALIVE_INTERVAL = 60 * 1000L
+        private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
 
-        var runCheckCommand = false
+        var isAppRunning = true
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())
@@ -43,8 +46,18 @@ class MyBackgroundService : Service() {
     private val checkAliveRunnable = object : Runnable {
         override fun run() {
             checkAlive()
-            if (runCheckCommand) checkCommandList()
             handler.postDelayed(this, CHECK_ALIVE_INTERVAL)
+        }
+    }
+
+    private val checkCommandRunnable = object : Runnable {
+        override fun run() {
+            if (!isAppRunning || !isAppRunning()) {
+                isAppRunning = false
+                checkCommandList()
+            }
+
+            handler.postDelayed(this, CHECK_COMMAND_INTERVAL)
         }
     }
 
@@ -72,7 +85,12 @@ class MyBackgroundService : Service() {
                             JSON.decodeToList(response["cmd_list"], Array<CommandModel>::class.java)
                         if (commandList.isNotEmpty()) {
                             for (item in commandList) {
+                                if (item.cmdCode == CommandEnum.RESTART_APP.command) {
+                                    replayCommand(value = "OK", commandId = item.cmdId)
 
+                                    openFlutterActivity()
+                                    return@launch
+                                }
                             }
                         }
                     }
@@ -81,6 +99,18 @@ class MyBackgroundService : Service() {
         } else stopSelf()
     }
 
+    private fun replayCommand(value: String, commandId: String?) {
+        serviceScope.launch {
+            val formBody = FormBody.Builder()
+                .add("return_value", value)
+                .build()
+
+            apiService.post(
+                url = "${AppApi.REPLY_COMMAND}/$commandId",
+                body = formBody,
+            )
+        }
+    }
 
     @Suppress("DEPRECATION")
     private fun isAppRunning(): Boolean {
@@ -129,8 +159,12 @@ class MyBackgroundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         handler.removeCallbacks(checkAliveRunnable)
+        handler.removeCallbacks(openAppRunnable)
+        handler.removeCallbacks(checkCommandRunnable)
+
         handler.post(checkAliveRunnable)
-        handler.postDelayed(openAppRunnable, 10000)
+        handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
+        handler.postDelayed(openAppRunnable, 2 * CHECK_COMMAND_INTERVAL)
 
         val notification = createNotification()
         startForeground(1001, notification)
