@@ -2,9 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:play_box/app/app_sp.dart';
-import 'package:play_box/app/app_sp_key.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 import 'app/app_string.dart';
 import 'observer/navigator_observer.dart';
@@ -21,6 +18,7 @@ void main() async {
   runApp(const MyApp());
 }
 
+@pragma("vm:entry-point")
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   String? commandId = message.data['cmd_id'];
   String? command = message.data['cmd_code'];

@@ -1,50 +1,50 @@
 class PacketModel {
   String? monthQty;
-  String paidId;
-  String packetCode;
-  String regNumber;
-  String namePacket;
-  String price;
+  String? paidId;
+  String? packetCode;
+  String? regNumber;
+  String? namePacket;
+  String? price;
   String? expireDate;
-  String picture;
-  String description;
-  String detail;
-  String customerId;
+  String? picture;
+  String? description;
+  String? detail;
+  String? customerId;
   String? pay;
-  String createdDate;
-  String createdBy;
-  String lastMDFBy;
-  String lastMDFDate;
-  String deleted;
-  String registerDate;
+  String? createdDate;
+  String? createdBy;
+  String? lastMDFBy;
+  String? lastMDFDate;
+  String? deleted;
+  String? registerDate;
   String? paymentDate;
   String? validDate;
   String? typePay;
-  String packetId;
+  String? packetId;
 
   PacketModel({
     this.monthQty,
-    required this.paidId,
-    required this.packetCode,
-    required this.regNumber,
-    required this.namePacket,
-    required this.price,
+    this.paidId,
+    this.packetCode,
+    this.regNumber,
+    this.namePacket,
+    this.price,
     this.expireDate,
-    required this.picture,
-    required this.description,
-    required this.detail,
-    required this.customerId,
+    this.picture,
+    this.description,
+    this.detail,
+    this.customerId,
     this.pay,
-    required this.createdDate,
-    required this.createdBy,
-    required this.lastMDFBy,
-    required this.lastMDFDate,
-    required this.deleted,
-    required this.registerDate,
+    this.createdDate,
+    this.createdBy,
+    this.lastMDFBy,
+    this.lastMDFDate,
+    this.deleted,
+    this.registerDate,
     this.paymentDate,
     this.validDate,
     this.typePay,
-    required this.packetId,
+    this.packetId,
   });
 
   factory PacketModel.fromJson(Map<String, dynamic> json) {
