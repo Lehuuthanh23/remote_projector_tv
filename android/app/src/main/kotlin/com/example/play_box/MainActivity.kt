@@ -30,7 +30,6 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
-
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
     private var eventSink: EventChannel.EventSink? = null

@@ -52,6 +52,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final CustomNavigatorObserver _navigatorObserver = CustomNavigatorObserver();
 
   @override
+  void initState() {
+    super.initState();
+    //_setupFirebaseMessaging();
+  }
+
+  Future<void> _setupFirebaseMessaging() async {
+    var messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(provisional: true);
+    await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Remote Projector',
