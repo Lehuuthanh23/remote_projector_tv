@@ -114,7 +114,6 @@ class DeviceRequest {
           '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
         );
 
-        print(response);
       } catch(_) {}
     }
   }
