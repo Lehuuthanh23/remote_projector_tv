@@ -15,7 +15,6 @@ class ConfigRequest {
       final responseData = jsonDecode(response.data);
       ConfigModel config = ConfigModel.fromJson(responseData);
 
-      print(response);
       return config;
     } catch(_) {}
 

@@ -18,4 +18,5 @@ class AppSPKey {
   static const String lstCampSchedule = 'lstCampSchedule';
   static const String typePlayVideo = 'typePlayVideo';
   static const String config = 'config';
+  static const String loginWith = 'loginWith';
 }

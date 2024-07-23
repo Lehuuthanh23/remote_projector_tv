@@ -247,7 +247,7 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                       },
                       child: IconButton(
                         icon: const Icon(Icons.menu,
-                            color: Colors.white, size: 30),
+                            color: Colors.transparent, size: 30),
                         onPressed: viewModel.toggleDrawer,
                       ),
                     ),

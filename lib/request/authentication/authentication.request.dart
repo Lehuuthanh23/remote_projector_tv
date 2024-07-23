@@ -45,7 +45,8 @@ class AuthenticationRequest {
 
         return null; // Successful login, no error message
       } else {
-        return loginResponse.msg ?? 'Tài khoản hoặc mật khẩu không chính xác.'; // Return error message
+        return loginResponse.msg ??
+            'Tài khoản hoặc mật khẩu không chính xác.'; // Return error message
       }
     } catch (_) {
       return 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
