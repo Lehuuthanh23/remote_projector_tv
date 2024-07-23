@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 import 'package:intl/intl.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -64,7 +65,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> _setupFirebaseMessaging() async {
     var messaging = FirebaseMessaging.instance;
-    // await messaging.requestPermission(provisional: true);
     var status = await messaging.requestPermission(
       alert: true,
       announcement: false,
@@ -75,6 +75,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       sound: false,
     );
     print(status.authorizationStatus);
+    try {
+      GooglePlayServicesAvailability availability = await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
+      print(availability.value);
+    } catch (_) {}
   }
 
   @override
