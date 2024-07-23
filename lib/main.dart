@@ -75,10 +75,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       sound: false,
     );
     print(status.authorizationStatus);
-    try {
-      GooglePlayServicesAvailability availability = await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
-      print(availability.value);
-    } catch (_) {}
   }
 
   @override
