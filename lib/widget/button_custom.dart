@@ -12,7 +12,7 @@ class ButtonCustom extends StatefulWidget {
   final Color? color;
   final double? width;
   final FocusNode? focusNode;
-
+  final Widget? customTitle;
   const ButtonCustom({
     super.key,
     required this.onPressed,
@@ -25,6 +25,7 @@ class ButtonCustom extends StatefulWidget {
     this.color,
     this.width,
     this.focusNode,
+    this.customTitle,
   });
 
   @override
@@ -88,16 +89,17 @@ class _ButtonCustomState extends State<ButtonCustom> {
             ),
           ),
           child: Center(
-            child: Text(
-              widget.title,
-              style: TextStyle(
-                fontSize: widget.textSize,
-                fontWeight: FontWeight.bold,
-                color: widget.isSplashScreen == null
-                    ? Colors.white
-                    : const Color(0xffEB6E2C),
-              ),
-            ),
+            child: widget.customTitle ??
+                Text(
+                  widget.title,
+                  style: TextStyle(
+                    fontSize: widget.textSize,
+                    fontWeight: FontWeight.bold,
+                    color: widget.isSplashScreen == null
+                        ? Colors.white
+                        : const Color(0xffEB6E2C),
+                  ),
+                ),
           ),
         ),
       ),

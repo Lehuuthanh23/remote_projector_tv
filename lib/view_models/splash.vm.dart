@@ -10,9 +10,11 @@ import '../app/app_utils.dart';
 import '../constants/api.dart';
 import '../models/config/config_model.dart';
 import '../models/device/device_info_model.dart';
+import '../models/user/authentication/request/login_request_model.dart';
 import '../models/user/user.dart';
 import '../request/account/account.request.dart';
 import '../request/config/config.request.dart';
+import '../services/google_sigin_api.service.dart';
 import '../view/authentication/login.page.dart';
 import '../view/home/home.page.dart';
 
@@ -58,19 +60,30 @@ class SplashViewModel extends BaseViewModel {
     } else {
       clearUser();
     }
+    String? loginWith = AppSP.get(AppSPKey.loginWith) ?? '';
 
     if (token.isNotEmpty) {
-      var user = jsonDecode(userJson);
-      User userFromJson = User.fromJson(user);
-      AccountRequest request = AccountRequest();
-      User? currentUser =
-          await request.getCustomerById(userFromJson.customerId!);
-
-      if (currentUser != null && token == currentUser.customerToken) {
-        checkLogin = true;
-        idCustomer = currentUser.customerId;
+      if (loginWith == 'google') {
+        User user = User.fromJson(jsonDecode(userJson));
+        if (await GoogleSignInService.signInSilently() != null) {
+          checkLogin = true;
+        } else {
+          print('Không có đăng nhập gg');
+          checkLogin = false;
+        }
       } else {
-        clearUser();
+        var user = jsonDecode(userJson);
+        User userFromJson = User.fromJson(user);
+        AccountRequest request = AccountRequest();
+        User? currentUser =
+            await request.getCustomerById(userFromJson.customerId!);
+
+        if (currentUser != null && token == currentUser.customerToken) {
+          checkLogin = true;
+          idCustomer = currentUser.customerId;
+        } else {
+          clearUser();
+        }
       }
     }
   }
@@ -85,10 +98,9 @@ class SplashViewModel extends BaseViewModel {
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
-                builder: (context) => checkLogin
-                    ? const HomePage()
-                    : const LoginPage()),
-                (router) => false);
+                builder: (context) =>
+                    checkLogin ? const HomePage() : const LoginPage()),
+            (router) => false);
       }
     });
   }

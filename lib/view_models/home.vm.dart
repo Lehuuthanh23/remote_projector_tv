@@ -20,6 +20,7 @@ import '../request/command/command.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
+import '../services/google_sigin_api.service.dart';
 import '../services/usb.service.dart';
 import '../view/splash/splash.page.dart';
 import '../view/video_camp/view_camp.dart';
@@ -163,8 +164,8 @@ class HomeViewModel extends BaseViewModel {
         return pauseVideo == null
             ? AppString.notPlayVideo
             : pauseVideo == true
-            ? AppString.pauseVideoReturn
-            : AppString.continueVideo;
+                ? AppString.pauseVideoReturn
+                : AppString.continueVideo;
 
       case AppString.restartVideo:
         if (callbackCommand != null) {
@@ -300,7 +301,10 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> signOut() async {
     await _deviceRequest.updateDeviceFirebaseToken('');
-
+    print('Đang nhập bằng: (${AppSP.get(AppSPKey.loginWith)})');
+    if (AppSP.get(AppSPKey.loginWith) == 'google') {
+      await GoogleSignInService.logout();
+    }
     AppSP.set(AppSPKey.token, '');
     AppSP.set(AppSPKey.userInfo, '');
     AppSP.set(AppSPKey.lstCampSchedule, '[]');
