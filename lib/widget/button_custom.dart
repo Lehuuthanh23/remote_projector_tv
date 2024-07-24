@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:velocity_x/velocity_x.dart';
 
 class ButtonCustom extends StatefulWidget {
   final Function onPressed;
@@ -11,6 +12,7 @@ class ButtonCustom extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final Color? color;
   final double? width;
+  final double? height;
   final FocusNode? focusNode;
   final Widget? customTitle;
   const ButtonCustom({
@@ -26,6 +28,7 @@ class ButtonCustom extends StatefulWidget {
     this.width,
     this.focusNode,
     this.customTitle,
+    this.height,
   });
 
   @override
@@ -71,8 +74,8 @@ class _ButtonCustomState extends State<ButtonCustom> {
         onTap: () => widget.onPressed(),
         child: Container(
           width: widget.width,
-          padding: widget.padding ??
-              const EdgeInsets.symmetric(horizontal: 45, vertical: 10),
+          height: widget.height,
+          padding: widget.padding ?? const EdgeInsets.symmetric(vertical: 10),
           margin: widget.margin,
           decoration: BoxDecoration(
             color: _isFocused

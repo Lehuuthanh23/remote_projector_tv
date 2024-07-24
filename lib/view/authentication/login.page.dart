@@ -136,31 +136,28 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               ButtonCustom(
+                                height: 45,
                                 title: '',
                                 isSplashScreen: true,
                                 onPressed: () async {
                                   await viewModel.signInWithGoogle();
                                 },
-                                customTitle: Row(
+                                customTitle: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.only(
-                                          right: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              50),
-                                      child: const Image(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Image(
                                           image: AssetImage(
                                               'assets/images/ic_google.png'),
                                           width: 25,
                                           height: 25),
                                     ),
-                                    const Text(
+                                    Text(
                                       "Đăng nhập với Google",
                                       style: TextStyle(
                                           color: Colors.black,
-                                          fontSize: 20,
+                                          fontSize: 17,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ],
