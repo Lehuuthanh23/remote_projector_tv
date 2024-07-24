@@ -59,51 +59,22 @@ class GoogleSignInService {
     return false;
   }
 
-  // static void initialize() {
-  //   _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-  //     _currentUser = account;
-  //     if (account == null) {
-  //       print('Đã đăng xuất trên web');
-  //       // Xử lý thêm nếu cần
-  //     }
-  //   });
-
-  //   _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-  //     print('Check google');
-  //     GoogleSignInAccount? user = await _googleSignIn.signInSilently();
-  //     if (user != null) {
-  //       var auth = await user.authentication;
-  //       var accessToken = auth.accessToken;
-  //       // print('Access Token: $accessToken'); // In ra giá trị của accessToken
-  //       if (accessToken != null) {
-  //         bool isValid = await verifyAccessToken(accessToken);
-  //         if (!isValid) {
-  //           print('Access Token không hợp lệ, đã đăng xuất trên web');
-  //           _currentUser = null;
-  //           await logout();
-  //           _navigationService.navigateToLoginPage();
-  //         }
-  //       } else {
-  //         print('accessToken is null');
-  //       }
-  //     } else if (_currentUser != null) {
-  //       print('Đã đăng xuất trên web');
-  //       _currentUser = null;
-  //     }
-  //     _currentUser = user;
-  //   });
-  // }
-
   static void initialize() {
-    _googleSignIn.onCurrentUserChanged
-        .listen((GoogleSignInAccount? account) async {
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       _currentUser = account;
       if (account == null) {
         print('Đã đăng xuất trên web');
-        _navigationService.navigateToLoginPage();
-      } else {
-        var auth = await account.authentication;
+        // Xử lý thêm nếu cần
+      }
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      print('Check google');
+      GoogleSignInAccount? user = await _googleSignIn.signInSilently();
+      if (user != null) {
+        var auth = await user.authentication;
         var accessToken = auth.accessToken;
+        // print('Access Token: $accessToken'); // In ra giá trị của accessToken
         if (accessToken != null) {
           bool isValid = await verifyAccessToken(accessToken);
           if (!isValid) {
@@ -115,10 +86,12 @@ class GoogleSignInService {
         } else {
           print('accessToken is null');
         }
+      } else if (_currentUser != null) {
+        print('Đã đăng xuất trên web');
+        _currentUser = null;
       }
+      _currentUser = user;
     });
-
-    signInSilently(); // Attempt to sign in silently on app start
   }
 
   static void dispose() {
