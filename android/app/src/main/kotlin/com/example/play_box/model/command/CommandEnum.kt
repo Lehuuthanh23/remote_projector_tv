@@ -9,4 +9,5 @@ enum class CommandEnum(val command: String) {
     VIDEO_FROMUSB("VIDEO_FROMUSB"),
     VIDEO_FROMCAMP("VIDEO_FROMCAMP"),
     DELETE_DEVICE("DELETE_DEVICE"),
+    WAKE_UP_APP("WAKE_UP_APP"),
 }

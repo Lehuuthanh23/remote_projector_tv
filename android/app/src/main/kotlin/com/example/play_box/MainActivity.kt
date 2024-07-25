@@ -14,6 +14,7 @@ import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -39,6 +40,7 @@ class MainActivity : FlutterActivity() {
         private const val SERIAL_CHANNEL = "com.example.usb/serial"
         private const val USB_EVENT_CHANNEL = "com.example.usb/event"
         private const val REQUEST_EXTERNAL_STORAGE = 1
+        private const val OVERLAY_PERMISSION_REQUEST_CODE = 1234
         private val PERMISSIONS_STORAGE = arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -207,7 +209,7 @@ class MainActivity : FlutterActivity() {
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
             Uri.parse("package:" + this.packageName)
         )
-        startActivityForResult(intent, 200)
+        startActivityForResult(intent, OVERLAY_PERMISSION_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(
@@ -229,18 +231,20 @@ class MainActivity : FlutterActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
-            if (Settings.canDrawOverlays(activity)) {
-                Toast.makeText(
-                    activity,
-                    "Quyền hiển thị trên ứng dụng khác đã được cấp",
-                    Toast.LENGTH_SHORT,
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "Quyền hiển thị trên ứng dụng khác bị từ chối",
-                    Toast.LENGTH_SHORT,
-                ).show()
+            if (requestCode == OVERLAY_PERMISSION_REQUEST_CODE) {
+                if (Settings.canDrawOverlays(activity)) {
+                    Toast.makeText(
+                        activity,
+                        "Quyền hiển thị trên ứng dụng khác đã được cấp",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "Quyền hiển thị trên ứng dụng khác bị từ chối",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
             }
         }
     }

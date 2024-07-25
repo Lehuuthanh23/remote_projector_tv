@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:google_api_availability/google_api_availability.dart';
 import 'package:intl/intl.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -20,7 +19,6 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await setupLocator();
-  GoogleSignInService.initialize();
   runApp(const MyApp());
 }
 
@@ -35,7 +33,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     if (command == AppString.getTimeNow) {
       DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
       replyContent = DateFormat('HH:mm:ss').format(now);
-    } else if (command == AppString.restartApp) {
+    } else if (command == AppString.restartApp || command == AppString.wakeUpApp) {
       replyContent = null;
     } else {
       replyContent = AppString.notPlayVideo;
@@ -64,8 +62,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _setupFirebaseMessaging() async {
-    var messaging = FirebaseMessaging.instance;
-    var status = await messaging.requestPermission(
+    FirebaseMessaging.instance.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -74,7 +71,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       provisional: true,
       sound: false,
     );
-    print(status.authorizationStatus);
   }
 
   @override

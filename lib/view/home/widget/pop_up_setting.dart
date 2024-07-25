@@ -18,7 +18,7 @@ class PopupSettingScreen extends StatefulWidget {
 
 class _PopupSettingScreenState extends State<PopupSettingScreen> {
   String _selectedSource = "USB";
-  bool? checkConnect;
+  bool? _checkConnect;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
         viewModelBuilder: () => widget.homeVM,
         onViewModelReady: (viewModel) async {
           _selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
-          checkConnect = await AppUtils.checkConnect();
+          _checkConnect = await AppUtils.checkConnect();
           viewModel.notifyListeners();
         },
         builder: (context, viewModel, child) {
@@ -404,15 +404,23 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                       ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: checkConnect == null
+                        color: _checkConnect == null
                             ? const Color(0xff9a9a9a)
                             : const Color(0xffEB6E2C),
                         onPressed: () async {
-                          checkConnect != false
+                          _checkConnect != false
                               ? null
                               : await widget.homeVM.connectDevice();
                         },
-                        title: checkConnect == true ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
+                        title: _checkConnect == true ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
+                        textSize: 15,
+                      ),
+                      ButtonCustom(
+                        width: 200,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        color: const Color(0xffEB6E2C),
+                        onPressed: widget.homeVM.toggleAminPermission,
+                        title: '${widget.homeVM.adminPermission == true ? 'TẮT' : 'BẬT'} QUYỀN HỆ THỐNG',
                         textSize: 15,
                       ),
                       ButtonCustom(

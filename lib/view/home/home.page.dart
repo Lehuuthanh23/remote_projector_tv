@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
-      disposeViewModel: false,
       viewModelBuilder: () => HomeViewModel(context: context),
       onViewModelReady: (viewModel) async {
         await viewModel.initialise();

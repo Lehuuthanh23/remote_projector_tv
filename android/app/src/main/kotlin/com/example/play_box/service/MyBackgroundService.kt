@@ -6,12 +6,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.example.play_box.MainActivity
 import com.example.play_box.R
@@ -26,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
+
 
 class MyBackgroundService : Service() {
     companion object {
@@ -90,6 +94,17 @@ class MyBackgroundService : Service() {
 
                                     openFlutterActivity()
                                     return@launch
+                                } else if (item.cmdCode == CommandEnum.WAKE_UP_APP.command) {
+                                    val powerManager =
+                                        getSystemService(POWER_SERVICE) as PowerManager
+                                    val wakeLock = powerManager.newWakeLock(
+                                        PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                                        "MyApp::MyWakeLockTag"
+                                    )
+                                    wakeLock.acquire(1000L)
+
+                                    wakeLock.release()
+                                    replayCommand(value = "APP_RUNNING", commandId = item.cmdId)
                                 }
                             }
                         }

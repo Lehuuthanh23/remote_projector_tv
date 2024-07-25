@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:device_policy_manager/device_policy_manager.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:stacked/stacked.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
@@ -70,6 +72,7 @@ class HomeViewModel extends BaseViewModel {
   bool turnOffPJ = false;
   bool openOnStartup = false;
   bool? pauseVideo;
+  bool adminPermission = false;
 
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
@@ -85,6 +88,9 @@ class HomeViewModel extends BaseViewModel {
     await fetchDeviceInfo();
     await _getTokenAndSendToServer();
     await getValue();
+    await WakelockPlus.enable();
+    adminPermission = await DevicePolicyManager.isPermissionGranted();
+
     _checkGooglePlayServices();
     _setupTokenRefreshListener();
     _setupForegroundMessageListener();
@@ -110,6 +116,9 @@ class HomeViewModel extends BaseViewModel {
     packets.clear();
 
     callbackCommand = null;
+
+    GoogleSignInService.dispose();
+    WakelockPlus.disable();
 
     super.dispose();
   }
@@ -222,6 +231,14 @@ class HomeViewModel extends BaseViewModel {
 
         getValue();
         return null;
+
+      case AppString.wakeUpApp:
+        if (adminPermission == true) {
+          await DevicePolicyManager.lockNow();
+          return AppString.appLock;
+        }
+
+        return AppString.appNotPermission;
 
       default:
         return null;
@@ -387,6 +404,17 @@ class HomeViewModel extends BaseViewModel {
         );
       }
     }
+  }
+
+  Future<void> toggleAminPermission() async {
+    if (adminPermission == true) {
+      DevicePolicyManager.removeActiveAdmin();
+      adminPermission = false;
+    } else if (adminPermission == false) {
+      await DevicePolicyManager.requestPermession("Your app is requesting the Administration permission");
+      adminPermission = await DevicePolicyManager.isPermissionGranted();
+    }
+    notifyListeners();
   }
 
   void turnOnl() {

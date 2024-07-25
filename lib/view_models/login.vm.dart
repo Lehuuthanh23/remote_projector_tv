@@ -61,7 +61,7 @@ class LoginViewModel extends BaseViewModel {
     if (error != null) {
       errorMessage = error;
     } else if (context.mounted) {
-      await AppSP.set(AppSPKey.loginWith, 'email');
+      AppSP.set(AppSPKey.loginWith, 'email');
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -74,8 +74,10 @@ class LoginViewModel extends BaseViewModel {
   Future signInWithGoogle() async {
     final user = await GoogleSignInService.login();
     if (user == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Sign in failed')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Sign in failed')));
+      }
     } else {
       AccountRequest accountRequest = AccountRequest();
       User? userModel = await accountRequest.getCustomerByEmail(user.email);
@@ -84,30 +86,30 @@ class LoginViewModel extends BaseViewModel {
         final error = await _authenticationRequest.login(userLogin);
         if (error != null) {
           errorMessage = error;
-          print('Lỗi đăng nhập: $errorMessage');
           await GoogleSignInService.logout();
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(errorMessage ?? 'Sign in failed')));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(errorMessage ?? 'Sign in failed')));
+          }
         } else if (context.mounted) {
           await AppSP.set(AppSPKey.loginWith, 'google');
+          GoogleSignInService.initialize();
           _navigationService.clearStackAndShow(Routes.homePage);
         }
-      } else {
+      } else if (context.mounted) {
         showDialog(
           context: context,
           builder: (context) {
             Future.delayed(const Duration(seconds: 3), () async {
-              if (context.mounted) {
-                await GoogleSignInService.logout();
-                Navigator.of(context).pop();
-              }
+              GoogleSignInService.logout();
+              Navigator.of(context).pop();
             });
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_error.png"),
               title: 'Tài khoản chưa được tạo',
               leftText: 'Xác nhận',
               onLeftTap: () async {
-                await GoogleSignInService.logout();
+                GoogleSignInService.logout();
                 Navigator.of(context).pop();
               },
             );

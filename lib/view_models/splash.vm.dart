@@ -65,6 +65,9 @@ class SplashViewModel extends BaseViewModel {
     if (token.isNotEmpty) {
       if (loginWith == 'google') {
         checkLogin = await GoogleSignInService.signInSilently() != null;
+        if (checkLogin) {
+          GoogleSignInService.initialize();
+        }
       } else {
         var user = jsonDecode(userJson);
         User userFromJson = User.fromJson(user);
@@ -86,8 +89,8 @@ class SplashViewModel extends BaseViewModel {
     AppUtils.platformChannel.invokeMethod('clearUser');
   }
 
-  void _navigateToNextPage(BuildContext context) {
-    _checkLogin();
+  Future<void> _navigateToNextPage(BuildContext context) async {
+    await _checkLogin();
     Future.delayed(const Duration(seconds: 2), () {
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
