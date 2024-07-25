@@ -66,6 +66,12 @@ android {
         release {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.release
+            applicationVariants.all { variant ->
+                variant.outputs.all {
+                    def newApkName = "Remote-Prjector-TV.apk"
+                    outputFileName = newApkName
+                }
+            }
         }
         debug {
             signingConfig signingConfigs.debug
