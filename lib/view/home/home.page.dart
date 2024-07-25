@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
       viewModelBuilder: () => HomeViewModel(context: context),
       onViewModelReady: (viewModel) async {
         await viewModel.initialise();
-        //viewModel.playCamp(true);
+        viewModel.playCamp(true);
       },
       builder: (context, viewModel, child) {
         return SafeArea(

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "469868592109",
-    "project_id": "remote-projector-27649",
-    "storage_bucket": "remote-projector-27649.appspot.com"
+    "project_number": "551379171312",
+    "project_id": "remote-projector-fc831",
+    "storage_bucket": "remote-projector-fc831.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:469868592109:android:de63ac62600292b5ddc5e4",
+        "mobilesdk_app_id": "1:551379171312:android:cb3007eddcd823b7238f35",
         "android_client_info": {
           "package_name": "com.example.play_box"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDDm3vrWSzs2_EyCLFLNMz-udrw1DoC4CA"
+          "current_key": "AIzaSyBR28VwToRmJtXDsIDZyet3uqmiDEZpsnM"
         }
       ],
       "services": {

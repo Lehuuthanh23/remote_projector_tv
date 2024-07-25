@@ -27,11 +27,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDDm3vrWSzs2_EyCLFLNMz-udrw1DoC4CA',
-    appId: '1:469868592109:android:de63ac62600292b5ddc5e4',
-    messagingSenderId: '469868592109',
-    projectId: 'remote-projector-27649',
-    storageBucket: 'remote-projector-27649.appspot.com',
+    apiKey: 'AIzaSyBR28VwToRmJtXDsIDZyet3uqmiDEZpsnM',
+    appId: '1:551379171312:android:cb3007eddcd823b7238f35',
+    messagingSenderId: '551379171312',
+    projectId: 'remote-projector-fc831',
+    storageBucket: 'remote-projector-fc831.appspot.com',
   );
-
 }
