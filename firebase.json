@@ -1,1 +1,21 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"remote-projector-27649","appId":"1:469868592109:android:de63ac62600292b5ddc5e4","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"remote-projector-27649","configurations":{"android":"1:469868592109:android:de63ac62600292b5ddc5e4"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "remote-projector-fc831",
+          "appId": "1:551379171312:android:cb3007eddcd823b7238f35",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "remote-projector-fc831",
+          "configurations": {
+            "android": "1:551379171312:android:cb3007eddcd823b7238f35"
+          }
+        }
+      }
+    }
+  }
+}

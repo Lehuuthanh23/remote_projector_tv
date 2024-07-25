@@ -64,13 +64,7 @@ class SplashViewModel extends BaseViewModel {
 
     if (token.isNotEmpty) {
       if (loginWith == 'google') {
-        User user = User.fromJson(jsonDecode(userJson));
-        if (await GoogleSignInService.signInSilently() != null) {
-          checkLogin = true;
-        } else {
-          print('Không có đăng nhập gg');
-          checkLogin = false;
-        }
+        checkLogin = await GoogleSignInService.signInSilently() != null;
       } else {
         var user = jsonDecode(userJson);
         User userFromJson = User.fromJson(user);

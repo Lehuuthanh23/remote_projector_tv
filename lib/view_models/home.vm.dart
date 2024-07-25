@@ -115,51 +115,9 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> _checkGooglePlayServices() async {
-    GooglePlayServicesAvailability availability;
-
     try {
-      availability = await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
-    } catch (e) {
-      availability = GooglePlayServicesAvailability.unknown;
-    }
-
-    switch (availability) {
-      case GooglePlayServicesAvailability.success:
-        print("Google Play Services is available.");
-        _showGooglePlayServicesError(availability, true);
-        break;
-      case GooglePlayServicesAvailability.serviceMissing:
-      case GooglePlayServicesAvailability.serviceUpdating:
-      case GooglePlayServicesAvailability.serviceVersionUpdateRequired:
-      case GooglePlayServicesAvailability.serviceDisabled:
-      case GooglePlayServicesAvailability.serviceInvalid:
-        _showGooglePlayServicesError(availability, false);
-        break;
-      default:
-        print("Unknown Google Play Services availability: $availability");
-        _showGooglePlayServicesError(availability, false);
-        break;
-    }
-  }
-
-  void _showGooglePlayServicesError(GooglePlayServicesAvailability availability, bool success) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Google Play Services ${success ? 'Success' : 'Error'}"),
-          content: Text("Google Play Services is${success ? '' : ' not'} available: $availability"),
-          actions: [
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+      await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
+    } catch (_) {}
   }
 
   Future<void> _getTokenAndSendToServer() async {
