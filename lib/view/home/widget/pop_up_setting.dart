@@ -416,14 +416,6 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                         textSize: 15,
                       ),
                       ButtonCustom(
-                        width: 200,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: const Color(0xffEB6E2C),
-                        onPressed: widget.homeVM.toggleAminPermission,
-                        title: '${widget.homeVM.adminPermission == true ? 'TẮT' : 'BẬT'} QUYỀN HỆ THỐNG',
-                        textSize: 15,
-                      ),
-                      ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         color: Colors.black,

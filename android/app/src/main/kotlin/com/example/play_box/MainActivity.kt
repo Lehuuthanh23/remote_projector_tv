@@ -14,9 +14,7 @@ import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -47,16 +45,19 @@ class MainActivity : FlutterActivity() {
         )
 
         lateinit var channel: MethodChannel
+        lateinit var eventChannel: EventChannel
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(RestartPlugin())
 
-        EventChannel(
+        eventChannel = EventChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             USB_EVENT_CHANNEL
-        ).setStreamHandler(
+        )
+
+        eventChannel.setStreamHandler(
             object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     eventSink = events
@@ -114,10 +115,6 @@ class MainActivity : FlutterActivity() {
                 "getSerial" -> {
                     val androidId = getDeviceId(this)
                     result.success(androidId)
-                }
-
-                "restartApp" -> {
-                    Log.d(TAG, "configureFlutterEngine: Reatsrt");
                 }
 
                 "setHost" -> {
@@ -186,6 +183,12 @@ class MainActivity : FlutterActivity() {
         super.onStop()
 
         MyBackgroundService.isAppRunning = false
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        eventChannel.setStreamHandler(null)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
