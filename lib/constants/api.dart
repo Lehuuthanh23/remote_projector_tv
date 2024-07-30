@@ -7,28 +7,28 @@ class Api {
 
   // Authentication & User Fetch URL
   static const String login = '/home/login';
-  static String getCustomer = '/home/GetInfoCustomer_ById';
-  static String getCustomerByEmail = '/home/GetInfoCustomer_ByEmail';
-  static String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
+  static const String getCustomer = '/home/GetInfoCustomer_ById';
+  static const String getCustomerByEmail = '/home/GetInfoCustomer_ByEmail';
+  static const String getCustomerByDevice = '/home/GetListCustomer_Bysericomputer';
 
   // Packet URL
-  static String getPacketByCustomerId = '/home/GetPacket_ByCustomerId';
+  static const String getPacketByCustomerId = '/home/GetPacket_ByCustomerId';
 
   // Device URL
-  static String createDevice = '/home/CreateDevice';
-  static String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
+  static const String createDevice = '/home/CreateDevice';
+  static const String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
 
   // Campaign URL
-  static String getTimeRunByCampId = '/home/GetTimeRun_ByCampId';
-  static String getCampByDevice = '/home/Getcamp_ByComputerId';
-  static String getAllRunTimeOfComputer = '/home/GetAllRunTimeOfComputer_4';
-  static String addCampaignRunProfile = '/home/AddCampaignRunProfile';
+  static const String getTimeRunByCampId = '/home/GetTimeRun_ByCampId';
+  static const String getCampByDevice = '/home/Getcamp_ByComputerId';
+  static const String getAllRunTimeOfComputer = '/home/GetAllRunTimeOfComputer_4';
+  static const String addCampaignRunProfile = '/home/AddCampaignRunProfile';
 
   // Notification URL
-  static String insertNotify = '/home/InsertNotify';
+  static const String insertNotify = '/home/InsertNotify';
 
   // Command URL
-  static String replyCommand = '/home/ReplyCommand';
+  static const String replyCommand = '/home/ReplyCommand';
 
   // Firebase
   static const String updateDeviceFirebaseToken = '/home/UpdateComputerToken_ById';
