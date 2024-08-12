@@ -56,11 +56,12 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
         viewModel.init();
       },
       builder: (context, viewModel, child) {
-        return WillPopScope(
-          onWillPop: () async {
-            viewModel.popPage();
-            widget.homeViewModel.playVideo = false;
-            return true;
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) async {
+            if (!didPop) {
+              viewModel.popPage();
+            }
           },
           child: Scaffold(
             body: Stack(
@@ -121,10 +122,12 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                 ),
                 if (viewModel.isDrawerOpen)
                   Positioned.fill(
-                    child: WillPopScope(
-                      onWillPop: () async {
-                        viewModel.toggleDrawer();
-                        return false;
+                    child: PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, _) async {
+                        if (!didPop) {
+                          viewModel.toggleDrawer();
+                        }
                       },
                       child: GestureDetector(
                         onTap: viewModel.toggleDrawer,
@@ -231,8 +234,8 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                     duration: const Duration(milliseconds: 300),
                     child: FocusScope(
                       autofocus: true,
-                      onKey: (FocusNode node, RawKeyEvent event) {
-                        if (event is RawKeyDownEvent) {
+                      onKey: (FocusNode node, event) {
+                        if (event is KeyDownEvent) {
                           switch (event.logicalKey.keyLabel) {
                             case 'Arrow Up':
                             case 'Arrow Down':

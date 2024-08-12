@@ -38,7 +38,7 @@ class MyBackgroundService : Service() {
         var isAppRunning = true
         var isFirebase = false
 
-        lateinit var channel: MethodChannel
+        var channel: MethodChannel? = null
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())
@@ -147,7 +147,7 @@ class MyBackgroundService : Service() {
                 stopSelf()
 
                 Handler(Looper.getMainLooper()).post {
-                    channel.invokeMethod(
+                    channel?.invokeMethod(
                         CommandEnum.DELETE_DEVICE.command,
                         mapOf("command" to CommandEnum.DELETE_DEVICE.command)
                     )
@@ -165,7 +165,7 @@ class MyBackgroundService : Service() {
             return
         }
         Handler(Looper.getMainLooper()).post {
-            channel.invokeMethod(
+            channel?.invokeMethod(
                 commandEnum.command,
                 mapOf("command" to commandEnum.command),
                 object : MethodChannel.Result {
@@ -231,7 +231,6 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
-        channel = MainActivity.channel
         sharedPreferences = SharedPreferencesManager(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

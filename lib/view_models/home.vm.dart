@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:stacked/stacked.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -33,9 +32,6 @@ class HomeViewModel extends BaseViewModel {
   HomeViewModel({required this.context});
 
   final BuildContext context;
-
-  final MethodChannel methodChannel =
-      const MethodChannel('com.example.usb/serial');
 
   final CampRequest _campRequest = CampRequest();
   final DeviceRequest _deviceRequest = DeviceRequest();
@@ -336,7 +332,6 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> signOut() async {
     await _deviceRequest.updateDeviceFirebaseToken('');
-    print('Đang nhập bằng: (${AppSP.get(AppSPKey.loginWith)})');
     if (AppSP.get(AppSPKey.loginWith) == 'google') {
       await GoogleSignInService.logout();
     }

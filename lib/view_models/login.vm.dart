@@ -100,9 +100,11 @@ class LoginViewModel extends BaseViewModel {
         showDialog(
           context: context,
           builder: (context) {
-            Future.delayed(const Duration(seconds: 3), () async {
+            Future.delayed(const Duration(seconds: 3), () {
               GoogleSignInService.logout();
-              Navigator.of(context).pop();
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
             });
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_error.png"),

@@ -56,7 +56,7 @@ class CommandRequest {
     if (_credentials == null) {
       await _autoRefreshCredentialsInitialize();
     }
-    String token = _credentials!.accessToken.data;
+    String? token = _credentials?.accessToken.data;
     Map<String, String> headers = {};
     headers["Authorization"] = 'Bearer $token';
     headers["Content-Type"] = 'application/json';
@@ -69,17 +69,19 @@ class CommandRequest {
     final serviceAccount = jsonDecode(source);
     var accountCredentials = ServiceAccountCredentials.fromJson(serviceAccount);
 
-    AutoRefreshingAuthClient autoRefreshingAuthClient =
-        await clientViaServiceAccount(
-      accountCredentials,
-      [messagingScope],
-    );
+    try {
+      AutoRefreshingAuthClient autoRefreshingAuthClient =
+          await clientViaServiceAccount(
+        accountCredentials,
+        [messagingScope],
+      );
 
-    /// initialization
-    _credentials = autoRefreshingAuthClient.credentials;
+      /// initialization
+      _credentials = autoRefreshingAuthClient.credentials;
 
-    autoRefreshingAuthClient.credentialUpdates.listen((credentials) {
-      _credentials = credentials;
-    });
+      autoRefreshingAuthClient.credentialUpdates.listen((credentials) {
+        _credentials = credentials;
+      });
+    } catch (_) {}
   }
 }
