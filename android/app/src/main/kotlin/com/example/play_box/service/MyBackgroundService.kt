@@ -27,6 +27,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
+import io.flutter.plugin.common.MethodChannel
+import com.example.play_box.utils.getCurrentTime
 
 class MyBackgroundService : Service() {
     companion object {
@@ -34,6 +36,9 @@ class MyBackgroundService : Service() {
         private const val CHECK_COMMAND_INTERVAL = 5 * 1000L
 
         var isAppRunning = true
+        var isFirebase = false
+
+        lateinit var channel: MethodChannel
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())
@@ -53,7 +58,7 @@ class MyBackgroundService : Service() {
 
     private val checkCommandRunnable = object : Runnable {
         override fun run() {
-            if (!isAppRunning || !isAppRunning()) {
+            if (!isFirebase || !isAppRunning || !isAppRunning()) {
                 isAppRunning = false
                 checkCommandList()
             }
@@ -87,18 +92,101 @@ class MyBackgroundService : Service() {
                             JSON.decodeToList(response["cmd_list"], Array<CommandModel>::class.java)
                         if (commandList.isNotEmpty()) {
                             for (item in commandList) {
-                                if (item.cmdCode == CommandEnum.RESTART_APP.command) {
-                                    replayCommand(value = "OK", commandId = item.cmdId)
-
-                                    openFlutterActivity()
-                                    return@launch
-                                }
+                                invokeCommand(item)
                             }
                         }
                     }
                 }
             }
         } else stopSelf()
+    }
+
+    private fun invokeCommand(command: CommandModel) {
+        when (command.cmdCode) {
+            CommandEnum.GET_TIME_NOW.command -> {
+                val timeString = getCurrentTime()
+
+                replayCommand(value = timeString, commandId = command.cmdId)
+            }
+
+            CommandEnum.RESTART_APP.command -> {
+                replayCommand(value = "OK", commandId = command.cmdId)
+
+                openFlutterActivity()
+            }
+
+            CommandEnum.VIDEO_STOP.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_STOP,
+                command.cmdId
+            )
+
+            CommandEnum.VIDEO_PAUSE.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_PAUSE,
+                command.cmdId
+            )
+
+            CommandEnum.VIDEO_RESTART.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_RESTART,
+                command.cmdId
+            )
+
+            CommandEnum.VIDEO_FROMUSB.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_FROMUSB,
+                command.cmdId
+            )
+
+            CommandEnum.VIDEO_FROMCAMP.command -> invokeCommandToFlutter(
+                CommandEnum.VIDEO_FROMCAMP,
+                command.cmdId
+            )
+
+            CommandEnum.DELETE_DEVICE.command -> {
+                sharedPreferences.saveIdComputer(null)
+                sharedPreferences.saveSerialComputer(null)
+                replayCommand(value = "OK", commandId = command.cmdId)
+                stopSelf()
+
+                Handler(Looper.getMainLooper()).post {
+                    channel.invokeMethod(
+                        CommandEnum.DELETE_DEVICE.command,
+                        mapOf("command" to CommandEnum.DELETE_DEVICE.command)
+                    )
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun invokeCommandToFlutter(commandEnum: CommandEnum, commandId: String?) {
+        if (!isAppRunning()) {
+            replayCommand(value = "APP_NOT_SHOW", commandId = commandId)
+
+            return
+        }
+        Handler(Looper.getMainLooper()).post {
+            channel.invokeMethod(
+                commandEnum.command,
+                mapOf("command" to commandEnum.command),
+                object : MethodChannel.Result {
+                    override fun success(result: Any?) {
+                        val returnValue: String? = result?.toString()
+
+                        if (returnValue != null) {
+                            replayCommand(value = returnValue, commandId = commandId)
+                        }
+                    }
+
+                    override fun error(
+                        errorCode: String,
+                        errorMessage: String?,
+                        errorDetails: Any?
+                    ) {
+                    }
+
+                    override fun notImplemented() {}
+                })
+        }
     }
 
     private fun replayCommand(value: String, commandId: String?) {
@@ -143,6 +231,7 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
+        channel = MainActivity.channel
         sharedPreferences = SharedPreferencesManager(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -155,6 +244,8 @@ class MyBackgroundService : Service() {
                 NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
+
+        isFirebase = sharedPreferences.getFirebaseCheck()
 
         super.onCreate()
     }

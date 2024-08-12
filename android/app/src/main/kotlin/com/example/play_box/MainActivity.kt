@@ -79,6 +79,7 @@ class MainActivity : FlutterActivity() {
         )
 
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SERIAL_CHANNEL)
+        MyBackgroundService.channel = channel
 
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -123,6 +124,13 @@ class MainActivity : FlutterActivity() {
                         AppApi.BASE_URL = host
                     }
                     sharedPreferencesManager.saveHost(host)
+                    result.success("")
+                }
+
+                "firebase" -> {
+                    val check = call.argument<Boolean>(Constants.FIRE_BASE)
+                    sharedPreferencesManager.saveFirebaseCheck(check)
+                    MyBackgroundService.isFirebase = check ?: false
                     result.success("")
                 }
 

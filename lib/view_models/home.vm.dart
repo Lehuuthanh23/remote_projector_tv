@@ -87,10 +87,6 @@ class HomeViewModel extends BaseViewModel {
     await _getTokenAndSendToServer();
     await getValue();
     await WakelockPlus.enable();
-
-    _checkGooglePlayServices();
-    _setupTokenRefreshListener();
-    _setupForegroundMessageListener();
   }
 
   @override
@@ -122,23 +118,48 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> _checkGooglePlayServices() async {
     try {
-      await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
+      await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(true);
     } catch (_) {}
   }
 
   Future<void> _getTokenAndSendToServer() async {
+    bool checkFirebase = false;
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
+
       if (token != null) {
-        _deviceRequest.updateDeviceFirebaseToken(token);
+        checkFirebase = await _commandRequest.checkFirebase(token);
+
+        if (checkFirebase) {
+          _checkGooglePlayServices();
+          _setupTokenRefreshListener();
+          _setupForegroundMessageListener();
+        }
+        await AppSP.set(AppSPKey.useFirebase, checkFirebase);
+        await AppUtils.platformChannel.invokeMethod('firebase', {
+          AppSPKey.useFirebase: checkFirebase,
+        });
       }
+
+      await _deviceRequest
+          .updateDeviceFirebaseToken(checkFirebase ? token! : '');
     } catch (_) {}
+
+    if (!checkFirebase) {
+      AppUtils.platformChannel.setMethodCallHandler((methodCall) async {
+        return await onCommandChecked(methodCall.method);
+      });
+    }
   }
 
   void _setupTokenRefreshListener() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      _deviceRequest.updateDeviceFirebaseToken(newToken);
+      bool useFirebase = AppSP.get(AppSPKey.useFirebase) ?? false;
+      if (useFirebase) {
+        _deviceRequest.updateDeviceFirebaseToken(newToken);
+      }
     });
   }
 

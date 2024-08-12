@@ -7,4 +7,5 @@ object Constants {
     const val SERIAL_COMPUTER = "serial_computer"
     const val COMPUTER_ID = "computer_id"
     const val HOST = "host"
+    const val FIRE_BASE = "firebase"
 }
