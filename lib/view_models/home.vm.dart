@@ -406,16 +406,6 @@ class HomeViewModel extends BaseViewModel {
     }
   }
 
-  Future<void> toggleAminPermission() async {
-    if (adminPermission == true) {
-      DevicePolicyManager.removeActiveAdmin();
-      adminPermission = false;
-    } else if (adminPermission == false) {
-      await DevicePolicyManager.requestPermession("Your app is requesting the Administration permission");
-      adminPermission = await DevicePolicyManager.isPermissionGranted();
-    }
-    notifyListeners();
-  }
 
   void turnOnl() {
     turnOnlPJ = !turnOnlPJ;
