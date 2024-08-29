@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:play_box/app/convert_md5.dart';
@@ -10,7 +11,6 @@ import '../app/app_utils.dart';
 import '../constants/api.dart';
 import '../models/config/config_model.dart';
 import '../models/device/device_info_model.dart';
-import '../models/user/authentication/request/login_request_model.dart';
 import '../models/user/user.dart';
 import '../request/account/account.request.dart';
 import '../request/config/config.request.dart';
@@ -29,7 +29,6 @@ class SplashViewModel extends BaseViewModel {
   DeviceInfoModel? deviceInfo;
   String token = "";
   String userJson = "";
-  String? idCustomer = '';
   String proUN = '';
   String proPW = '';
   String projectorIP = '';
@@ -77,7 +76,6 @@ class SplashViewModel extends BaseViewModel {
 
         if (currentUser != null && token == currentUser.customerToken) {
           checkLogin = true;
-          idCustomer = currentUser.customerId;
         } else {
           clearUser();
         }

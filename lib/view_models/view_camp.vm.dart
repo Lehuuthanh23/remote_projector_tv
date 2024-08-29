@@ -13,10 +13,8 @@ import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_string.dart';
 import '../models/camp/camp_schedule.dart';
-import '../models/notification/notify_model.dart';
 import '../observer/navigator_observer.dart';
 import '../request/camp/camp.request.dart';
-import '../request/notification/notify.request.dart';
 import '../services/usb.service.dart';
 import '../view/video_camp/video_downloader.dart';
 import 'home.vm.dart';
@@ -61,6 +59,8 @@ class ViewCampViewModel extends BaseViewModel {
   bool pauseVideo = false;
   bool checkImage = false;
   bool checkAlive = true;
+
+  StreamSubscription? _subscription;
   FocusNode drawerFocus = FocusNode();
 
   void init() {
@@ -116,7 +116,8 @@ class ViewCampViewModel extends BaseViewModel {
       _updateTime();
     });
 
-    usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
+    _subscription =
+        usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
     homeViewModel.setCallback(onCommandInvoke);
   }
 
@@ -124,6 +125,8 @@ class ViewCampViewModel extends BaseViewModel {
   void dispose() {
     _controller?.dispose();
     _timerTimeShowing.cancel();
+    _subscription?.cancel();
+    _subscription = null;
 
     checkAlive = false;
     usbPaths.clear();
@@ -151,8 +154,6 @@ class ViewCampViewModel extends BaseViewModel {
       }
     } else if (command == AppString.stopVideo) {
       popPage();
-      homeViewModel.playVideo = false;
-      Navigator.pop(context);
     }
   }
 
@@ -162,6 +163,9 @@ class ViewCampViewModel extends BaseViewModel {
     if (AppSP.get(AppSPKey.turnOffPJ) == 'true') {
       _dio.get(offProjector);
     }
+
+    homeViewModel.playVideo = false;
+    Navigator.pop(context);
   }
 
   void getCampSchedule() {

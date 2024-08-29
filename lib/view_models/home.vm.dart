@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:device_policy_manager/device_policy_manager.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:stacked/stacked.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -34,9 +32,6 @@ class HomeViewModel extends BaseViewModel {
   HomeViewModel({required this.context});
 
   final BuildContext context;
-
-  final MethodChannel methodChannel =
-      const MethodChannel('com.example.usb/serial');
 
   final CampRequest _campRequest = CampRequest();
   final DeviceRequest _deviceRequest = DeviceRequest();
@@ -72,7 +67,6 @@ class HomeViewModel extends BaseViewModel {
   bool turnOffPJ = false;
   bool openOnStartup = false;
   bool? pauseVideo;
-  bool adminPermission = false;
 
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
@@ -89,11 +83,6 @@ class HomeViewModel extends BaseViewModel {
     await _getTokenAndSendToServer();
     await getValue();
     await WakelockPlus.enable();
-    adminPermission = await DevicePolicyManager.isPermissionGranted();
-
-    _checkGooglePlayServices();
-    _setupTokenRefreshListener();
-    _setupForegroundMessageListener();
   }
 
   @override
@@ -125,23 +114,48 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> _checkGooglePlayServices() async {
     try {
-      await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability(true);
+      await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(true);
     } catch (_) {}
   }
 
   Future<void> _getTokenAndSendToServer() async {
+    bool checkFirebase = false;
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
+
       if (token != null) {
-        _deviceRequest.updateDeviceFirebaseToken(token);
+        checkFirebase = await _commandRequest.checkFirebase(token);
+
+        if (checkFirebase) {
+          _checkGooglePlayServices();
+          _setupTokenRefreshListener();
+          _setupForegroundMessageListener();
+        }
+        await AppSP.set(AppSPKey.useFirebase, checkFirebase);
+        await AppUtils.platformChannel.invokeMethod('firebase', {
+          AppSPKey.useFirebase: checkFirebase,
+        });
       }
+
+      await _deviceRequest
+          .updateDeviceFirebaseToken(checkFirebase ? token! : '');
     } catch (_) {}
+
+    if (!checkFirebase) {
+      AppUtils.platformChannel.setMethodCallHandler((methodCall) async {
+        return await onCommandChecked(methodCall.method);
+      });
+    }
   }
 
   void _setupTokenRefreshListener() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      _deviceRequest.updateDeviceFirebaseToken(newToken);
+      bool useFirebase = AppSP.get(AppSPKey.useFirebase) ?? false;
+      if (useFirebase) {
+        _deviceRequest.updateDeviceFirebaseToken(newToken);
+      }
     });
   }
 
@@ -232,14 +246,6 @@ class HomeViewModel extends BaseViewModel {
         getValue();
         return null;
 
-      case AppString.wakeUpApp:
-        if (adminPermission == true) {
-          await DevicePolicyManager.lockNow();
-          return AppString.appLock;
-        }
-
-        return AppString.appNotPermission;
-
       default:
         return null;
     }
@@ -326,7 +332,6 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> signOut() async {
     await _deviceRequest.updateDeviceFirebaseToken('');
-    print('Đang nhập bằng: (${AppSP.get(AppSPKey.loginWith)})');
     if (AppSP.get(AppSPKey.loginWith) == 'google') {
       await GoogleSignInService.logout();
     }
@@ -405,8 +410,6 @@ class HomeViewModel extends BaseViewModel {
       }
     }
   }
-
-
   void turnOnl() {
     turnOnlPJ = !turnOnlPJ;
     AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());

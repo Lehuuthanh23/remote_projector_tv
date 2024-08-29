@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:stacked_services/stacked_services.dart';
-import 'package:velocity_x/velocity_x.dart';
 import 'package:stacked/stacked.dart';
+import 'package:velocity_x/velocity_x.dart';
 
-import '../../app/app.locator.dart';
-import '../../app/app.router.dart';
-import '../../app/app_sp.dart';
-import '../../app/app_sp_key.dart';
-import '../../models/user/authentication/request/login_request_model.dart';
-import '../../models/user/authentication/request/sign_up_request_model.dart';
-import '../../models/user/user.dart';
-import '../../request/account/account.request.dart';
-import '../../request/authentication/authentication.request.dart';
-import '../../services/google_sigin_api.service.dart';
 import '../../view_models/login.vm.dart';
 import '../../widget/button_custom.dart';
-import '../../widget/pop_up.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,9 +14,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final AuthenticationRequest _authenticationRequest = AuthenticationRequest();
-  String? errorMessage;
-  final _navigationService = appLocator<NavigationService>();
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

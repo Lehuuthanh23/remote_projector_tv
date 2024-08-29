@@ -60,7 +60,8 @@ dependencies:
   google_sign_in: ^6.2.1
   stacked_services: ^1.5.0
   wakelock_plus: ^1.2.5
-  device_policy_manager: ^0.0.1
+  googleapis_auth: ^1.6.0
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

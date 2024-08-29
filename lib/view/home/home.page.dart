@@ -147,10 +147,12 @@ class _HomePageState extends State<HomePage> {
                 ),
                 if (viewModel.isDrawerOpen)
                   Positioned.fill(
-                    child: WillPopScope(
-                      onWillPop: () async {
-                        viewModel.toggleDrawer();
-                        return false;
+                    child: PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, _) {
+                        if (!didPop) {
+                          viewModel.toggleDrawer();
+                        }
                       },
                       child: GestureDetector(
                         onTap: viewModel.toggleDrawer,
@@ -172,7 +174,8 @@ class _HomePageState extends State<HomePage> {
                     child: Stack(
                       children: [
                         Container(
-                          width: MediaQuery.of(context).size.width > MediaQuery.of(context).size.height
+                          width: MediaQuery.of(context).size.width >
+                                  MediaQuery.of(context).size.height
                               ? MediaQuery.of(context).size.width / 2
                               : MediaQuery.of(context).size.width,
                           color: Colors.black26,

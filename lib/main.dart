@@ -9,7 +9,6 @@ import 'app/app.router.dart';
 import 'app/app_string.dart';
 import 'observer/navigator_observer.dart';
 import 'request/command/command.request.dart';
-import 'services/google_sigin_api.service.dart';
 import 'view/splash/splash.page.dart';
 import 'app/di.dart';
 

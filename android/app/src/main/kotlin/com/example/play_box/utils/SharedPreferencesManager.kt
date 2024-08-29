@@ -98,4 +98,10 @@ class SharedPreferencesManager(context: Context) {
     }
 
     fun getHost(): String? = retrieveStringByKey(Constants.HOST)
+
+    fun saveFirebaseCheck(value: Boolean?) {
+        saveBooleanByKey(Constants.FIRE_BASE, value ?: false)
+    }
+
+    fun getFirebaseCheck(): Boolean = retrieveBooleanByKey(Constants.FIRE_BASE) ?: false
 }

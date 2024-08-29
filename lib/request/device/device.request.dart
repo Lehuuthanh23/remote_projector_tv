@@ -110,11 +110,10 @@ class DeviceRequest {
       try {
         Device device = Device.fromJson(jsonDecode(deviceString!));
 
-        final response = await _dio.get(
+        await _dio.get(
           '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
         );
-
-      } catch(_) {}
+      } catch (_) {}
     }
   }
 }

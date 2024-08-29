@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:velocity_x/velocity_x.dart';
 
 class ButtonCustom extends StatefulWidget {
   final Function onPressed;
@@ -15,6 +14,7 @@ class ButtonCustom extends StatefulWidget {
   final double? height;
   final FocusNode? focusNode;
   final Widget? customTitle;
+
   const ButtonCustom({
     super.key,
     required this.onPressed,

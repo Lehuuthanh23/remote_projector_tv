@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 
 import '../app/app_sp.dart';
@@ -24,10 +25,10 @@ class DeviceInfoService {
       }
 
       deviceInfoModel = DeviceInfoModel(
-        model: androidInfo.model ?? '',
-        manufacturer: androidInfo.manufacturer ?? '',
+        model: androidInfo.model,
+        manufacturer: androidInfo.manufacturer,
         osVersion: 'Android ${androidInfo.version.release}',
-        deviceName: androidInfo.device ?? '',
+        deviceName: androidInfo.device,
         platform: 'Android',
         serialNumber: serialNumber,
         androidId: androidId ?? androidInfo.id,
@@ -36,10 +37,10 @@ class DeviceInfoService {
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       deviceInfoModel = DeviceInfoModel(
-        model: iosInfo.utsname.machine ?? '',
+        model: iosInfo.utsname.machine,
         manufacturer: 'Apple',
         osVersion: '${iosInfo.systemName} ${iosInfo.systemVersion}',
-        deviceName: iosInfo.name ?? '',
+        deviceName: iosInfo.name,
         platform: 'iOS',
         serialNumber:
             iosInfo.identifierForVendor, // Sử dụng identifierForVendor (UUID)
