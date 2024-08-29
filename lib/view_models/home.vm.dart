@@ -410,7 +410,6 @@ class HomeViewModel extends BaseViewModel {
       }
     }
   }
-
   void turnOnl() {
     turnOnlPJ = !turnOnlPJ;
     AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());
