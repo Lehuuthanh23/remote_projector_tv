@@ -1,21 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_api_availability/google_api_availability.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:stacked/stacked.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_string.dart';
 import '../app/app_utils.dart';
+import '../constants/app_info.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
+import '../models/config/config_model.dart';
 import '../models/device/device_info_model.dart';
 import '../models/packet/packet_model.dart';
 import '../models/user/user.dart';
+import '../plugin/install_plugin.dart';
 import '../request/camp/camp.request.dart';
 import '../request/command/command.request.dart';
 import '../request/device/device.request.dart';
@@ -68,6 +76,31 @@ class HomeViewModel extends BaseViewModel {
   bool openOnStartup = false;
   bool? pauseVideo;
 
+  CancelToken? _cancelToken;
+
+  bool _permissionGranted = false;
+  bool get permissionGranted => _permissionGranted;
+
+  bool _isUpdate = false;
+  bool get isUpdate => _isUpdate;
+
+  bool _updateAvailable = false;
+  bool get updateAvailable => _updateAvailable;
+
+  int _currentIndex = 0;
+  int get currentIndex => _currentIndex;
+
+  double _progress = 0;
+  double get progress => _progress;
+
+  String? _tempPath;
+  String? get tempPath => _tempPath;
+
+  bool _newVersion = false;
+  bool get newVersion => _newVersion;
+
+  ConfigModel? _configModel;
+  ConfigModel? get configModel => _configModel;
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
@@ -78,7 +111,7 @@ class HomeViewModel extends BaseViewModel {
     proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
-
+    await _checkVersionApp();
     await fetchDeviceInfo();
     await _getTokenAndSendToServer();
     await getValue();
@@ -410,6 +443,7 @@ class HomeViewModel extends BaseViewModel {
       }
     }
   }
+
   void turnOnl() {
     turnOnlPJ = !turnOnlPJ;
     AppSP.set(AppSPKey.turnOnlPJ, turnOnlPJ.toString());
@@ -446,5 +480,154 @@ class HomeViewModel extends BaseViewModel {
       }
     }
     notifyListeners();
+  }
+
+  //Check update
+  void cancelDownloadTaped() {
+    if (_tempPath != null) {
+      _installApp();
+    } else if (_isUpdate) {
+      _cancelToken?.cancel();
+      _cancelToken = null;
+      _isUpdate = false;
+      _progress = 0;
+      _updateAvailable = false;
+      notifyListeners();
+    } else {
+      if (Platform.isAndroid) {
+        updateAndroidApp(_configModel?.appTVBoxUpdateUrl);
+      }
+    }
+  }
+
+  Future<void> _checkVersionApp() async {
+    String configString = AppSP.get(AppSPKey.config) ?? '';
+
+    if (configString.isNotBlank) {
+      _configModel = ConfigModel.fromJson(jsonDecode(configString));
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (Platform.isAndroid) {
+        String buildDate = _configModel?.appTVBoxBuildDate ??
+            AppInfo.userAndroidAppInfo.buildDate;
+
+        if (AppInfo.userAndroidAppInfo.buildDate.isBeforeBuildDate(buildDate)) {
+          _newVersion = true;
+          notifyListeners();
+          // showDialog(
+          //   barrierDismissible: false,
+          //   context: context,
+          //   builder: (BuildContext context) {
+          //     return PopUpWidget(
+          //       icon: Image.asset("assets/images/ic_error.png"),
+          //       title:
+          //           'Để tiếp tục sử dụng ứng dụng, vui lòng cập nhật ứng dụng lên phiên bản mới nhất.\nPhiên bản: ${_configModel?.appUserAndroidVersion ?? ''}\nNgày phát hành: ${_configModel?.appUserAndroidBuildDate ?? ''}',
+          //       leftText: 'Xác nhận',
+          //       onLeftTap: () {
+          //         Navigator.pop(context);
+          //         _updateAndroidApp(_configModel?.appUserAndroidUpdateUrl);
+          //       },
+          //     );
+          //   },
+          // );
+        }
+      } else if (Platform.isIOS) {
+        String buildDate =
+            _configModel?.appTVBoxBuildDate ?? AppInfo.userIOSAppInfo.buildDate;
+
+        if (AppInfo.userIOSAppInfo.buildDate.isBeforeBuildDate(buildDate)) {
+          _newVersion = true;
+          notifyListeners();
+          // showDialog(
+          //   context: context,
+          //   barrierDismissible: false,
+          //   builder: (BuildContext context) {
+          //     return PopUpWidget(
+          //       icon: Image.asset("assets/images/ic_error.png"),
+          //       title:
+          //           'Để tiếp tục sử dụng ứng dụng, vui lòng cập nhật ứng dụng lên phiên bản mới nhất.\nPhiên bản: ${_configModel?.appUserAndroidVersion ?? ''}\nNgày phát hành: ${_configModel?.appUserAndroidBuildDate ?? ''}',
+          //       leftText: 'Xác nhận',
+          //       onLeftTap: () {
+          //         Navigator.pop(context);
+          //         launchUrl(Uri.parse(_configModel?.appUserIosUpdateUrl ?? ''));
+          //       },
+          //     );
+          //   },
+          // );
+        }
+      }
+    }
+  }
+
+  Future<void> updateAndroidApp(String? url) async {
+    if (url == null || _isUpdate == true) return;
+
+    if (!_permissionGranted) {
+      _permissionGranted = await InstallPlugin.requestPermission() ?? false;
+    }
+    _updateAvailable = true;
+    notifyListeners();
+
+    if (_permissionGranted) {
+      _isUpdate = true;
+      _progress = 0;
+      _permissionGranted = true;
+      _cancelToken = CancelToken();
+
+      notifyListeners();
+
+      var appDocDir = await getTemporaryDirectory();
+      String savePath = "${appDocDir.path}/${url.split('/').last}";
+
+      var response = await Dio().download(
+        url,
+        savePath,
+        cancelToken: _cancelToken,
+        onReceiveProgress: (count, total) {
+          final value = count / total;
+          if (_progress != value) {
+            _progress = value;
+            notifyListeners();
+          }
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _tempPath = savePath;
+
+        _installApp();
+      }
+    } else {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_error.png"),
+            title:
+                'Để tiếp tục việc cập nhật ứng dụng, bạn cần cấp quyền cài đặt ứng dụng từ bên ngoài.\nMở cài đặt?',
+            leftText: 'Xác nhận',
+            onLeftTap: () async {
+              _permissionGranted =
+                  await InstallPlugin.requestPermission(openSetting: true) ??
+                      false;
+            },
+          );
+        },
+      );
+    }
+  }
+
+  Future<void> _installApp() async {
+    if (_tempPath == null) return;
+
+    final res = await InstallPlugin.install(_tempPath!);
+
+    if (!res['isSuccess'] == true) {
+      _isUpdate = false;
+      _cancelToken = null;
+      _progress = 0;
+      notifyListeners();
+    }
   }
 }

@@ -62,6 +62,7 @@ dependencies:
   wakelock_plus: ^1.2.5
   googleapis_auth: ^1.6.0
   http: ^1.2.2
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

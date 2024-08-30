@@ -65,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               TextFormField(
+                                autofocus: true,
                                 focusNode: viewModel.emailFocusNode,
                                 controller: viewModel.emailController,
                                 decoration:
@@ -90,13 +91,29 @@ class _LoginPageState extends State<LoginPage> {
                                 controller: viewModel.passwordController,
                                 decoration: const InputDecoration(
                                     labelText: 'Mật khẩu'),
-                                obscureText: true,
+                                obscureText: viewModel.obscurePassword,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Xin hãy nhập mật khẩu';
                                   }
                                   return null;
                                 },
+                              ),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    checkColor: Colors.amber,
+                                    activeColor: Colors.grey.shade800,
+                                    value: !viewModel.obscurePassword,
+                                    onChanged: (value) {
+                                      viewModel.showPassword(value);
+                                    },
+                                  ),
+                                  const Text(
+                                    'Hiện mật khẩu',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
                               ),
                               viewModel.errorMessage != null
                                   ? const SizedBox(height: 16.0)
@@ -110,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ),
                               ButtonCustom(
+                                autofocus: false,
                                 focusNode: viewModel.loginButtonFocusNode,
                                 isSplashScreen: true,
                                 onPressed: () => viewModel.handleLogin(),
@@ -121,6 +139,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               ButtonCustom(
+                                autofocus: false,
                                 height: 45,
                                 title: '',
                                 isSplashScreen: true,
@@ -154,6 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                                 textSize: 20,
                               ),
                               ButtonCustom(
+                                autofocus: false,
                                 focusNode: viewModel.exitButtonFocusNode,
                                 onPressed: () {
                                   SystemNavigator.pop();

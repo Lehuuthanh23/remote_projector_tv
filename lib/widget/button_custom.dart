@@ -14,6 +14,7 @@ class ButtonCustom extends StatefulWidget {
   final double? height;
   final FocusNode? focusNode;
   final Widget? customTitle;
+  final bool autofocus;
 
   const ButtonCustom({
     super.key,
@@ -29,6 +30,7 @@ class ButtonCustom extends StatefulWidget {
     this.focusNode,
     this.customTitle,
     this.height,
+    this.autofocus = true,
   });
 
   @override
@@ -69,7 +71,7 @@ class _ButtonCustomState extends State<ButtonCustom> {
         }
         return KeyEventResult.ignored;
       },
-      autofocus: true,
+      autofocus: widget.autofocus,
       child: GestureDetector(
         onTap: () => widget.onPressed(),
         child: Container(

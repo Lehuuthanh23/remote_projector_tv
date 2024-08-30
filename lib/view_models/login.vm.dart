@@ -32,7 +32,7 @@ class LoginViewModel extends BaseViewModel {
   FocusNode exitButtonFocusNode = FocusNode();
   final _navigationService = appLocator<NavigationService>();
   final AuthenticationRequest _authenticationRequest = AuthenticationRequest();
-
+  bool obscurePassword = true; // Biến để ẩn/hiện mật khẩu
   String? errorMessage;
 
   // @override
@@ -46,6 +46,11 @@ class LoginViewModel extends BaseViewModel {
 
   //   super.dispose();
   // }
+
+  showPassword(bool? value) {
+    obscurePassword = !obscurePassword;
+    notifyListeners();
+  }
 
   Future<void> handleLogin() async {
     if (!formKey.currentState!.validate()) {
