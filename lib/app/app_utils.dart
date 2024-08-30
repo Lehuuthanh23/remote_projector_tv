@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import '../constants/api.dart';
 import '../models/device/device_info_model.dart';
@@ -53,5 +54,16 @@ class AppUtils {
     } else {
       return false;
     }
+  }
+}
+
+extension DateTimeStringExtension on String {
+  bool isBeforeBuildDate(String dateB) {
+    DateFormat format = DateFormat("dd/MM/yyyy HH:mm");
+
+    DateTime dateTimeA = format.parse(this);
+    DateTime dateTimeB = format.parse(dateB);
+
+    return dateTimeA.isBefore(dateTimeB);
   }
 }

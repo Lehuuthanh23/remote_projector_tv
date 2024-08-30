@@ -28,6 +28,8 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+import io.flutter.plugins.GeneratedPluginRegistrant.registerWith
+import com.example.play_box.plugin.InstallPlugin
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
@@ -51,7 +53,9 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         flutterEngine.plugins.add(RestartPlugin())
+        flutterEngine.plugins.add(InstallPlugin())
 
+        registerWith(flutterEngine)
         eventChannel = EventChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             USB_EVENT_CHANNEL

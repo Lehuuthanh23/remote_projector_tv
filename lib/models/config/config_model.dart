@@ -1,15 +1,17 @@
 class ConfigModel {
-  String? companyName;
-  String? companyAddress;
-  String? hotline;
-  String? representative;
-  String? email;
-  String? taxCode;
-  String? apiServer;
-  String? guideLink;
-  int? activeCode;
-
-  ConfigModel({
+  final String? companyName;
+  final String? companyAddress;
+  final String? hotline;
+  final String? representative;
+  final String? email;
+  final String? taxCode;
+  final String? apiServer;
+  final String? guideLink;
+  final int? activeCode;
+  final String? appTVBoxVersion;
+  final String? appTVBoxBuildDate;
+  final String? appTVBoxUpdateUrl;
+  const ConfigModel({
     this.companyName,
     this.companyAddress,
     this.hotline,
@@ -19,6 +21,9 @@ class ConfigModel {
     this.apiServer,
     this.guideLink,
     this.activeCode,
+    this.appTVBoxVersion,
+    this.appTVBoxBuildDate,
+    this.appTVBoxUpdateUrl,
   });
 
   factory ConfigModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +37,9 @@ class ConfigModel {
       apiServer: json['API_SERVER'],
       guideLink: json['GUIDE_LINK'],
       activeCode: json['ACTIVE_FLAG'],
+      appTVBoxVersion: json['APPTVBOX_VERSION'],
+      appTVBoxBuildDate: json['APPTVBOX_BUILD_DATE'],
+      appTVBoxUpdateUrl: json['APPTVBOX_UPDATE_URL'],
     );
   }
 
@@ -46,6 +54,9 @@ class ConfigModel {
       'API_SERVER': apiServer,
       'GUIDE_LINK': guideLink,
       'ACTIVE_FLAG': activeCode,
+      'APPTVBOX_VERSION': appTVBoxVersion,
+      'APPTVBOX_BUILD_DATE': appTVBoxBuildDate,
+      'APPTVBOX_UPDATE_URL': appTVBoxUpdateUrl,
     };
   }
 }

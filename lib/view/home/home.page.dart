@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../constants/app_color.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/button_custom.dart';
 import '../timer_clock/timer_clock.dart';
@@ -43,106 +44,152 @@ class _HomePageState extends State<HomePage> {
                       end: Alignment.centerRight,
                     ),
                   ),
-                  child: Column(
-                    children: [
-                      const Spacer(),
-                      Column(
-                        children: [
-                          Image.asset(
-                            'assets/images/ic_projector.png',
-                            width: 150,
-                            height: 150,
-                          ),
-                          const Text(
-                            'REMOTE PROJECTOR',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 25,
+                  child: FocusScope(
+                    canRequestFocus: !viewModel.updateAvailable,
+                    child: Column(
+                      children: [
+                        const Spacer(),
+                        Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/ic_projector.png',
+                              width: 150,
+                              height: 150,
                             ),
-                          ),
-                        ],
-                      ).centered(),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ButtonCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            isSplashScreen: true,
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: PopupCampRunScreen(
-                                      camps: viewModel.camps,
-                                      vm: viewModel,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            title: 'DANH SÁCH CAMP',
-                            textSize: 15,
-                          ),
-                          ButtonCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            isSplashScreen: true,
-                            onPressed: () {
-                              showDialog(
-                                barrierDismissible: false,
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Dialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: PopupSettingScreen(
-                                      homeVM: viewModel,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            title: 'CÀI ĐẶT',
-                            textSize: 15,
-                          ),
-                          ButtonCustom(
-                            width: 150,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            color: Colors.black,
-                            onPressed: () => viewModel.signOut(),
-                            title: 'THOÁT',
-                            textSize: 15,
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              CupertinoSwitch(
-                                  value: viewModel.playVideo,
-                                  onChanged: (check) =>
-                                      viewModel.playCamp(check)),
-                              const Text(
-                                'Tự động chạy',
-                                style: TextStyle(color: Colors.black),
+                            const Text(
+                              'REMOTE PROJECTOR',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 25,
                               ),
-                            ],
+                            ),
+                          ],
+                        ).centered(),
+                        const Spacer(),
+                        Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ButtonCustom(
+                                  width: 150,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  isSplashScreen: true,
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: PopupCampRunScreen(
+                                            camps: viewModel.camps,
+                                            vm: viewModel,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  title: 'DANH SÁCH CAMP',
+                                  textSize: 15,
+                                ),
+                                ButtonCustom(
+                                  width: 150,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  isSplashScreen: true,
+                                  onPressed: () {
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: PopupSettingScreen(
+                                            homeVM: viewModel,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  title: 'CÀI ĐẶT',
+                                  textSize: 15,
+                                ),
+                                ButtonCustom(
+                                  width: 150,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  color: Colors.black,
+                                  onPressed: () => viewModel.signOut(),
+                                  title: 'THOÁT',
+                                  textSize: 15,
+                                ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    CupertinoSwitch(
+                                        value: viewModel.playVideo,
+                                        onChanged: (check) =>
+                                            viewModel.playCamp(check)),
+                                    const Text(
+                                      'Tự động chạy',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ],
+                                ),
+                                TimerClock(
+                                  homeViewModel: viewModel,
+                                ),
+                              ],
+                            ),
+                            if (viewModel.newVersion)
+                              Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                padding: const EdgeInsets.only(left: 30),
+                                width: MediaQuery.of(context).size.width,
+                                color: Colors.white,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Vui lòng cập nhật ứng dụng lên phiên bản mới nhất | Phiên bản: ${viewModel.configModel?.appTVBoxVersion ?? ''} | Ngày phát hành: ${viewModel.configModel?.appTVBoxBuildDate ?? ''}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 50, bottom: 10, top: 10),
+                                      child: ButtonCustom(
+                                        width: 150,
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        color: Colors.amber,
+                                        onPressed: () =>
+                                            viewModel.updateAndroidApp(viewModel
+                                                .configModel
+                                                ?.appTVBoxUpdateUrl),
+                                          
+                                        title: 'Cập nhật',
+                                        textSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (!viewModel.newVersion)
+                          const SizedBox(
+                            height: 20,
                           ),
-                          TimerClock(
-                            homeViewModel: viewModel,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 if (viewModel.isDrawerOpen)
@@ -252,13 +299,106 @@ class _HomePageState extends State<HomePage> {
                   child: AnimatedOpacity(
                     opacity: viewModel.isDrawerOpen ? 0.0 : 1.0,
                     duration: const Duration(milliseconds: 300),
-                    child: IconButton(
-                      icon:
-                          const Icon(Icons.menu, color: Colors.white, size: 30),
-                      onPressed: viewModel.toggleDrawer,
+                    child: FocusScope(
+                      canRequestFocus: !viewModel.updateAvailable,
+                      child: IconButton(
+                        icon: const Icon(Icons.menu,
+                            color: Colors.white, size: 30),
+                        onPressed: viewModel.toggleDrawer,
+                      ),
                     ),
                   ),
                 ),
+
+                if (viewModel.updateAvailable)
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: AppColor.black.withOpacity(0.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Center(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: AppColor.white,
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        width: 400,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Tải xuống bản cập nhật',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: AppColor.black,
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.none,
+                                        ),
+                                      ),
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text:
+                                                  '${viewModel.tempPath != null ? 'Đã tải xong' : viewModel.isUpdate ? 'Đang tải' : 'Tạm dừng'}${viewModel.isUpdate ? ':' : ''} ',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColor.black,
+                                                fontWeight: FontWeight.bold,
+                                                decoration: TextDecoration.none,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: viewModel.isUpdate
+                                                  ? '${(viewModel.progress * 100).toStringAsFixed(2)} %'
+                                                  : '',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: AppColor.black,
+                                                fontWeight: FontWeight.w400,
+                                                decoration: TextDecoration.none,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (viewModel.isUpdate)
+                                  const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              ],
+                            ),
+                            ButtonCustom(
+                              onPressed: viewModel.cancelDownloadTaped,
+                              title: viewModel.tempPath != null
+                                  ? 'Cài đặt'
+                                  : viewModel.isUpdate
+                                      ? 'Hủy'
+                                      : 'Tải xuống',
+                              color: Colors.amber,
+                              textSize: 20,
+                              margin: const EdgeInsets.only(top: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
