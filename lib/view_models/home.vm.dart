@@ -16,6 +16,7 @@ import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_string.dart';
 import '../app/app_utils.dart';
+import '../app/convert_md5.dart';
 import '../constants/app_info.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
@@ -26,6 +27,7 @@ import '../models/user/user.dart';
 import '../plugin/install_plugin.dart';
 import '../request/camp/camp.request.dart';
 import '../request/command/command.request.dart';
+import '../request/config/config.request.dart';
 import '../request/device/device.request.dart';
 import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
@@ -101,6 +103,7 @@ class HomeViewModel extends BaseViewModel {
 
   ConfigModel? _configModel;
   ConfigModel? get configModel => _configModel;
+  final ConfigRequest _configRequest = ConfigRequest();
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
@@ -209,6 +212,7 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<String?> onCommandChecked(String? command) async {
+    await _checkVersionApp();
     switch (command) {
       case AppString.getTimeNow:
         return currentTimeFormatted;
@@ -501,6 +505,8 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> _checkVersionApp() async {
+    ConfigModel? config = await _configRequest.getConfig();
+    saveConfig(config);
     String configString = AppSP.get(AppSPKey.config) ?? '';
 
     if (configString.isNotBlank) {
