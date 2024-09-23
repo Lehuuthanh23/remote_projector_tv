@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
                               height: 150,
                             ),
                             const Text(
-                              'REMOTE PROJECTOR',
+                              'GT GLOBAL TV',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -174,7 +174,6 @@ class _HomePageState extends State<HomePage> {
                                             viewModel.updateAndroidApp(viewModel
                                                 .configModel
                                                 ?.appTVBoxUpdateUrl),
-                                          
                                         title: 'Cập nhật',
                                         textSize: 15,
                                       ),

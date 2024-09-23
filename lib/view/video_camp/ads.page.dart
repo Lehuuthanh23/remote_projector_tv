@@ -32,7 +32,7 @@ class ADSPage extends StatelessWidget {
                 height: 150,
               ),
               const Text(
-                'REMOTE PROJECTOR',
+                'GT GLOBAL TV',
                 style: TextStyle(
                   decoration: TextDecoration.none,
                   fontWeight: FontWeight.bold,

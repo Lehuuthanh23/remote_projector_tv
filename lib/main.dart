@@ -7,10 +7,10 @@ import 'package:stacked_services/stacked_services.dart';
 import 'app/app.locator.dart';
 import 'app/app.router.dart';
 import 'app/app_string.dart';
+import 'app/di.dart';
 import 'observer/navigator_observer.dart';
 import 'request/command/command.request.dart';
 import 'view/splash/splash.page.dart';
-import 'app/di.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     if (command == AppString.getTimeNow) {
       DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
       replyContent = DateFormat('HH:mm:ss').format(now);
-    } else if (command == AppString.restartApp || command == AppString.wakeUpApp) {
+    } else if (command == AppString.restartApp ||
+        command == AppString.wakeUpApp) {
       replyContent = null;
     } else {
       replyContent = AppString.notPlayVideo;
@@ -75,7 +76,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Remote Projector',
+      title: 'GT GLOBAL TV',
       debugShowCheckedModeBanner: false,
       navigatorKey: StackedService.navigatorKey,
       onGenerateRoute: StackedRouter().onGenerateRoute,
