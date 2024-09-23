@@ -48,12 +48,7 @@ class _LoginPageState extends State<LoginPage> {
                         width: 150,
                         height: 150,
                       ),
-                      'REMOTE PROJECTOR'
-                          .text
-                          .bold
-                          .color(Colors.white)
-                          .size(25)
-                          .make(),
+                      'GT GLOBAL'.text.bold.color(Colors.white).size(25).make(),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: width < height ? 50 : width / 3,

@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:google_api_availability/google_api_availability.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stacked/stacked.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -212,7 +211,7 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<String?> onCommandChecked(String? command) async {
-    await _checkVersionApp();
+    _checkVersionApp();
     switch (command) {
       case AppString.getTimeNow:
         return currentTimeFormatted;
