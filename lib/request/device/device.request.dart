@@ -45,6 +45,7 @@ class DeviceRequest {
       );
 
       final responseData = jsonDecode(response.data);
+      print(responseData);
       if (responseData["status"] == 1) {
         checkConnect = true;
 
@@ -79,7 +80,9 @@ class DeviceRequest {
           AppSPKey.computerId: device.computerId
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      print(e.toString());
+    }
 
     return checkConnect;
   }
