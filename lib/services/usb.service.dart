@@ -1,4 +1,4 @@
-import 'package:play_box/app/app_utils.dart';
+import '../../app/app_utils.dart';
 
 class UsbService {
   Future<List<String>> getUsbPath() async {

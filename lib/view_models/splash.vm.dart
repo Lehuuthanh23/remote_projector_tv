@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:play_box/app/convert_md5.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_utils.dart';
+import '../app/convert_md5.dart';
 import '../constants/api.dart';
 import '../models/config/config_model.dart';
 import '../models/device/device_info_model.dart';

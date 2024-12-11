@@ -30,10 +30,12 @@ class PacketRequest {
       packets = packets.where((packet) {
         if (packet.deleted != 'y') {
           DateTime now = DateTime.now();
-          DateTime validDate = DateTime.parse(
-              packet.validDate.isEmptyOrNull ? now.toString() : packet.validDate!);
-          DateTime expireDate = DateTime.parse(
-              packet.expireDate.isEmptyOrNull ? now.toString() : packet.expireDate!);
+          DateTime validDate = DateTime.parse(packet.validDate.isEmptyOrNull
+              ? now.toString()
+              : packet.validDate!);
+          DateTime expireDate = DateTime.parse(packet.expireDate.isEmptyOrNull
+              ? now.toString()
+              : packet.expireDate!);
           return validDate.isBefore(now) && expireDate.isAfter(now);
         } else {
           return false;

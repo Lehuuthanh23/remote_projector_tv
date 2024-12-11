@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:io';
 
 import '../../app/app_string.dart';
 import '../../app/app_utils.dart';
@@ -21,7 +21,8 @@ class VideoUSBPage extends StatefulWidget {
   State<VideoUSBPage> createState() => _VideoUSBPageState();
 }
 
-class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver {
+class _VideoUSBPageState extends State<VideoUSBPage>
+    with WidgetsBindingObserver {
   late VideoPlayerController _controller;
   late Timer _timerTimeShowing;
 
@@ -165,9 +166,10 @@ class _VideoUSBPageState extends State<VideoUSBPage> with WidgetsBindingObserver
             Center(
               child: _controller.value.isInitialized
                   ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ) : null,
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    )
+                  : null,
             ),
             Positioned(
               bottom: 20,

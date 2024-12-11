@@ -88,9 +88,6 @@ class HomeViewModel extends BaseViewModel {
   bool _updateAvailable = false;
   bool get updateAvailable => _updateAvailable;
 
-  int _currentIndex = 0;
-  int get currentIndex => _currentIndex;
-
   double _progress = 0;
   double get progress => _progress;
 
@@ -102,7 +99,9 @@ class HomeViewModel extends BaseViewModel {
 
   ConfigModel? _configModel;
   ConfigModel? get configModel => _configModel;
+
   final ConfigRequest _configRequest = ConfigRequest();
+
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
@@ -159,6 +158,7 @@ class HomeViewModel extends BaseViewModel {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
+      print(token);
 
       if (token != null) {
         checkFirebase = await _commandRequest.checkFirebase(token);

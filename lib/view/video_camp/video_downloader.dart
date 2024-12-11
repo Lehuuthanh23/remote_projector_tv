@@ -1,4 +1,5 @@
 import 'dart:isolate';
+
 import 'package:dio/dio.dart';
 
 class VideoDownloader {

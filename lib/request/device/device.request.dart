@@ -45,7 +45,6 @@ class DeviceRequest {
       );
 
       final responseData = jsonDecode(response.data);
-      print(responseData);
       if (responseData["status"] == 1) {
         checkConnect = true;
 
@@ -80,9 +79,7 @@ class DeviceRequest {
           AppSPKey.computerId: device.computerId
         });
       }
-    } catch (e) {
-      print(e.toString());
-    }
+    } catch (_) {}
 
     return checkConnect;
   }
@@ -112,6 +109,8 @@ class DeviceRequest {
     if (!deviceString.isEmptyOrNull) {
       try {
         Device device = Device.fromJson(jsonDecode(deviceString!));
+        print(
+            '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token');
 
         await _dio.get(
           '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
