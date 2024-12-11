@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:google_api_availability/google_api_availability.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
@@ -146,13 +145,6 @@ class HomeViewModel extends BaseViewModel {
     super.dispose();
   }
 
-  Future<void> _checkGooglePlayServices() async {
-    try {
-      await GoogleApiAvailability.instance
-          .checkGooglePlayServicesAvailability(true);
-    } catch (_) {}
-  }
-
   Future<void> _getTokenAndSendToServer() async {
     bool checkFirebase = false;
     try {
@@ -164,7 +156,6 @@ class HomeViewModel extends BaseViewModel {
         checkFirebase = await _commandRequest.checkFirebase(token);
 
         if (checkFirebase) {
-          _checkGooglePlayServices();
           _setupTokenRefreshListener();
           _setupForegroundMessageListener();
         }
