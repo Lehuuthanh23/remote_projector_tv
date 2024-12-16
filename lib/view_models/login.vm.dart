@@ -32,20 +32,8 @@ class LoginViewModel extends BaseViewModel {
   FocusNode exitButtonFocusNode = FocusNode();
   final _navigationService = appLocator<NavigationService>();
   final AuthenticationRequest _authenticationRequest = AuthenticationRequest();
-  bool obscurePassword = true; // Biến để ẩn/hiện mật khẩu
+  bool obscurePassword = true;
   String? errorMessage;
-
-  // @override
-  // void dispose() {
-  //   emailController.dispose();
-  //   passwordController.dispose();
-  //   emailFocusNode.dispose();
-  //   passwordFocusNode.dispose();
-  //   loginButtonFocusNode.dispose();
-  //   exitButtonFocusNode.dispose();
-
-  //   super.dispose();
-  // }
 
   showPassword(bool? value) {
     obscurePassword = !obscurePassword;

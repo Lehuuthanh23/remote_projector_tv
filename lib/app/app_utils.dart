@@ -57,6 +57,40 @@ class AppUtils {
   }
 }
 
+Future<bool> isVideoUrlValid(String? url) async {
+  if (url == null) return false;
+
+  try {
+    final dio = Dio();
+    final response = await dio.head(url);
+
+    if (response.statusCode == 200 &&
+        response.headers['content-type'] != null) {
+      final contentType = response.headers['content-type']!.first;
+      return contentType.startsWith('video/');
+    }
+  } catch (_) {}
+
+  return false;
+}
+
+Future<bool> isImageUrlValid(String? url) async {
+  if (url == null) return false;
+
+  try {
+    final dio = Dio();
+    final response = await dio.head(url);
+
+    if (response.statusCode == 200 &&
+        response.headers['content-type'] != null) {
+      final contentType = response.headers['content-type']!.first;
+      return contentType.startsWith('image/');
+    }
+  } catch (_) {}
+
+  return false;
+}
+
 extension DateTimeStringExtension on String {
   bool isBeforeBuildDate(String dateB) {
     DateFormat format = DateFormat("dd/MM/yyyy HH:mm");

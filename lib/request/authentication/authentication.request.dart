@@ -35,18 +35,18 @@ class AuthenticationRequest {
 
       if (loginResponse.status == 1 && loginResponse.info.isNotEmpty) {
         await fetchDeviceInfo();
-        //final responseCheck = await dio.
         if (await checkCustomerByDevice(
-            deviceInfo!.androidId, loginResponse.info.first.customerId!)) {
+          deviceInfo!.androidId,
+          loginResponse.info.first.customerId!,
+        )) {
           return 'Thiết bị đã có quyền sở hữu.';
         } else {
           await onLoginSuccess(response, loginResponse);
         }
 
-        return null; // Successful login, no error message
+        return null;
       } else {
-        return loginResponse.msg ??
-            'Tài khoản hoặc mật khẩu không chính xác.'; // Return error message
+        return loginResponse.msg ?? 'Tài khoản hoặc mật khẩu không chính xác.';
       }
     } catch (_) {
       return 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';

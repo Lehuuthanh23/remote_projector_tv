@@ -48,7 +48,6 @@ class DeviceRequest {
       if (responseData["status"] == 1) {
         checkConnect = true;
 
-        // Save device to memory when connect success
         DeviceInfoModel deviceInfoModel =
             DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
         DeviceRequest deviceRequest = DeviceRequest();
@@ -63,17 +62,14 @@ class DeviceRequest {
             .toList()
             .first;
 
-        // Push notification to user
-        NotifyRequest notifyRequest = NotifyRequest();
         Notify notify = Notify(
             title: 'Kết nối thiết bị mới',
             descript: 'Kết nối thiết bị mới thành công',
             detail: 'Thiết bị ${deviceInfo.model} được thêm thành công',
             picture: '');
-        await notifyRequest.addNotify(notify);
+        await NotifyRequest().addNotify(notify);
 
-        // Save info device to memory
-        AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
+        await AppSP.set(AppSPKey.computer, jsonEncode(device.toJson()));
         await AppUtils.platformChannel.invokeMethod('saveComputer', {
           AppSPKey.serialComputer: device.serialComputer,
           AppSPKey.computerId: device.computerId

@@ -60,7 +60,7 @@ class DeviceInfoService {
       );
     }
 
-    AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
+    await AppSP.set(AppSPKey.device, jsonEncode(deviceInfoModel.toJson()));
     return deviceInfoModel;
   }
 

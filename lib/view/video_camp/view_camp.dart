@@ -70,41 +70,47 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                   color: Colors.black,
                 ),
                 Center(
-                    child: viewModel.isPlaying && viewModel.isPlaying
-                        ? (viewModel.checkImage
-                            ? (viewModel
-                                                .campSchedulesNew[
-                                                    viewModel.currentIndex]
-                                                .videoType ==
-                                            'url' &&
-                                        viewModel.image == null) ||
-                                    viewModel.usbPaths.isEmpty
-                                ? Image.network(
-                                    viewModel
-                                        .campSchedulesNew[
-                                            viewModel.currentIndex]
-                                        .urlYoutube,
-                                    fit: BoxFit.fill,
-                                  )
-                                : viewModel.image != null
-                                    ? Image.file(
-                                        viewModel.image!,
-                                        fit: BoxFit.fill,
-                                      )
-                                    : Container(
-                                        color: Colors.black,
-                                      )
-                            : viewModel.controller != null &&
-                                    viewModel.controller!.value.isInitialized
-                                ? AspectRatio(
-                                    aspectRatio:
-                                        viewModel.controller!.value.aspectRatio,
-                                    child: VideoPlayer(viewModel.controller!),
-                                  )
-                                : Container(
-                                    color: Colors.black,
-                                  ))
-                        : const ADSPage()),
+                  child: viewModel.isPlaying
+                      ? (viewModel.checkImage
+                          ? (viewModel.campSchedulesNew[viewModel.currentIndex]
+                                              .videoType ==
+                                          'url' &&
+                                      viewModel.image == null) ||
+                                  viewModel.usbPaths.isEmpty
+                              ? viewModel.setCampaignError.contains(viewModel
+                                      .campSchedulesNew[viewModel.currentIndex]
+                                      .campaignId)
+                                  ? Container(
+                                      color: Colors.black,
+                                    )
+                                  : Image.network(
+                                      viewModel
+                                          .campSchedulesNew[
+                                              viewModel.currentIndex]
+                                          .urlYoutube,
+                                      fit: BoxFit.fill,
+                                    )
+                              : viewModel.image != null
+                                  ? Image.file(
+                                      viewModel.image!,
+                                      fit: BoxFit.fill,
+                                    )
+                                  : Container(
+                                      color: Colors.black,
+                                    )
+                          : viewModel.controller != null &&
+                                  viewModel.controller!.value.isInitialized &&
+                                  !viewModel.isDisposeVideoPlayer
+                              ? AspectRatio(
+                                  aspectRatio:
+                                      viewModel.controller!.value.aspectRatio,
+                                  child: VideoPlayer(viewModel.controller!),
+                                )
+                              : Container(
+                                  color: Colors.black,
+                                ))
+                      : const ADSPage(),
+                ),
                 Positioned(
                   bottom: 20,
                   right: 20,

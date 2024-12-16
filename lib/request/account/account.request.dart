@@ -30,10 +30,9 @@ class AccountRequest {
           updatedUser.customerId = userData.customerId;
 
           return updatedUser;
-        } else {
-          // Handle case where no user information is returned from the API
-          return userData; // Return original stored user data
         }
+
+        return userData;
       }
     } catch (_) {}
 
@@ -48,7 +47,7 @@ class AccountRequest {
 
       final responseData = jsonDecode(response.data);
       UserResponseModel customerResponse =
-      UserResponseModel.fromJson(responseData);
+          UserResponseModel.fromJson(responseData);
 
       if (customerResponse.userList.isNotEmpty) {
         User updatedUser = customerResponse.userList.first;
@@ -69,7 +68,7 @@ class AccountRequest {
 
       final responseData = jsonDecode(response.data);
       UserResponseModel customerResponse =
-      UserResponseModel.fromJson(responseData);
+          UserResponseModel.fromJson(responseData);
 
       if (customerResponse.userList.isNotEmpty) {
         User updatedUser = customerResponse.userList.first;

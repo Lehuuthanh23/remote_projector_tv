@@ -30,14 +30,16 @@ class CampRequest {
     DeviceInfoModel deviceInfoModel =
         DeviceInfoModel.fromJson(jsonDecode(deviceString!));
     List<Device> lstDevice =
-        (await _deviceRequest.getDeviceByCustomerId(currentUser.customerId!)).where((device) =>
-        device.serialComputer ==
-            (deviceInfoModel.serialNumber == 'unknown'
-                ? deviceInfoModel.androidId
-                : deviceInfoModel.serialNumber))
+        (await _deviceRequest.getDeviceByCustomerId(currentUser.customerId!))
+            .where((device) =>
+                device.serialComputer ==
+                (deviceInfoModel.serialNumber == 'unknown'
+                    ? deviceInfoModel.androidId
+                    : deviceInfoModel.serialNumber))
             .toList();
     Device? device = lstDevice.isNotEmpty ? lstDevice.first : null;
-    AppSP.set(AppSPKey.computer, device!= null ? jsonEncode(device.toJson()) : '');
+    await AppSP.set(
+        AppSPKey.computer, device != null ? jsonEncode(device.toJson()) : '');
 
     if (device != null) {
       await AppUtils.platformChannel.invokeMethod('saveComputer', {
@@ -56,7 +58,6 @@ class CampRequest {
           lstCamp = campList.map((e) => CampModel.fromJson(e)).toList();
         }
 
-        // Get TimeRunModel for each CampModel
         for (var camp in lstCamp) {
           camp.lstTimeRun = await getTimeRunCampById(camp.campaignId);
         }
@@ -136,6 +137,6 @@ class CampRequest {
         options: AppUtils.createOptionsNoCookie(),
         data: formData,
       );
-    } catch(_) {}
+    } catch (_) {}
   }
 }

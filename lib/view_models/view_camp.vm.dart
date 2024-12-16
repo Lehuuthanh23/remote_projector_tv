@@ -12,6 +12,7 @@ import 'package:video_player/video_player.dart';
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_string.dart';
+import '../app/app_utils.dart';
 import '../models/camp/camp_schedule.dart';
 import '../observer/navigator_observer.dart';
 import '../request/camp/camp.request.dart';
@@ -38,6 +39,9 @@ class ViewCampViewModel extends BaseViewModel {
   String _formattedTime = '';
   String get formattedTime => _formattedTime;
 
+  final Set<String> _setCampaignError = {};
+  Set<String> get setCampaignError => _setCampaignError;
+
   late Timer _timerTimeShowing;
 
   List<String> usbPaths = [];
@@ -59,6 +63,7 @@ class ViewCampViewModel extends BaseViewModel {
   bool pauseVideo = false;
   bool checkImage = false;
   bool checkAlive = true;
+  bool isDisposeVideoPlayer = false;
 
   StreamSubscription? _subscription;
   FocusNode drawerFocus = FocusNode();
@@ -131,6 +136,7 @@ class ViewCampViewModel extends BaseViewModel {
     checkAlive = false;
     usbPaths.clear();
     campSchedulesNew.clear();
+    _setCampaignError.clear();
 
     homeViewModel.setCallback(null);
 
@@ -234,6 +240,8 @@ class ViewCampViewModel extends BaseViewModel {
       {int timeStart = 0}) async {
     if (!checkAlive || !context.mounted) return;
     _controller?.dispose();
+    isDisposeVideoPlayer = true;
+    notifyListeners();
 
     image = null;
     if (currentIndex < campSchedules.length) {
@@ -264,8 +272,23 @@ class ViewCampViewModel extends BaseViewModel {
 
               if (currentCampSchedule.videoType == 'url') {
                 if (!File(savePath).existsSync()) {
-                  VideoDownloader.startDownload(
-                      currentCampSchedule.urlYoutube, savePath, (progress) {});
+                  bool isErrorInList = _setCampaignError
+                      .contains(currentCampSchedule.campaignId);
+
+                  if (!isErrorInList &&
+                      await isImageUrlValid(currentCampSchedule.urlYoutube)) {
+                    VideoDownloader.startDownload(
+                        currentCampSchedule.urlYoutube,
+                        savePath,
+                        (progress) {});
+                  } else {
+                    if (!isErrorInList) {
+                      _setCampaignError.add(currentCampSchedule.campaignId);
+                    }
+                    notifyListeners();
+                    _loadNextMediaInList(campSchedules);
+                    return;
+                  }
                 } else {
                   image = File(savePath);
                 }
@@ -278,7 +301,20 @@ class ViewCampViewModel extends BaseViewModel {
                 _loadNextMediaInList(campSchedules);
                 return;
               }
+            } else {
+              bool isErrorInList =
+                  _setCampaignError.contains(currentCampSchedule.campaignId);
+              if (isErrorInList ||
+                  !(await isImageUrlValid(currentCampSchedule.urlYoutube))) {
+                if (!isErrorInList) {
+                  _setCampaignError.add(currentCampSchedule.campaignId);
+                }
+                notifyListeners();
+                _loadNextMediaInList(campSchedules);
+                return;
+              }
             }
+
             notifyListeners();
             var counter = _waitTime;
             Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -298,8 +334,20 @@ class ViewCampViewModel extends BaseViewModel {
             checkImage = false;
 
             if (usbPaths.isEmpty) {
-              _controller = VideoPlayerController.networkUrl(
-                  Uri.parse(currentCampSchedule.urlYoutube));
+              bool isErrorInList =
+                  _setCampaignError.contains(currentCampSchedule.campaignId);
+
+              if (!isErrorInList &&
+                  await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
+                _controller = VideoPlayerController.networkUrl(
+                    Uri.parse(currentCampSchedule.urlYoutube));
+              } else {
+                if (!isErrorInList) {
+                  _setCampaignError.add(currentCampSchedule.campaignId);
+                }
+                _loadNextMediaInList(campSchedules);
+                return;
+              }
             } else {
               String nameVideoSave =
                   currentCampSchedule.urlYoutube.split('/').last;
@@ -317,8 +365,20 @@ class ViewCampViewModel extends BaseViewModel {
                 }
 
                 if (!File(savePath).existsSync()) {
-                  _controller = VideoPlayerController.networkUrl(
-                      Uri.parse(currentCampSchedule.urlYoutube));
+                  bool isErrorInList = _setCampaignError
+                      .contains(currentCampSchedule.campaignId);
+
+                  if (!isErrorInList &&
+                      await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
+                    _controller = VideoPlayerController.networkUrl(
+                        Uri.parse(currentCampSchedule.urlYoutube));
+                  } else {
+                    if (!isErrorInList) {
+                      _setCampaignError.add(currentCampSchedule.campaignId);
+                    }
+                    _loadNextMediaInList(campSchedules);
+                    return;
+                  }
                 } else {
                   _controller = VideoPlayerController.file(File(savePath));
                 }
@@ -337,6 +397,7 @@ class ViewCampViewModel extends BaseViewModel {
             await _controller!.initialize();
             _controller!.setLooping(true);
             _controller!.play();
+            isDisposeVideoPlayer = false;
 
             if (timeStart > 0) {
               _controller!.seekTo(Duration(seconds: timeStart));
@@ -362,35 +423,38 @@ class ViewCampViewModel extends BaseViewModel {
           _loadNextMediaInList(campSchedules);
         }
       } else {
+        if (!_setCampaignError.contains(currentCampSchedule.campaignId)) {
+          _setCampaignError.add(currentCampSchedule.campaignId);
+        }
         _loadNextMediaInList(campSchedules);
       }
     }
   }
 
   Future<void> _loadNextMediaInList(List<CampSchedule> campSchedules) async {
-    currentIndex++;
-    if (currentIndex >= campSchedules.length) {
-      currentIndex = 0;
-    }
+    bool isAllInSet = campSchedules
+        .map((e) => e.campaignId)
+        .every((item) => _setCampaignError.contains(item));
 
-    checkDisconnectUSB = null;
-    _loadNextMedia(campSchedules);
+    if (isAllInSet) {
+      isPlaying = false;
+      notifyListeners();
+    } else {
+      currentIndex++;
+      if (currentIndex >= campSchedules.length) {
+        currentIndex = 0;
+      }
+
+      checkDisconnectUSB = null;
+      _loadNextMedia(campSchedules);
+    }
   }
 
   void _onMediaFinished(List<CampSchedule> campSchedules) {
     CampSchedule currentCampSchedule = campSchedules[currentIndex];
     CampRequest campRequest = CampRequest();
-    //NotifyRequest notifyRequest = NotifyRequest();
 
     campRequest.addCampaignRunProfile(currentCampSchedule);
-
-    /*Notify notify = Notify(
-      title: 'Chạy chiến dịch',
-      descript: 'Chạy chiến dịch ${currentCampSchedule.campaignName}',
-      detail: 'Chạy chiến dịch ${currentCampSchedule.campaignName}',
-      picture: '',
-    );
-    notifyRequest.addNotify(notify);*/
 
     _loadNextMediaInList(campSchedules);
   }
