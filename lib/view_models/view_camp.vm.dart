@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:better_player/better_player.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:stacked/stacked.dart';
-import 'package:video_player/video_player.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
@@ -32,8 +32,9 @@ class ViewCampViewModel extends BaseViewModel {
   static const usbEventChannel = EventChannel('com.example.usb/event');
   final Dio _dio = Dio();
 
-  VideoPlayerController? _controller;
-  VideoPlayerController? get controller => _controller;
+  BetterPlayerController? _betterPlayerController;
+  BetterPlayerController? get betterPlayerController => _betterPlayerController;
+
   bool isDrawerOpen = false;
 
   String _formattedTime = '';
@@ -41,6 +42,9 @@ class ViewCampViewModel extends BaseViewModel {
 
   final Set<String> _setCampaignError = {};
   Set<String> get setCampaignError => _setCampaignError;
+
+  double _aspectRatio = 16 / 9;
+  double get aspectRatio => _aspectRatio;
 
   late Timer _timerTimeShowing;
 
@@ -101,8 +105,8 @@ class ViewCampViewModel extends BaseViewModel {
         if (isPlaying) {
           isPlaying = false;
           flagPlayCamp = false;
-          _controller?.pause();
-          _controller = null;
+          _betterPlayerController?.pause();
+          _betterPlayerController = null;
           notifyListeners();
         }
       } else {
@@ -128,7 +132,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _betterPlayerController?.dispose();
     _timerTimeShowing.cancel();
     _subscription?.cancel();
     _subscription = null;
@@ -154,9 +158,9 @@ class ViewCampViewModel extends BaseViewModel {
       homeViewModel.pauseVideo = pauseVideo;
 
       if (pauseVideo) {
-        _controller?.pause();
+        _betterPlayerController?.pause();
       } else {
-        _controller?.play();
+        _betterPlayerController?.play();
       }
     } else if (command == AppString.stopVideo) {
       popPage();
@@ -198,7 +202,7 @@ class ViewCampViewModel extends BaseViewModel {
 
   Future<void> _onUsbEvent(dynamic event) async {
     if (event == 'USB_DISCONNECTED') {
-      _controller?.dispose();
+      _betterPlayerController?.dispose();
       checkDisconnectUSB = true;
     } else if (event == 'USB_CONNECTED') {
       checkDisconnectUSB = false;
@@ -239,7 +243,7 @@ class ViewCampViewModel extends BaseViewModel {
   Future<void> _loadNextMedia(List<CampSchedule> campSchedules,
       {int timeStart = 0}) async {
     if (!checkAlive || !context.mounted) return;
-    _controller?.dispose();
+    _betterPlayerController?.dispose();
     isDisposeVideoPlayer = true;
     notifyListeners();
 
@@ -339,8 +343,9 @@ class ViewCampViewModel extends BaseViewModel {
 
               if (!isErrorInList &&
                   await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
-                _controller = VideoPlayerController.networkUrl(
-                    Uri.parse(currentCampSchedule.urlYoutube));
+                // _betterPlayerController = VideoPlayerController.networkUrl(
+                //     Uri.parse(currentCampSchedule.urlYoutube));
+                await _setupVideo(currentCampSchedule.urlYoutube);
               } else {
                 if (!isErrorInList) {
                   _setCampaignError.add(currentCampSchedule.campaignId);
@@ -370,8 +375,9 @@ class ViewCampViewModel extends BaseViewModel {
 
                   if (!isErrorInList &&
                       await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
-                    _controller = VideoPlayerController.networkUrl(
-                        Uri.parse(currentCampSchedule.urlYoutube));
+                    // _betterPlayerController = VideoPlayerController.networkUrl(
+                    //     Uri.parse(currentCampSchedule.urlYoutube));
+                    await _setupVideo(currentCampSchedule.urlYoutube);
                   } else {
                     if (!isErrorInList) {
                       _setCampaignError.add(currentCampSchedule.campaignId);
@@ -380,27 +386,31 @@ class ViewCampViewModel extends BaseViewModel {
                     return;
                   }
                 } else {
-                  _controller = VideoPlayerController.file(File(savePath));
+                  // _betterPlayerController =
+                  //     VideoPlayerController.file(File(savePath));
+                  await _setupVideo(savePath, inInternet: false);
                 }
               } else {
                 String usbPathh =
                     '${usbPaths.first}/Videos/${currentCampSchedule.urlUsb}';
 
                 if (File(usbPathh).existsSync()) {
-                  _controller = VideoPlayerController.file(File(usbPathh));
+                  // _betterPlayerController =
+                  //     VideoPlayerController.file(File(usbPathh));
+                  await _setupVideo(usbPathh, inInternet: false);
                 } else {
                   _loadNextMediaInList(campSchedules);
                   return;
                 }
               }
             }
-            await _controller!.initialize();
-            _controller!.setLooping(true);
-            _controller!.play();
+            // await _betterPlayerController!.initialize();
+            // _betterPlayerController!.setLooping(true);
+            _betterPlayerController!.play();
             isDisposeVideoPlayer = false;
 
             if (timeStart > 0) {
-              _controller!.seekTo(Duration(seconds: timeStart));
+              _betterPlayerController!.seekTo(Duration(seconds: timeStart));
             }
 
             notifyListeners();
@@ -429,6 +439,42 @@ class ViewCampViewModel extends BaseViewModel {
         _loadNextMediaInList(campSchedules);
       }
     }
+  }
+
+  Future<void> _setupVideo(String url, {bool inInternet = true}) async {
+    BetterPlayerConfiguration betterPlayerConfiguration =
+        const BetterPlayerConfiguration(
+      autoPlay: true,
+      looping: true,
+      controlsConfiguration: BetterPlayerControlsConfiguration(
+        showControls: false,
+      ),
+    );
+
+    BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
+      inInternet
+          ? BetterPlayerDataSourceType.network
+          : BetterPlayerDataSourceType.file,
+      url,
+    );
+
+    // Tạo BetterPlayerController
+    _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
+    await _betterPlayerController!
+        .setupDataSource(betterPlayerDataSource)
+        .then((_) async {
+      final videoPlayerController =
+          _betterPlayerController!.videoPlayerController;
+      double ratio = 16 / 9;
+      if (videoPlayerController != null) {
+        final size = videoPlayerController.value.size;
+        if (size != null) {
+          ratio = size.width / size.height;
+        }
+      }
+
+      _aspectRatio = ratio;
+    });
   }
 
   Future<void> _loadNextMediaInList(List<CampSchedule> campSchedules) async {

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../app/app_string.dart';
 import '../../app/app_utils.dart';
@@ -23,16 +23,19 @@ class VideoUSBPage extends StatefulWidget {
 
 class _VideoUSBPageState extends State<VideoUSBPage>
     with WidgetsBindingObserver {
-  late VideoPlayerController _controller;
   late Timer _timerTimeShowing;
 
   String _formattedTime = '';
 
-  List<File> _videoFiles = [];
+  BetterPlayerController? _betterPlayerController;
+
+  List<String> _videoFiles = [];
   List<String> usbPaths = [];
 
   int _currentVideoIndex = 0;
   bool isPlaying = false;
+
+  double _aspectRatio = 16 / 9;
 
   @override
   void initState() {
@@ -49,7 +52,7 @@ class _VideoUSBPageState extends State<VideoUSBPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.dispose();
+    _betterPlayerController?.dispose();
 
     _videoFiles.clear();
     usbPaths.clear();
@@ -64,10 +67,10 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.paused) {
-      _controller.pause();
+      _betterPlayerController?.pause();
     } else if (state == AppLifecycleState.resumed) {
       if (isPlaying) {
-        _controller.play();
+        _betterPlayerController?.play();
       }
     }
   }
@@ -76,13 +79,52 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     if (command == AppString.pauseVideo) {
       isPlaying = !isPlaying;
       if (isPlaying) {
-        _controller.pause();
+        _betterPlayerController?.pause();
       } else {
-        _controller.play();
+        _betterPlayerController?.play();
       }
     } else if (command == AppString.stopVideo) {
       Navigator.pop(context);
     }
+  }
+
+  Future<void> _setupVideo(String url) async {
+    BetterPlayerConfiguration betterPlayerConfiguration =
+        const BetterPlayerConfiguration(
+      autoPlay: true,
+      looping: false,
+      controlsConfiguration: BetterPlayerControlsConfiguration(
+        showControls: false,
+      ),
+    );
+
+    BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.file,
+      url,
+    );
+
+    _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
+    _betterPlayerController!.addEventsListener((event) {
+      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+        _playNextVideo();
+      }
+    });
+    await _betterPlayerController!
+        .setupDataSource(betterPlayerDataSource)
+        .then((_) async {
+      final videoPlayerController =
+          _betterPlayerController!.videoPlayerController;
+      double ratio = 16 / 9;
+      if (videoPlayerController != null) {
+        final size = videoPlayerController.value.size;
+        if (size != null) {
+          ratio = size.width / size.height;
+        }
+      }
+
+      _aspectRatio = ratio;
+    });
+    setState(() {});
   }
 
   Future<void> _getUsbPath() async {
@@ -102,50 +144,24 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     final videoFiles = videosDirectory
         .listSync()
         .where((item) => item.path.endsWith('.mp4'))
-        .map((item) => File(item.path))
+        .map((item) => item.path)
         .toList();
 
     if (videoFiles.isNotEmpty) {
-      setState(() {
-        _videoFiles = videoFiles;
-      });
+      _videoFiles = videoFiles;
       _initializeVideoPlayer();
     }
   }
 
   void _initializeVideoPlayer() {
     if (_videoFiles.isNotEmpty) {
-      _controller = VideoPlayerController.file(_videoFiles[_currentVideoIndex])
-        ..addListener(() {
-          if (_controller.value.position == _controller.value.duration) {
-            _playNextVideo();
-          }
-          setState(() {});
-        })
-        ..setLooping(false)
-        ..initialize().then((_) {
-          setState(() {});
-          _controller.play();
-          isPlaying = true;
-        });
+      _setupVideo(_videoFiles[_currentVideoIndex]);
     }
   }
 
   void _playNextVideo() {
     _currentVideoIndex = (_currentVideoIndex + 1) % _videoFiles.length;
-    _controller.dispose();
-    _controller = VideoPlayerController.file(_videoFiles[_currentVideoIndex])
-      ..addListener(() {
-        if (_controller.value.position == _controller.value.duration) {
-          _playNextVideo();
-        }
-        setState(() {});
-      })
-      ..setLooping(false)
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
+    _setupVideo(_videoFiles[_currentVideoIndex]);
   }
 
   void _updateTime() {
@@ -164,10 +180,10 @@ class _VideoUSBPageState extends State<VideoUSBPage>
         child: Stack(
           children: [
             Center(
-              child: _controller.value.isInitialized
+              child: _betterPlayerController != null
                   ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
+                      aspectRatio: _aspectRatio,
+                      child: BetterPlayer(controller: _betterPlayerController!),
                     )
                   : null,
             ),

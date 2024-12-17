@@ -1,7 +1,7 @@
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../view_models/home.vm.dart';
 import '../../view_models/view_camp.vm.dart';
@@ -98,13 +98,13 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                                   : Container(
                                       color: Colors.black,
                                     )
-                          : viewModel.controller != null &&
-                                  viewModel.controller!.value.isInitialized &&
+                          : viewModel.betterPlayerController != null &&
                                   !viewModel.isDisposeVideoPlayer
                               ? AspectRatio(
-                                  aspectRatio:
-                                      viewModel.controller!.value.aspectRatio,
-                                  child: VideoPlayer(viewModel.controller!),
+                                  aspectRatio: viewModel.aspectRatio,
+                                  child: BetterPlayer(
+                                      controller:
+                                          viewModel.betterPlayerController!),
                                 )
                               : Container(
                                   color: Colors.black,
@@ -261,7 +261,20 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                       ),
                     ),
                   ),
-                )
+                ),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    color: Colors.white.withOpacity(0.4),
+                    child: Text(
+                      'Đang chạy ${viewModel.checkImage ? 'Image' : 'Video'}\nUSB: ${viewModel.usbPaths.join(' - ')}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
