@@ -11,6 +11,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbManager
+import android.os.Environment
+import android.os.storage.StorageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -113,7 +115,7 @@ class MainActivity : FlutterActivity() {
                 }
 
                 "getUsbPath" -> {
-                    val usbPath = getUsbPath()
+                    val usbPath = getUsbPath2()
                     result.success(usbPath)
                 }
 
@@ -321,6 +323,60 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return usbPaths
+    }
+
+    private fun getUsbPath2(): List<String> {
+        val usbPaths = mutableListOf<String>()
+
+        try {
+            val externalDirs = context.getExternalFilesDirs(null)
+            for (file in externalDirs) {
+                file?.let {
+                    if (!Environment.isExternalStorageEmulated(it)) {
+                        val usbPath = it.absolutePath.split("/Android").first()
+                        usbPaths.add(usbPath)
+                    }
+                }
+            }
+
+            val possiblePaths = arrayOf(
+                "/storage",
+                "/mnt/usb_storage",
+                "/mnt/media_rw"
+            )
+
+            for (path in possiblePaths) {
+                val file = File(path)
+                if (file.exists() && file.isDirectory) {
+                    file.listFiles()?.filter { it.isDirectory && File(it, "Android").exists() }?.forEach {
+                        if (!usbPaths.contains(it.absolutePath)) {
+                            usbPaths.add(it.absolutePath)
+                        }
+                    }
+                }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+                val storageVolumes = storageManager.storageVolumes
+                for (volume in storageVolumes) {
+                    val path = volume.javaClass.getMethod("getPath").invoke(volume) as String?
+                    path?.let {
+                        val usbFile = File(it)
+                        if (usbFile.exists() && usbFile.isDirectory && File(usbFile, "Android").exists()) {
+                            if (!usbPaths.contains(usbFile.absolutePath)) {
+                                usbPaths.add(usbFile.absolutePath)
+                            }
+                        }
+                    }
+                }
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
