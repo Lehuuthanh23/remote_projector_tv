@@ -186,8 +186,6 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     _currentVideoIndex = (_currentVideoIndex + 1) % _videoFiles.length;
     setState(() {
       _image = null;
-      _betterPlayerController?.dispose();
-      _betterPlayerController = null;
       _isCurrentImage = _isImage(_videoFiles[_currentVideoIndex]);
     });
     if (_isCurrentImage) {
