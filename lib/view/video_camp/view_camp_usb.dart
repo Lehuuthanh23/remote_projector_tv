@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/app_string.dart';
@@ -23,23 +24,28 @@ class VideoUSBPage extends StatefulWidget {
 
 class _VideoUSBPageState extends State<VideoUSBPage>
     with WidgetsBindingObserver {
+  static const usbEventChannel = EventChannel('com.example.usb/event');
+
   late Timer _timerTimeShowing;
+  StreamSubscription? _usbChecked;
 
   String _formattedTime = '';
-
   BetterPlayerController? _betterPlayerController;
+  File? _image;
 
   List<String> _videoFiles = [];
   List<String> usbPaths = [];
 
   int _currentVideoIndex = 0;
-  bool isPlaying = false;
+  bool _isPlaying = false;
+  bool _isCurrentImage = false;
 
   double _aspectRatio = 16 / 9;
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    _usbChecked = usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
     widget.homeViewModel.setCallback(onCommandInvoke);
     _timerTimeShowing = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       _updateTime();
@@ -58,6 +64,7 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     usbPaths.clear();
     _timerTimeShowing.cancel();
     widget.homeViewModel.setCallback(null);
+    _usbChecked?.cancel();
 
     super.dispose();
   }
@@ -69,16 +76,22 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     if (state == AppLifecycleState.paused) {
       _betterPlayerController?.pause();
     } else if (state == AppLifecycleState.resumed) {
-      if (isPlaying) {
+      if (_isPlaying) {
         _betterPlayerController?.play();
       }
     }
   }
 
+  Future<void> _onUsbEvent(dynamic event) async {
+    if (event == 'USB_DISCONNECTED') {
+      Navigator.pop(context);
+    }
+  }
+
   void onCommandInvoke(String command) {
     if (command == AppString.pauseVideo) {
-      isPlaying = !isPlaying;
-      if (isPlaying) {
+      _isPlaying = !_isPlaying;
+      if (_isPlaying) {
         _betterPlayerController?.pause();
       } else {
         _betterPlayerController?.play();
@@ -162,19 +175,22 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     videoFiles.addAll(imageFiles);
     if (videoFiles.isNotEmpty) {
       _videoFiles = videoFiles;
-      _initializeVideoPlayer();
-    }
-  }
-
-  void _initializeVideoPlayer() {
-    if (_videoFiles.isNotEmpty) {
-      _setupVideo(_videoFiles[_currentVideoIndex]);
+      _currentVideoIndex = -1;
+      _playNextVideo();
+    } else if (mounted) {
+      Navigator.pop(context, true);
     }
   }
 
   void _playNextVideo() {
     _currentVideoIndex = (_currentVideoIndex + 1) % _videoFiles.length;
-    if (_isImage(_videoFiles[_currentVideoIndex])) {
+    setState(() {
+      _image = null;
+      _betterPlayerController?.dispose();
+      _betterPlayerController = null;
+      _isCurrentImage = _isImage(_videoFiles[_currentVideoIndex]);
+    });
+    if (_isCurrentImage) {
       _showImage(_videoFiles[_currentVideoIndex]);
     } else {
       _setupVideo(_videoFiles[_currentVideoIndex]);
@@ -182,25 +198,12 @@ class _VideoUSBPageState extends State<VideoUSBPage>
   }
 
   Future<void> _showImage(String imagePath) async {
-    // Hiển thị ảnh trong 10 giây
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.black,
-          insetPadding: const EdgeInsets.all(0),
-          child: Image.file(
-            File(imagePath),
-            fit: BoxFit.cover,
-          ),
-        );
-      },
-    );
+    setState(() {
+      _image = File(imagePath);
+    });
 
-    // Sau 10 giây, đóng dialog và chuyển sang video tiếp theo
     await Future.delayed(const Duration(seconds: 10));
-    Navigator.of(context, rootNavigator: true).pop(); // Đóng dialog
-    _playNextVideo(); // Chuyển sang video kế tiếp
+    _playNextVideo();
   }
 
   void _updateTime() {
@@ -219,12 +222,21 @@ class _VideoUSBPageState extends State<VideoUSBPage>
         child: Stack(
           children: [
             Center(
-              child: _betterPlayerController != null
-                  ? AspectRatio(
-                      aspectRatio: _aspectRatio,
-                      child: BetterPlayer(controller: _betterPlayerController!),
+              child: _isCurrentImage && _image != null
+                  ? Image.file(
+                      _image!,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.contain,
                     )
-                  : null,
+                  : _betterPlayerController != null
+                      ? AspectRatio(
+                          aspectRatio: _aspectRatio,
+                          child: BetterPlayer(
+                            controller: _betterPlayerController!,
+                          ),
+                        )
+                      : null,
             ),
             Positioned(
               bottom: 20,
