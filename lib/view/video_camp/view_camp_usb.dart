@@ -151,12 +151,12 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     final pictureDirectory = Directory('${usbPaths.first}/Images');
     final videoFiles = videosDirectory
         .listSync()
-        .where((item) => _isImage(item.path))
+        .where((item) => item.path.endsWith('.mp4'))
         .map((item) => item.path)
         .toList();
     final imageFiles = pictureDirectory
         .listSync()
-        .where((item) => item.path.endsWith('.mp4'))
+        .where((item) => _isImage(item.path))
         .map((item) => item.path)
         .toList();
     videoFiles.addAll(imageFiles);
