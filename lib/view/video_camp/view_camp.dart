@@ -84,16 +84,20 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                                       color: Colors.black,
                                     )
                                   : Image.network(
+                                      width: double.infinity,
+                                      height: double.infinity,
                                       viewModel
                                           .campSchedulesNew[
                                               viewModel.currentIndex]
                                           .urlYoutube,
-                                      fit: BoxFit.fill,
+                                      fit: BoxFit.contain,
                                     )
                               : viewModel.image != null
                                   ? Image.file(
+                                      width: double.infinity,
+                                      height: double.infinity,
                                       viewModel.image!,
-                                      fit: BoxFit.fill,
+                                      fit: BoxFit.contain,
                                     )
                                   : Container(
                                       color: Colors.black,
@@ -103,8 +107,9 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                               ? AspectRatio(
                                   aspectRatio: viewModel.aspectRatio,
                                   child: BetterPlayer(
-                                      controller:
-                                          viewModel.betterPlayerController!),
+                                    controller:
+                                        viewModel.betterPlayerController!,
+                                  ),
                                 )
                               : Container(
                                   color: Colors.black,
@@ -258,19 +263,6 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                         icon: const Icon(Icons.menu,
                             color: Colors.transparent, size: 30),
                         onPressed: viewModel.toggleDrawer,
-                      ),
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    color: Colors.white.withOpacity(0.4),
-                    child: Text(
-                      'Đang chạy ${viewModel.checkImage ? 'Image' : 'Video'}\nUSB: ${viewModel.usbPaths.join(' - ')}',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
                       ),
                     ),
                   ),

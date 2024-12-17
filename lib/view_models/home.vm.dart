@@ -150,7 +150,6 @@ class HomeViewModel extends BaseViewModel {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       String? token = await messaging.getToken();
-      print(token);
 
       if (token != null) {
         checkFirebase = await _commandRequest.checkFirebase(token);
@@ -319,11 +318,35 @@ class HomeViewModel extends BaseViewModel {
       );
       playVideo = false;
     } else if (context.mounted) {
-      Navigator.push(
+      bool? emptyList = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (viewContext) => VideoUSBPage(homeViewModel: this)),
+          builder: (viewContext) => VideoUSBPage(homeViewModel: this),
+        ),
       );
+      if (emptyList == true) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            Future.delayed(const Duration(seconds: 3), () {
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            });
+
+            return PopUpWidget(
+              icon: Image.asset("assets/images/ic_error.png"),
+              title: 'Usb hiện không có video hoặc hình ảnh trong thư mục',
+              leftText: 'Xác nhận',
+              onLeftTap: () {
+                Navigator.of(context).pop();
+              },
+            );
+          },
+        );
+      }
+
+      playVideo = false;
     }
   }
 
@@ -462,15 +485,18 @@ class HomeViewModel extends BaseViewModel {
       if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
         await _fetchPackets();
         if (AppString.checkPacket && context.mounted) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ViewCamp(
-                        homeViewModel: this,
-                      )));
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ViewCamp(
+                homeViewModel: this,
+              ),
+            ),
+          );
+          playVideo == false;
         }
       } else {
-        nexPlayVideoUSB();
+        await nexPlayVideoUSB();
       }
     }
     notifyListeners();
