@@ -138,15 +138,28 @@ class _VideoUSBPageState extends State<VideoUSBPage>
     });
   }
 
+  bool _isImage(String path) {
+    return path.endsWith('.jpg') ||
+        path.endsWith('.jpeg') ||
+        path.endsWith('.png') ||
+        path.endsWith('.gif');
+  }
+
   Future<void> _loadVideos() async {
     await _getUsbPath();
     final videosDirectory = Directory('${usbPaths.first}/Videos');
+    final pictureDirectory = Directory('${usbPaths.first}/Images');
     final videoFiles = videosDirectory
+        .listSync()
+        .where((item) => _isImage(item.path))
+        .map((item) => item.path)
+        .toList();
+    final imageFiles = pictureDirectory
         .listSync()
         .where((item) => item.path.endsWith('.mp4'))
         .map((item) => item.path)
         .toList();
-
+    videoFiles.addAll(imageFiles);
     if (videoFiles.isNotEmpty) {
       _videoFiles = videoFiles;
       _initializeVideoPlayer();
@@ -161,7 +174,33 @@ class _VideoUSBPageState extends State<VideoUSBPage>
 
   void _playNextVideo() {
     _currentVideoIndex = (_currentVideoIndex + 1) % _videoFiles.length;
-    _setupVideo(_videoFiles[_currentVideoIndex]);
+    if (_isImage(_videoFiles[_currentVideoIndex])) {
+      _showImage(_videoFiles[_currentVideoIndex]);
+    } else {
+      _setupVideo(_videoFiles[_currentVideoIndex]);
+    }
+  }
+
+  Future<void> _showImage(String imagePath) async {
+    // Hiển thị ảnh trong 10 giây
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: const EdgeInsets.all(0),
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.cover,
+          ),
+        );
+      },
+    );
+
+    // Sau 10 giây, đóng dialog và chuyển sang video tiếp theo
+    await Future.delayed(const Duration(seconds: 10));
+    Navigator.of(context, rootNavigator: true).pop(); // Đóng dialog
+    _playNextVideo(); // Chuyển sang video kế tiếp
   }
 
   void _updateTime() {
