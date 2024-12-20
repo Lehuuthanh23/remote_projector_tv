@@ -23,6 +23,7 @@ class Api {
   static const String getCampByDevice = '/home/Getcamp_ByComputerId';
   static const String getAllRunTimeOfComputer = '/home/GetAllRunTimeOfComputer_4';
   static const String addCampaignRunProfile = '/home/AddCampaignRunProfile';
+  static const String getCampTodayByComputerId = '/home/GetCampToday_ByComputerId';
 
   // Notification URL
   static const String insertNotify = '/home/InsertNotify';

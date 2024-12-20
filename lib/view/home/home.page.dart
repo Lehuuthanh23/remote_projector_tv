@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../app/app_utils.dart';
 import '../../constants/app_color.dart';
 import '../../view_models/home.vm.dart';
 import '../../widget/button_custom.dart';
@@ -24,7 +25,26 @@ class _HomePageState extends State<HomePage> {
       viewModelBuilder: () => HomeViewModel(context: context),
       onViewModelReady: (viewModel) async {
         await viewModel.initialise();
-        viewModel.playCamp(true);
+        viewModel.checkConnectDevice = await AppUtils.checkConnect();
+        if (viewModel.checkConnectDevice == true) {
+          viewModel.playCamp(true);
+        } else {
+          viewModel.playVideo = false;
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: PopupSettingScreen(
+                  homeVM: viewModel,
+                ),
+              );
+            },
+          );
+        }
       },
       builder: (context, viewModel, child) {
         return SafeArea(
@@ -136,8 +156,11 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     CupertinoSwitch(
                                         value: viewModel.playVideo,
-                                        onChanged: (check) =>
-                                            viewModel.playCamp(check)),
+                                        onChanged: (check) {
+                                          if (viewModel.checkConnectDevice) {
+                                            viewModel.playCamp(check);
+                                          }
+                                        }),
                                     const Text(
                                       'Tự động chạy',
                                       style: TextStyle(color: Colors.black),
