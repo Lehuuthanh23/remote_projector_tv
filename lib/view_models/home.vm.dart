@@ -75,6 +75,7 @@ class HomeViewModel extends BaseViewModel {
   bool turnOffPJ = false;
   bool openOnStartup = false;
   bool? pauseVideo;
+  bool checkConnectDevice = false;
 
   CancelToken? _cancelToken;
 
@@ -280,7 +281,6 @@ class HomeViewModel extends BaseViewModel {
   Future<void> getValue() async {
     await getMyCamp();
     await getCampSchedule();
-
     notifyListeners();
   }
 
@@ -296,6 +296,8 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> nexPlayVideoUSB() async {
     List<String> usbPaths = await UsbService().getUsbPath();
+    print('Pathhhhhhh: ');
+    print(usbPaths);
     if (usbPaths.isEmpty && context.mounted) {
       showDialog(
         context: context,
@@ -408,7 +410,6 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> getCampSchedule() async {
     lstCampSchedule = await _campRequest.getCampSchedule();
-
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
@@ -438,6 +439,8 @@ class HomeViewModel extends BaseViewModel {
               title: 'Kết nối thành công',
               leftText: 'Xác nhận',
               onLeftTap: () {
+                checkConnectDevice = true;
+                notifyListeners();
                 Navigator.pop(context);
               },
             );

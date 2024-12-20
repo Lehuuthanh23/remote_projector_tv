@@ -32,20 +32,20 @@ class CampSchedule {
 
   factory CampSchedule.fromJson(Map<String, dynamic> json) {
     return CampSchedule(
-      campaignId: json['campaign_id'],
-      campaignName: json['campaign_name'],
-      fromDate: json['from_date'],
-      toDate: json['to_date'],
-      status: json['status'],
-      videoType: json['video_type'],
-      urlYoutube: json['url_youtobe'],
-      urlUsb: json['url_usp'],
-      daysOfWeek: json['days_of_week'],
+      campaignId: json['campaign_id'] ?? '',
+      campaignName: json['campaign_name'] ?? '',
+      fromDate: json['from_date'] ?? '',
+      toDate: json['to_date'] ?? '',
+      status: json['status'] ?? '',
+      videoType: json['video_type'] ?? '',
+      urlYoutube: json['url_youtobe'] ?? '',
+      urlUsb: json['url_usp'] ?? '',
+      daysOfWeek: json['days_of_week'] ?? '',
       deleted: json['deleted'] ?? '',
-      customerId: json['customer_id'],
-      fromTime: json['from_time'],
-      toTime: json['to_time'],
-      videoDuration: json['video_duration'],
+      customerId: json['customer_id'] ?? '',
+      fromTime: json['from_time'] ?? '',
+      toTime: json['to_time'] ?? '',
+      videoDuration: json['video_duration'] ?? '',
     );
   }
 

@@ -49,7 +49,7 @@ class CampRequest {
 
       try {
         final response = await _dio.get(
-          '${Api.hostApi}${Api.getCampByDevice}/${device.computerId}',
+          '${Api.hostApi}${Api.getCampTodayByComputerId}/${device.computerId}/${DateTime.now().toUtc().add(const Duration(hours: 7)).toString().substring(0, 10)}/1',
         );
         final responseData = jsonDecode(response.data);
         List<dynamic> campList = responseData['Camp_list'];
@@ -107,7 +107,6 @@ class CampRequest {
 
       final responseData = jsonDecode(response.data);
       List<dynamic> timeCampSchedule = responseData['Camp_list'];
-
       lstCampSchedule =
           timeCampSchedule.map((e) => CampSchedule.fromJson(e)).toList();
     } catch (_) {}
