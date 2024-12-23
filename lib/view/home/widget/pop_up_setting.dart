@@ -4,6 +4,7 @@ import 'package:stacked/stacked.dart';
 import '../../../app/app_sp.dart';
 import '../../../app/app_sp_key.dart';
 import '../../../app/app_utils.dart';
+import '../../../models/dir/dir_model.dart';
 import '../../../view_models/home.vm.dart';
 import '../../../widget/button_custom.dart';
 
@@ -146,26 +147,97 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        TextFormField(
-                                          enabled: false,
-                                          decoration: InputDecoration(
-                                            labelText: widget.homeVM.deviceInfo
-                                                        ?.serialNumber ==
-                                                    'unknown'
-                                                ? 'ANDROID ID'
-                                                : 'SERI NUMBER',
-                                            hintText: '',
-                                            enabled: false,
-                                            border:
-                                                const UnderlineInputBorder(),
-                                          ),
-                                          initialValue: widget.homeVM.deviceInfo
-                                                      ?.serialNumber ==
-                                                  'unknown'
-                                              ? widget
-                                                  .homeVM.deviceInfo!.androidId
-                                              : widget.homeVM.deviceInfo
-                                                  ?.serialNumber,
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextFormField(
+                                                enabled: false,
+                                                decoration: InputDecoration(
+                                                  labelText: widget
+                                                              .homeVM
+                                                              .deviceInfo
+                                                              ?.serialNumber ==
+                                                          'unknown'
+                                                      ? 'ANDROID ID'
+                                                      : 'SERI NUMBER',
+                                                  hintText: '',
+                                                  enabled: false,
+                                                  border:
+                                                      const UnderlineInputBorder(),
+                                                ),
+                                                initialValue: widget
+                                                            .homeVM
+                                                            .deviceInfo
+                                                            ?.serialNumber ==
+                                                        'unknown'
+                                                    ? widget.homeVM.deviceInfo!
+                                                        .androidId
+                                                    : widget.homeVM.deviceInfo
+                                                        ?.serialNumber,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 200,
+                                              height: 50,
+                                              child:
+                                                  DropdownButtonFormField<Dir>(
+                                                focusNode: viewModel
+                                                    .focusNodeSelectDir,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.black),
+                                                itemHeight: 30,
+                                                decoration: InputDecoration(
+                                                  labelText: "Chọn hệ thống",
+                                                  hintText: "Chọn hệ thống",
+                                                  labelStyle: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black),
+                                                  hintStyle: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4.0),
+                                                    borderSide:
+                                                        const BorderSide(
+                                                            color: Colors.grey),
+                                                  ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4.0),
+                                                    borderSide:
+                                                        const BorderSide(
+                                                            color: Colors.red),
+                                                  ),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4.0),
+                                                    borderSide:
+                                                        const BorderSide(
+                                                            color: Colors.grey),
+                                                  ),
+                                                ),
+                                                value: viewModel.selectedDir,
+                                                items: viewModel.listDirAll
+                                                    .map((dir) {
+                                                  return DropdownMenuItem<Dir>(
+                                                    value: dir,
+                                                    child:
+                                                        Text(dir.dirName ?? ""),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (Dir? value) {
+                                                  viewModel.onChangeDir(value);
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                         const SizedBox(height: 10),
                                         TextFormField(
@@ -333,6 +405,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                     CrossAxisAlignment.center,
                                                 children: [
                                                   const Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
                                                       child: Text(
                                                           'Chạy từ nguồn:')),
                                                   Column(
@@ -409,11 +483,28 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                             ? const Color(0xff9a9a9a)
                             : const Color(0xffEB6E2C),
                         onPressed: () async {
-                          _checkConnect != false
-                              ? null
-                              : await widget.homeVM.connectDevice();
+                          if (_checkConnect == false) {
+                            await widget.homeVM.connectDevice();
+                          }
+                          AppSP.set(
+                              AppSPKey.proPW, viewModel.proPWController.text);
+                          AppSP.set(
+                              AppSPKey.proUN, viewModel.proUNController.text);
+                          AppSP.set(AppSPKey.projectorIP,
+                              viewModel.proIPController.text);
+                          viewModel.updateDirByDevice();
                         },
-                        title: _checkConnect == true ? 'ĐÃ KẾT NỐI' : 'KẾT NỐI',
+                        title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',
+                        textSize: 15,
+                      ),
+                      ButtonCustom(
+                        width: 150,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        color: const Color(0xffEB6E2C),
+                        onPressed: () async {
+                          viewModel.openSettings();
+                        },
+                        title: 'Cài đặt Wifi',
                         textSize: 15,
                       ),
                       ButtonCustom(

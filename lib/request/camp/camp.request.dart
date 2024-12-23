@@ -20,6 +20,24 @@ class CampRequest {
 
   final DeviceRequest _deviceRequest = DeviceRequest();
 
+  Future<List<CampModel>> getCampByIdDirectory(String? dirId) async {
+    try {
+      final response = await _dio.get(
+        '${Api.hostApi}${Api.getCampaignByDirectoryId}/$dirId/1',
+      );
+
+      final responseData = jsonDecode(response.data);
+      List<dynamic> list = responseData['Camp_list'];
+      List<CampModel> listCamp = list.isNotEmpty
+          ? list.map((e) => CampModel.fromJson(e)).toList()
+          : [];
+
+      return listCamp;
+    } catch (_) {}
+
+    return [];
+  }
+
   Future<List<CampModel>> getAllCampByIdCustomer() async {
     List<CampModel> lstCamp = [];
     User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
@@ -52,6 +70,7 @@ class CampRequest {
           '${Api.hostApi}${Api.getCampTodayByComputerId}/${device.computerId}/${DateTime.now().toUtc().add(const Duration(hours: 7)).toString().substring(0, 10)}/1',
         );
         final responseData = jsonDecode(response.data);
+        // print(responseData);
         List<dynamic> campList = responseData['Camp_list'];
 
         if (campList.isNotEmpty) {

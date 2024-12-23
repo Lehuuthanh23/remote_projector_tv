@@ -20,4 +20,7 @@ class AppSPKey {
   static const String config = 'config';
   static const String loginWith = 'loginWith';
   static const String useFirebase = 'useFirebase';
+  static const String isSettingsOpened = 'isSettingsOpened';
+  static const String currentDir = 'currentDir';
+  static const String currentDevice = 'currentDevice';
 }
