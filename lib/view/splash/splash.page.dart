@@ -36,7 +36,7 @@ class _SplashPageState extends State<SplashPage> {
             ),
             alignment: Alignment.center,
             child: const Text(
-              'GT GLOBAL',
+              'TS Screen',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 50,

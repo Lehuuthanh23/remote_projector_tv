@@ -32,7 +32,7 @@ class ADSPage extends StatelessWidget {
                 height: 150,
               ),
               const Text(
-                'GT GLOBAL TV',
+                'TS Screen TV',
                 style: TextStyle(
                   decoration: TextDecoration.none,
                   fontWeight: FontWeight.bold,

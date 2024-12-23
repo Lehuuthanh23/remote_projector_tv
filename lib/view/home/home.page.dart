@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
         await viewModel.initialise();
         viewModel.checkConnectDevice = await AppUtils.checkConnect();
         if (viewModel.checkConnectDevice == true) {
-          viewModel.playCamp(true);
+          viewModel.playCamp(false);
         } else {
           viewModel.playVideo = false;
           showDialog(
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                               height: 150,
                             ),
                             const Text(
-                              'GT GLOBAL TV',
+                              'TS Screen TV',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

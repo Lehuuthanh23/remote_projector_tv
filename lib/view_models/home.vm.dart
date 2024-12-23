@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_policy_controller/device_policy_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,8 @@ import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../models/config/config_model.dart';
 import '../models/device/device_info_model.dart';
+import '../models/device/device_model.dart';
+import '../models/dir/dir_model.dart';
 import '../models/packet/packet_model.dart';
 import '../models/user/user.dart';
 import '../plugin/install_plugin.dart';
@@ -27,6 +30,7 @@ import '../request/camp/camp.request.dart';
 import '../request/command/command.request.dart';
 import '../request/config/config.request.dart';
 import '../request/device/device.request.dart';
+import '../request/dir/dir.request.dart';
 import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
 import '../services/google_sigin_api.service.dart';
@@ -45,6 +49,7 @@ class HomeViewModel extends BaseViewModel {
   final DeviceRequest _deviceRequest = DeviceRequest();
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   final CommandRequest _commandRequest = CommandRequest();
+  final DirRequest _dirRequest = DirRequest();
 
   TextEditingController proUNController = TextEditingController();
   TextEditingController proPWController = TextEditingController();
@@ -97,11 +102,24 @@ class HomeViewModel extends BaseViewModel {
   bool _newVersion = false;
   bool get newVersion => _newVersion;
 
+  final List<Dir> _listDir = [];
+  List<Dir> get listDir => _listDir;
+
+  final List<Dir> _listShareDir = [];
+  List<Dir> get listShareDir => _listShareDir;
+
+  final List<Dir> _listDirAll = [];
+  List<Dir> get listDirAll => _listDirAll;
+
   ConfigModel? _configModel;
   ConfigModel? get configModel => _configModel;
 
   final ConfigRequest _configRequest = ConfigRequest();
+  final dpc = DevicePolicyController.instance;
 
+  Dir? selectedDir;
+  FocusNode focusNodeSelectDir = FocusNode();
+  bool isFocusedSelectDir = false;
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
@@ -116,6 +134,20 @@ class HomeViewModel extends BaseViewModel {
     await fetchDeviceInfo();
     await _getTokenAndSendToServer();
     await getValue();
+    await getDir();
+    if (AppSP.get(AppSPKey.currentDir) != 0) {
+      print('hahaha');
+      print(AppSP.get(AppSPKey.currentDir));
+      selectedDir = _listDirAll
+          .where((dir) {
+            print(dir.dirName.toString());
+            print(dir.dirId.toString());
+            return dir.dirId.toString() ==
+                AppSP.get(AppSPKey.currentDir).toString();
+          })
+          .toList()
+          .first;
+    }
     await WakelockPlus.enable();
   }
 
@@ -144,6 +176,69 @@ class HomeViewModel extends BaseViewModel {
     WakelockPlus.disable();
 
     super.dispose();
+  }
+
+  onChangeDir(Dir? dir) {
+    selectedDir = dir;
+    AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
+    notifyListeners();
+  }
+
+  Future<void> getDir() async {
+    setBusy(true);
+
+    _listDirAll.clear();
+
+    await getMyDir();
+    await getShareDir();
+
+    _listDirAll.addAll([..._listDir, ..._listShareDir]);
+    _listDirAll.add(Dir());
+    setBusy(false);
+  }
+
+  Future<void> getMyDir() async {
+    _listDir.clear();
+    _listDir.addAll(await _dirRequest.getMyDir());
+    for (var dir in _listDir) {
+      dir.isOwner = true;
+    }
+  }
+
+  updateDirByDevice() async {
+    Device device =
+        Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    if (AppSP.get(AppSPKey.currentDir) != null &&
+        AppSP.get(AppSPKey.currentDir) != 0) {
+      await _deviceRequest.updateDirByDevice(
+          device, int.parse(AppSP.get(AppSPKey.currentDir).toString()));
+      notifyListeners();
+      print('Get xong danh sách camp');
+    }
+    await getValue();
+  }
+
+  Future<void> getShareDir() async {
+    _listShareDir.clear();
+    _listShareDir.addAll(await _dirRequest.getShareDir());
+  }
+
+  Future<void> openSettings() async {
+    try {
+      await dpc.unlockApp();
+      print('Unlock App');
+
+      final success = await dpc.startApp();
+      if (success) {
+        print("Settings opened successfully");
+        AppSP.set(AppSPKey.isSettingsOpened, true);
+        // isSettingsOpened = true;
+      } else {
+        print("Failed to open Settings");
+      }
+    } catch (e) {
+      print("Error opening Settings: $e");
+    }
   }
 
   Future<void> _getTokenAndSendToServer() async {

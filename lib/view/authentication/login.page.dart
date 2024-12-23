@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
                         width: 150,
                         height: 150,
                       ),
-                      'GT GLOBAL'.text.bold.color(Colors.white).size(25).make(),
+                      'TS Screen'.text.bold.color(Colors.white).size(25).make(),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: width < height ? 50 : width / 3,

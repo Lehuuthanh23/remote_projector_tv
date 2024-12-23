@@ -114,4 +114,38 @@ class DeviceRequest {
       } catch (_) {}
     }
   }
+
+  Future<bool> updateDirByDevice(Device device, int? idDir) async {
+    print(idDir);
+    device.idDir = idDir.toString();
+    final formData = FormData.fromMap({
+      'computer_name': device.computerName,
+      'seri_computer': device.serialComputer,
+      'status': device.status,
+      'provinces': device.provinces,
+      'district': device.district,
+      'wards': device.wards,
+      'center_id': device.centerId,
+      'location': device.location,
+      'customer_id': device.customerId,
+      'type': device.type,
+      'id_dir': device.idDir,
+      'time_end': device.timeEnd,
+    });
+
+    try {
+      final response = await _dio.post(
+        AppUtils.createUrl('${Api.updateDevice}/${device.computerId}'),
+        data: formData,
+      );
+
+      final responseData = jsonDecode(response.data);
+      if (responseData['status'] == 1) {
+        AppSP.set(AppSPKey.currentDevice, jsonEncode(device.toJson()));
+      }
+      return responseData['status'] == 1;
+    } catch (_) {}
+
+    return false;
+  }
 }

@@ -50,6 +50,7 @@ class AppUtils {
                 : deviceInfoModel.serialNumber))
         .toList();
     if (devices.isNotEmpty) {
+      AppSP.set(AppSPKey.currentDevice, jsonEncode(devices.first.toJson()));
       return true;
     } else {
       return false;
