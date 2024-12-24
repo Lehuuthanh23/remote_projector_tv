@@ -375,8 +375,6 @@ class ViewCampViewModel extends BaseViewModel {
 
                   if (!isErrorInList &&
                       await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
-                    // _betterPlayerController = VideoPlayerController.networkUrl(
-                    //     Uri.parse(currentCampSchedule.urlYoutube));
                     await _setupVideo(currentCampSchedule.urlYoutube);
                   } else {
                     if (!isErrorInList) {
@@ -386,8 +384,6 @@ class ViewCampViewModel extends BaseViewModel {
                     return;
                   }
                 } else {
-                  // _betterPlayerController =
-                  //     VideoPlayerController.file(File(savePath));
                   await _setupVideo(savePath, inInternet: false);
                 }
               } else {
@@ -395,8 +391,6 @@ class ViewCampViewModel extends BaseViewModel {
                     '${usbPaths.first}/Videos/${currentCampSchedule.urlUsb}';
 
                 if (File(usbPathh).existsSync()) {
-                  // _betterPlayerController =
-                  //     VideoPlayerController.file(File(usbPathh));
                   await _setupVideo(usbPathh, inInternet: false);
                 } else {
                   _loadNextMediaInList(campSchedules);
@@ -404,8 +398,6 @@ class ViewCampViewModel extends BaseViewModel {
                 }
               }
             }
-            // await _betterPlayerController!.initialize();
-            // _betterPlayerController!.setLooping(true);
             _betterPlayerController!.play();
             isDisposeVideoPlayer = false;
 
@@ -458,7 +450,6 @@ class ViewCampViewModel extends BaseViewModel {
       url,
     );
 
-    // Tạo BetterPlayerController
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
     await _betterPlayerController!
         .setupDataSource(betterPlayerDataSource)
