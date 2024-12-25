@@ -234,8 +234,8 @@ class MyBackgroundService : Service() {
         sharedPreferences = SharedPreferencesManager(applicationContext)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "my_service_channel"
-            val channelName = "My Service Channel"
+            val channelId = "ts_screen_channel"
+            val channelName = "TS Screen Channel"
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -265,8 +265,8 @@ class MyBackgroundService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val channelId = "my_service_channel"
-        val channelName = "My Service Channel"
+        val channelId = "ts_screen_channel"
+        val channelName = "TS Screen Channel"
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -281,7 +281,7 @@ class MyBackgroundService : Service() {
             PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
 
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Projector")
+            .setContentTitle("TS Screen")
             .setContentText("Service is running")
             .setSmallIcon(R.drawable.ic_projector)
             .setContentIntent(pendingIntent)
