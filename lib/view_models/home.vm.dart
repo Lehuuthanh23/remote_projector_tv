@@ -136,6 +136,17 @@ class HomeViewModel extends BaseViewModel {
       await AppUtils.platformChannel.invokeMethod(
           'saveUser', {AppSPKey.userInfo: currentUser.customerId});
     }
+    bool isAdmin = await dpc.isAdminActive();
+    if (isAdmin) {
+      if (AppSP.get(AppSPKey.isKioskMode) != null) {
+        kioskMode = AppSP.get(AppSPKey.isKioskMode);
+      } else {
+        kioskMode = true;
+      }
+    } else {
+      kioskMode = false;
+    }
+
     proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
@@ -202,6 +213,7 @@ class HomeViewModel extends BaseViewModel {
     } else if (check == true) {
       dpc.lockApp(home: true);
       kioskMode = true;
+      AppSP.set(AppSPKey.isKioskMode, kioskMode);
     }
     notifyListeners();
   }

@@ -23,4 +23,5 @@ class AppSPKey {
   static const String isSettingsOpened = 'isSettingsOpened';
   static const String currentDir = 'currentDir';
   static const String currentDevice = 'currentDevice';
+  static const String isKioskMode = 'isKioskMode';
 }

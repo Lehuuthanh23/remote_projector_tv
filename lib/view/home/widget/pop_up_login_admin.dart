@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
+import '../../../app/app_sp.dart';
+import '../../../app/app_sp_key.dart';
 import '../../../view_models/home.vm.dart';
 
 class PopUpLoginAdmin extends StatelessWidget {
@@ -61,6 +63,7 @@ class PopUpLoginAdmin extends StatelessWidget {
                     viewModel.passwordAdminController.clear();
                     viewModel.notifyListeners();
                     viewModel.kioskMode = false;
+                    AppSP.set(AppSPKey.isKioskMode, viewModel.kioskMode);
                     Navigator.of(context).pop(); // Đóng dialog
                   }
                 },

@@ -97,21 +97,22 @@ class _HomePageState extends State<HomePage> {
                                     const EdgeInsets.symmetric(vertical: 10),
                                 isSplashScreen: true,
                                 onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Dialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: PopupCampRunScreen(
-                                          camps: viewModel.camps,
-                                          vm: viewModel,
-                                        ),
-                                      );
-                                    },
-                                  );
+                                  viewModel.dpc.clearDeviceOwnerApp();
+                                  // showDialog(
+                                  //   context: context,
+                                  //   builder: (BuildContext context) {
+                                  //     return Dialog(
+                                  //       shape: RoundedRectangleBorder(
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(10),
+                                  //       ),
+                                  //       child: PopupCampRunScreen(
+                                  //         camps: viewModel.camps,
+                                  //         vm: viewModel,
+                                  //       ),
+                                  //     );
+                                  //   },
+                                  // );
                                 },
                                 title: 'DANH SÁCH HỆ THỐNG',
                                 textSize: 15,
