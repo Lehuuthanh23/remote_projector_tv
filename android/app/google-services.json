@@ -2,14 +2,14 @@
   "project_info": {
     "project_number": "551379171312",
     "project_id": "remote-projector-fc831",
-    "storage_bucket": "remote-projector-fc831.appspot.com"
+    "storage_bucket": "remote-projector-fc831.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:551379171312:android:cb3007eddcd823b7238f35",
+        "mobilesdk_app_id": "1:551379171312:android:575f8a44f4bdd34b238f35",
         "android_client_info": {
-          "package_name": "com.example.play_box"
+          "package_name": "tv.gtglobal.ts_screen"
         }
       },
       "oauth_client": [],
