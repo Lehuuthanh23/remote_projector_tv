@@ -116,7 +116,6 @@ class DeviceRequest {
   }
 
   Future<bool> updateDirByDevice(Device device, int? idDir) async {
-    print(idDir);
     device.idDir = idDir.toString();
     final formData = FormData.fromMap({
       'computer_name': device.computerName,

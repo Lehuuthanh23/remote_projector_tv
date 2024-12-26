@@ -148,7 +148,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TS Screen TV',
+      title: 'TS Screen',
       debugShowCheckedModeBanner: false,
       navigatorKey: StackedService.navigatorKey,
       onGenerateRoute: StackedRouter().onGenerateRoute,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:play_box/app/convert_md5.dart';
 
 import '../../app/app_sp.dart';
 import '../../app/app_sp_key.dart';
@@ -16,6 +17,30 @@ class AuthenticationRequest {
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
 
   DeviceInfoModel? deviceInfo;
+
+  Future<bool> checkLoginAdmin(String userName, String password) async {
+    final formData = FormData.fromMap({
+      'username': userName.trim(),
+      'password': convertToMD5(password),
+    });
+
+    try {
+      final response = await _dio.post(
+        '${Api.hostApi}${Api.loginAdmin}',
+        data: formData,
+      );
+      final responseData = jsonDecode(response.data);
+      if (responseData['status'] == 1) {
+        List<dynamic> listUser = responseData['accountList'];
+        if (listUser.isNotEmpty) {
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 
   Future<String?> login(LoginRequestModel user) async {
     final formData = FormData.fromMap({

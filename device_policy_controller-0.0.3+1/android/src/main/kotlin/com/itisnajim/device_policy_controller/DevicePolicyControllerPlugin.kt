@@ -257,6 +257,7 @@ private fun startApp(packageName: String?, result: Result) {
         val intent: Intent? = if (packageName.isNullOrEmpty()) {
             log("Trả về Wi-Fi Settings")
             Intent(Settings.ACTION_WIFI_SETTINGS)
+            // Intent(Settings.ACTION_SETTINGS);
         } else {
             log("Không trả về Wi-Fi Settings, mở app khác")
             context.packageManager.getLaunchIntentForPackage(packageName)
