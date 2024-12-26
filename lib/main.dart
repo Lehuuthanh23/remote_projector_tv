@@ -123,7 +123,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('Vào didChangeAppLifecycleState');
     // Xử lý trạng thái vòng đời ứng dụng
-    bool isSettingsOpened = AppSP.get(AppSPKey.isSettingsOpened);
+    bool isSettingsOpened = AppSP.get(AppSPKey.isSettingsOpened) ?? false;
     print(isSettingsOpened);
     if (state == AppLifecycleState.resumed && isSettingsOpened) {
       isSettingsOpened = false;

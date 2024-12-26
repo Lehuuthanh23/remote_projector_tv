@@ -4,7 +4,7 @@
       "android": {
         "default": {
           "projectId": "remote-projector-fc831",
-          "appId": "1:551379171312:android:cb3007eddcd823b7238f35",
+          "appId": "1:551379171312:android:575f8a44f4bdd34b238f35",
           "fileOutput": "android/app/google-services.json"
         }
       },
@@ -12,7 +12,7 @@
         "lib/firebase_options.dart": {
           "projectId": "remote-projector-fc831",
           "configurations": {
-            "android": "1:551379171312:android:cb3007eddcd823b7238f35"
+            "android": "1:551379171312:android:575f8a44f4bdd34b238f35"
           }
         }
       }

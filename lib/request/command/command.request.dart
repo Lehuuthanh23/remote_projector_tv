@@ -65,7 +65,7 @@ class CommandRequest {
 
   Future<void> _autoRefreshCredentialsInitialize() async {
     String source = await rootBundle
-        .loadString('assets/remote-projector-fc831-5abcdfd47961.json');
+        .loadString('assets/remote-projector-fc831-82dfab54485c.json');
     final serviceAccount = jsonDecode(source);
     var accountCredentials = ServiceAccountCredentials.fromJson(serviceAccount);
 
