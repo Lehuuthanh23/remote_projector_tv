@@ -42,6 +42,7 @@ class AppUtils {
     DeviceRequest deviceRequest = DeviceRequest();
     List<Device> lstDevice =
         await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
+        
     List<Device> devices = lstDevice
         .where((device) =>
             device.serialComputer ==

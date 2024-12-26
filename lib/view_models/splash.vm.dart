@@ -41,7 +41,6 @@ class SplashViewModel extends BaseViewModel {
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
     proPW = AppSP.get(AppSPKey.proPW) ?? '';
     projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
-
     if (AppSP.get(AppSPKey.openPJOnStartup) == 'true') {
       String onProjector =
           "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
