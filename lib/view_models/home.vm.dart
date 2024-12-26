@@ -128,7 +128,7 @@ class HomeViewModel extends BaseViewModel {
   Dir? selectedDir;
   FocusNode focusNodeSelectDir = FocusNode();
   bool isFocusedSelectDir = false;
-
+  bool isAdmin = false;
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
@@ -136,7 +136,7 @@ class HomeViewModel extends BaseViewModel {
       await AppUtils.platformChannel.invokeMethod(
           'saveUser', {AppSPKey.userInfo: currentUser.customerId});
     }
-    bool isAdmin = await dpc.isAdminActive();
+    isAdmin = await dpc.isAdminActive();
     if (isAdmin) {
       if (AppSP.get(AppSPKey.isKioskMode) != null) {
         kioskMode = AppSP.get(AppSPKey.isKioskMode);
@@ -201,21 +201,23 @@ class HomeViewModel extends BaseViewModel {
   }
 
   changeKioskMode(bool check) {
-    if (check == false) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return PopUpLoginAdmin(
-            homeVM: this,
-          );
-        },
-      );
-    } else if (check == true) {
-      dpc.lockApp(home: true);
-      kioskMode = true;
-      AppSP.set(AppSPKey.isKioskMode, kioskMode);
+    if (isAdmin) {
+      if (check == false) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return PopUpLoginAdmin(
+              homeVM: this,
+            );
+          },
+        );
+      } else if (check == true) {
+        dpc.lockApp(home: true);
+        kioskMode = true;
+        AppSP.set(AppSPKey.isKioskMode, kioskMode);
+      }
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<bool> checkAdmin() async {
@@ -230,10 +232,16 @@ class HomeViewModel extends BaseViewModel {
     _listDirAll.clear();
 
     await getMyDir();
-    await getShareDir();
+    // await getShareDir();
 
-    _listDirAll.addAll([..._listDir, ..._listShareDir]);
+    _listDirAll.addAll([..._listDir]);
     _listDirAll.add(Dir());
+    if (AppSP.get(AppSPKey.currentDir) == null) {
+      if (_listDirAll.isNotEmpty) {
+        selectedDir = _listDirAll.first;
+        AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
+      }
+    }
     setBusy(false);
   }
 
@@ -250,8 +258,8 @@ class HomeViewModel extends BaseViewModel {
         Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
     await _deviceRequest.updateDirByDevice(
         device, int.parse(AppSP.get(AppSPKey.currentDir).toString()));
-    notifyListeners();
     print('Get xong danh sách camp');
+    notifyListeners();
     await getValue();
   }
 

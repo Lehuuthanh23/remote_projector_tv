@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
@@ -5,7 +7,11 @@ import 'package:stacked/stacked.dart';
 import '../../../app/app_sp.dart';
 import '../../../app/app_sp_key.dart';
 import '../../../app/app_utils.dart';
+import '../../../models/device/device_info_model.dart';
+import '../../../models/device/device_model.dart';
 import '../../../models/dir/dir_model.dart';
+import '../../../models/user/user.dart';
+import '../../../request/device/device.request.dart';
 import '../../../view_models/home.vm.dart';
 import '../../../widget/button_custom.dart';
 
@@ -485,8 +491,20 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                             : null,
                         isSplashScreen: false,
                         onPressed: () async {
+                          User currentUser = User.fromJson(
+                              jsonDecode(AppSP.get(AppSPKey.userInfo)));
+                          DeviceInfoModel deviceInfoModel =
+                              DeviceInfoModel.fromJson(
+                                  jsonDecode(AppSP.get(AppSPKey.device)));
+                          DeviceRequest deviceRequest = DeviceRequest();
+                          List<Device> lstDevice = await deviceRequest
+                              .getDeviceByCustomerId(currentUser.customerId!);
+                          print('aaa0: ${lstDevice.length}');
                           if (_checkConnect == false) {
                             await widget.homeVM.connectDevice();
+                            lstDevice = await deviceRequest
+                                .getDeviceByCustomerId(currentUser.customerId!);
+                            print('aaa1: ${lstDevice.length}');
                           }
                           AppSP.set(
                               AppSPKey.proPW, viewModel.proPWController.text);
@@ -494,7 +512,11 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                               AppSPKey.proUN, viewModel.proUNController.text);
                           AppSP.set(AppSPKey.projectorIP,
                               viewModel.proIPController.text);
-                          viewModel.updateDirByDevice();
+
+                          await viewModel.updateDirByDevice();
+                          lstDevice = await deviceRequest
+                              .getDeviceByCustomerId(currentUser.customerId!);
+                          print('aaa2: ${lstDevice.length}');
                         },
                         title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',
                         textSize: 15,
