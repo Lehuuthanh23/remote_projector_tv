@@ -28,9 +28,9 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBR28VwToRmJtXDsIDZyet3uqmiDEZpsnM',
-    appId: '1:551379171312:android:cb3007eddcd823b7238f35',
+    appId: '1:551379171312:android:575f8a44f4bdd34b238f35',
     messagingSenderId: '551379171312',
     projectId: 'remote-projector-fc831',
-    storageBucket: 'remote-projector-fc831.appspot.com',
+    storageBucket: 'remote-projector-fc831.firebasestorage.app',
   );
 }

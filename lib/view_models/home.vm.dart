@@ -120,6 +120,7 @@ class HomeViewModel extends BaseViewModel {
   Dir? selectedDir;
   FocusNode focusNodeSelectDir = FocusNode();
   bool isFocusedSelectDir = false;
+
   Future<void> initialise() async {
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
