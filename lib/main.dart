@@ -29,21 +29,24 @@ const bootCompletedHandlerStartedKey = "bootCompletedHandlerStarted";
 final dpc = DevicePolicyController.instance;
 
 Future<void> initKioskMode() async {
-  dpc.handleBootCompleted((_) async {
-    final startedValue = await dpc.get(bootCompletedHandlerStartedKey);
-    print('startedValue: ${startedValue}');
-    final isStarted = startedValue == "true";
-    print('dpc:: handleBootCompleted:: isStarted: $isStarted');
-    await dpc.put(bootCompletedHandlerStartedKey, content: "true");
-    if (!isStarted) {
-      try {
-        await dpc.startApp();
-        await enableKioskMode();
-      } catch (e) {
-        print('dpc:: handleBootCompleted startApp error: $e');
+  bool isAdmin = await dpc.isAdminActive();
+  if (isAdmin) {
+    dpc.handleBootCompleted((_) async {
+      final startedValue = await dpc.get(bootCompletedHandlerStartedKey);
+      print('startedValue: ${startedValue}');
+      final isStarted = startedValue == "true";
+      print('dpc:: handleBootCompleted:: isStarted: $isStarted');
+      await dpc.put(bootCompletedHandlerStartedKey, content: "true");
+      if (!isStarted) {
+        try {
+          await dpc.startApp();
+          await enableKioskMode();
+        } catch (e) {
+          print('dpc:: handleBootCompleted startApp error: $e');
+        }
       }
-    }
-  });
+    });
+  }
 
   final startedValue = await dpc.get(bootCompletedHandlerStartedKey);
   final isStarted = startedValue == "true";
@@ -53,19 +56,13 @@ Future<void> initKioskMode() async {
 
 Future<void> enableKioskMode() async {
   try {
-    await dpc.lockApp(home: true);
-    // await dpc.lockDevice(password: "1111");
-    await dpc.setAsLauncher(enable: true);
-    await dpc.setKeyguardDisabled(disabled: true);
-    // await dpc.addUserRestrictions([
-    //   "DISALLOW_INSTALL_APPS", // Ngăn cài đặt ứng dụng
-    //   "DISALLOW_INSTALL_UNKNOWN_SOURCES", // Ngăn cài từ nguồn không xác định
-    //   "DISALLOW_UNINSTALL_APPS", // Ngăn gỡ ứng dụng
-    //   "DISALLOW_CONFIG_WIFI", // Ngăn thay đổi Wi-Fi
-    //   "DISALLOW_CONFIG_BLUETOOTH", // Ngăn thay đổi Bluetooth
-    //   "DISALLOW_FACTORY_RESET" // Ngăn reset thiết bị
-    // ]);
-    await dpc.setKeepScreenAwake(true);
+    bool isAdmin = await dpc.isAdminActive();
+    if (isAdmin) {
+      await dpc.lockApp(home: true);
+      await dpc.setAsLauncher(enable: true);
+      await dpc.setKeyguardDisabled(disabled: true);
+      await dpc.setKeepScreenAwake(true);
+    }
     await dpc.put(bootCompletedHandlerStartedKey, content: "false"); //false
   } catch (e) {
     print('dpc:: enableKioskMode error: $e');
@@ -148,7 +145,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TS Screen TV',
+      title: 'TS Screen',
       debugShowCheckedModeBanner: false,
       navigatorKey: StackedService.navigatorKey,
       onGenerateRoute: StackedRouter().onGenerateRoute,

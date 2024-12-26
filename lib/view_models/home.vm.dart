@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:play_box/request/authentication/authentication.request.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -35,6 +36,7 @@ import '../request/packet/packet.request.dart';
 import '../services/device.service.dart';
 import '../services/google_sigin_api.service.dart';
 import '../services/usb.service.dart';
+import '../view/home/widget/pop_up_login_admin.dart';
 import '../view/splash/splash.page.dart';
 import '../view/video_camp/view_camp.dart';
 import '../view/video_camp/view_camp_usb.dart';
@@ -50,10 +52,13 @@ class HomeViewModel extends BaseViewModel {
   final DeviceInfoService _deviceInfoService = DeviceInfoService();
   final CommandRequest _commandRequest = CommandRequest();
   final DirRequest _dirRequest = DirRequest();
+  final AuthenticationRequest _authenticationRequest = AuthenticationRequest();
 
   TextEditingController proUNController = TextEditingController();
   TextEditingController proPWController = TextEditingController();
   TextEditingController proIPController = TextEditingController();
+  TextEditingController usernameAdminController = TextEditingController();
+  TextEditingController passwordAdminController = TextEditingController();
 
   final focusNodeProUN = FocusNode();
   final focusNodeProPW = FocusNode();
@@ -117,6 +122,9 @@ class HomeViewModel extends BaseViewModel {
   final ConfigRequest _configRequest = ConfigRequest();
   final dpc = DevicePolicyController.instance;
 
+  bool kioskMode = true;
+  String errorStringCheckAdmin = '';
+
   Dir? selectedDir;
   FocusNode focusNodeSelectDir = FocusNode();
   bool isFocusedSelectDir = false;
@@ -128,6 +136,17 @@ class HomeViewModel extends BaseViewModel {
       await AppUtils.platformChannel.invokeMethod(
           'saveUser', {AppSPKey.userInfo: currentUser.customerId});
     }
+    bool isAdmin = await dpc.isAdminActive();
+    if (isAdmin) {
+      if (AppSP.get(AppSPKey.isKioskMode) != null) {
+        kioskMode = AppSP.get(AppSPKey.isKioskMode);
+      } else {
+        kioskMode = true;
+      }
+    } else {
+      kioskMode = false;
+    }
+
     proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
@@ -137,12 +156,8 @@ class HomeViewModel extends BaseViewModel {
     await getValue();
     await getDir();
     if (AppSP.get(AppSPKey.currentDir) != 0) {
-      print('hahaha');
-      print(AppSP.get(AppSPKey.currentDir));
       selectedDir = _listDirAll
           .where((dir) {
-            print(dir.dirName.toString());
-            print(dir.dirId.toString());
             return dir.dirId.toString() ==
                 AppSP.get(AppSPKey.currentDir).toString();
           })
@@ -185,6 +200,30 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  changeKioskMode(bool check) {
+    if (check == false) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return PopUpLoginAdmin(
+            homeVM: this,
+          );
+        },
+      );
+    } else if (check == true) {
+      dpc.lockApp(home: true);
+      kioskMode = true;
+      AppSP.set(AppSPKey.isKioskMode, kioskMode);
+    }
+    notifyListeners();
+  }
+
+  Future<bool> checkAdmin() async {
+    bool checkAdmin = await _authenticationRequest.checkLoginAdmin(
+        usernameAdminController.text, passwordAdminController.text);
+    return checkAdmin;
+  }
+
   Future<void> getDir() async {
     setBusy(true);
 
@@ -209,13 +248,10 @@ class HomeViewModel extends BaseViewModel {
   updateDirByDevice() async {
     Device device =
         Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
-    if (AppSP.get(AppSPKey.currentDir) != null &&
-        AppSP.get(AppSPKey.currentDir) != 0) {
-      await _deviceRequest.updateDirByDevice(
-          device, int.parse(AppSP.get(AppSPKey.currentDir).toString()));
-      notifyListeners();
-      print('Get xong danh sách camp');
-    }
+    await _deviceRequest.updateDirByDevice(
+        device, int.parse(AppSP.get(AppSPKey.currentDir).toString()));
+    notifyListeners();
+    print('Get xong danh sách camp');
     await getValue();
   }
 
@@ -684,7 +720,9 @@ class HomeViewModel extends BaseViewModel {
     if (url == null || _isUpdate == true) return;
 
     if (!_permissionGranted) {
+      await dpc.unlockApp();
       _permissionGranted = await InstallPlugin.requestPermission() ?? false;
+      await dpc.lockApp();
     }
     _updateAvailable = true;
     notifyListeners();

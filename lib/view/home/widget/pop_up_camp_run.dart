@@ -54,7 +54,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
               padding: const EdgeInsets.all(8.0),
               alignment: Alignment.center,
               child: const Text(
-                'DANH SÁCH CAMP',
+                'DANH SÁCH HỆ THỐNG',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                 ButtonCustom(
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  color: const Color(0xffEB6E2C),
+                  isSplashScreen: false,
                   onPressed: () {
                     widget.vm.getValue();
                   },
@@ -91,7 +91,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                 ButtonCustom(
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  color: Colors.black,
+                  isSplashScreen: false,
                   onPressed: () {
                     Navigator.pop(context);
                   },

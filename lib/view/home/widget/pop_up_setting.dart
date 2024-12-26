@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
@@ -228,8 +229,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                     .map((dir) {
                                                   return DropdownMenuItem<Dir>(
                                                     value: dir,
-                                                    child:
-                                                        Text(dir.dirName ?? ""),
+                                                    child: Text(dir.dirName ??
+                                                        "Thiết bị ngoài"),
                                                   );
                                                 }).toList(),
                                                 onChanged: (Dir? value) {
@@ -481,7 +482,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         color: _checkConnect == null
                             ? const Color(0xff9a9a9a)
-                            : const Color(0xffEB6E2C),
+                            : null,
+                        isSplashScreen: false,
                         onPressed: () async {
                           if (_checkConnect == false) {
                             await widget.homeVM.connectDevice();
@@ -500,7 +502,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                       ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: const Color(0xffEB6E2C),
+                        isSplashScreen: false,
                         onPressed: () async {
                           viewModel.openSettings();
                         },
@@ -510,12 +512,26 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                       ButtonCustom(
                         width: 150,
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: Colors.black,
+                        isSplashScreen: false,
                         onPressed: () {
                           Navigator.pop(context);
                         },
                         title: 'THOÁT',
                         textSize: 15,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          CupertinoSwitch(
+                              value: viewModel.kioskMode,
+                              onChanged: (check) {
+                                viewModel.changeKioskMode(check);
+                              }),
+                          const Text(
+                            'Kiosk mode',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ],
                       ),
                     ],
                   ),

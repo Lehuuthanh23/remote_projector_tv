@@ -27,12 +27,12 @@ class ADSPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/ic_projector.png',
-                width: 150,
-                height: 150,
+                'assets/images/ts_screen.png',
+                width: 100,
+                height: 100,
               ),
               const Text(
-                'TS Screen TV',
+                'TS Screen',
                 style: TextStyle(
                   decoration: TextDecoration.none,
                   fontWeight: FontWeight.bold,

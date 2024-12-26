@@ -7,6 +7,7 @@ class Api {
 
   // Authentication & User Fetch URL
   static const String login = '/home/login';
+  static const String loginAdmin = '/sysaccount/login';
   static const String getCustomer = '/home/GetInfoCustomer_ById';
   static const String getCustomerByEmail = '/home/GetInfoCustomer_ByEmail';
   static const String getCustomerByDevice =

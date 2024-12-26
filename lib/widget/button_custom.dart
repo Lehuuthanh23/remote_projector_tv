@@ -15,6 +15,7 @@ class ButtonCustom extends StatefulWidget {
   final FocusNode? focusNode;
   final Widget? customTitle;
   final bool autofocus;
+  final bool focus;
 
   const ButtonCustom({
     super.key,
@@ -31,6 +32,7 @@ class ButtonCustom extends StatefulWidget {
     this.customTitle,
     this.height,
     this.autofocus = true,
+    this.focus = true,
   });
 
   @override
@@ -61,6 +63,7 @@ class _ButtonCustomState extends State<ButtonCustom> {
   @override
   Widget build(BuildContext context) {
     return Focus(
+      canRequestFocus: widget.focus,
       focusNode: widget.focusNode ?? _focusNode,
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent &&
@@ -81,13 +84,15 @@ class _ButtonCustomState extends State<ButtonCustom> {
           margin: widget.margin,
           decoration: BoxDecoration(
             color: _isFocused
-                ? (widget.color ?? const Color.fromARGB(255, 192, 227, 255))
+                ? (widget.color ?? const Color.fromARGB(255, 96, 255, 128))
                     .withOpacity(0.7)
                 : widget.color ??
                     (_isFocused
-                        ? const Color.fromARGB(255, 192, 227, 255)
+                        ? const Color.fromARGB(255, 96, 255, 128)
                             .withOpacity(0.7)
-                        : Colors.white),
+                        : widget.isSplashScreen == true
+                            ? Colors.white
+                            : const Color(0xffEB6E2C)),
             borderRadius: BorderRadius.horizontal(
               left: Radius.circular(widget.borderRadius ?? 50),
               right: Radius.circular(widget.borderRadius ?? 50),
@@ -100,8 +105,10 @@ class _ButtonCustomState extends State<ButtonCustom> {
                   style: TextStyle(
                     fontSize: widget.textSize,
                     fontWeight: FontWeight.bold,
-                    color: widget.isSplashScreen == null
-                        ? Colors.white
+                    color: widget.isSplashScreen == false
+                        ? _isFocused
+                            ? const Color(0xffEB6E2C)
+                            : Colors.white
                         : const Color(0xffEB6E2C),
                   ),
                 ),
