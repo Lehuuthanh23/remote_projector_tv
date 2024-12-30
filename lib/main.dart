@@ -57,6 +57,7 @@ Future<void> initKioskMode() async {
 Future<void> enableKioskMode() async {
   try {
     bool isAdmin = await dpc.isAdminActive();
+    await dpc.setAsLauncher(enable: false);
     if (isAdmin) {
       await dpc.lockApp(home: true);
       await dpc.setAsLauncher(enable: true);
@@ -126,7 +127,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       isSettingsOpened = false;
       AppSP.set(AppSPKey.isSettingsOpened, false);
       print('Lock app tiếp');
-      dpc.lockApp(home: true);
+      if (AppSP.get(AppSPKey.isKioskMode) == true) {
+        dpc.lockApp(home: true);
+      } else {
+        AppSP.set(AppSPKey.isKioskMode, false);
+        dpc.unlockApp();
+      }
+      // dpc.setAsLauncher(enable: false);
     }
   }
 

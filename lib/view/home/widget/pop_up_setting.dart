@@ -36,6 +36,8 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
         onViewModelReady: (viewModel) async {
           _selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
           _checkConnect = await AppUtils.checkConnect();
+          await viewModel.getDir();
+          viewModel.kioskMode = AppSP.get(AppSPKey.isKioskMode) ?? false;
           viewModel.notifyListeners();
         },
         builder: (context, viewModel, child) {
