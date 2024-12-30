@@ -54,7 +54,7 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
               padding: const EdgeInsets.all(8.0),
               alignment: Alignment.center,
               child: const Text(
-                'DANH SÁCH HỆ THỐNG',
+                'DANH SÁCH VIDEO',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

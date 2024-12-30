@@ -29,7 +29,7 @@ class PacketRequest {
 
       packets = packets.where((packet) {
         if (packet.deleted != 'y') {
-          DateTime now = DateTime.now();
+          DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
           DateTime validDate = DateTime.parse(packet.validDate.isEmptyOrNull
               ? now.toString()
               : packet.validDate!);

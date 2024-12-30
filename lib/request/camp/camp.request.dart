@@ -114,7 +114,12 @@ class CampRequest {
     Device device = Device.fromJson(jsonDecode(deviceString!));
     final formData = FormData.fromMap({
       'computer_id': device.computerId,
-      'work_date': DateTime.now().toIso8601String().split('T').first,
+      'work_date': DateTime.now()
+          .toUtc()
+          .add(const Duration(hours: 7))
+          .toIso8601String()
+          .split('T')
+          .first,
     });
 
     try {

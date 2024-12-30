@@ -242,16 +242,16 @@ class DevicePolicyControllerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 private fun startApp(packageName: String?, result: Result) {
     try {
         log("Vào startApp")
-        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        // val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         // Whitelist Settings để có thể mở trong Kiosk Mode
-        dpm.setLockTaskPackages(
-            adminComponentName, // ComponentName của Device Owner
-            arrayOf(
-                context.packageName,       // Package của app Kiosk Mode
-                "com.android.settings"     // Package của Settings
-            )
-        )
+        // dpm.setLockTaskPackages(
+        //     adminComponentName, // ComponentName của Device Owner
+        //     arrayOf(
+        //         context.packageName,       // Package của app Kiosk Mode
+        //         "com.android.settings"     // Package của Settings
+        //     )
+        // )
 
         // Mở Wi-Fi Settings nếu packageName không được cung cấp
         val intent: Intent? = if (packageName.isNullOrEmpty()) {

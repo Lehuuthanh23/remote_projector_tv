@@ -218,6 +218,13 @@ class HomeViewModel extends BaseViewModel {
       }
       notifyListeners();
     }
+    // kioskMode = check;
+    // notifyListeners();
+    // if (check == true) {
+    //   dpc.lockApp(home: true);
+    // } else {
+    //   dpc.unlockApp();
+    // }
   }
 
   Future<bool> checkAdmin() async {
@@ -241,6 +248,15 @@ class HomeViewModel extends BaseViewModel {
         selectedDir = _listDirAll.first;
         AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
       }
+    }
+    if (AppSP.get(AppSPKey.currentDir) != 0) {
+      selectedDir = _listDirAll
+          .where((dir) {
+            return dir.dirId.toString() ==
+                AppSP.get(AppSPKey.currentDir).toString();
+          })
+          .toList()
+          .first;
     }
     setBusy(false);
   }
@@ -271,6 +287,7 @@ class HomeViewModel extends BaseViewModel {
   Future<void> openSettings() async {
     try {
       await dpc.unlockApp();
+      await dpc.setAsLauncher(enable: true);
       print('Unlock App');
 
       final success = await dpc.startApp();

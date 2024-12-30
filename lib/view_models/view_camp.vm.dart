@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:better_player/better_player.dart';
 import 'package:dio/dio.dart';
@@ -68,7 +69,7 @@ class ViewCampViewModel extends BaseViewModel {
   bool checkImage = false;
   bool checkAlive = true;
   bool isDisposeVideoPlayer = false;
-
+  DateTime? now;
   StreamSubscription? _subscription;
   FocusNode drawerFocus = FocusNode();
 
@@ -88,15 +89,23 @@ class ViewCampViewModel extends BaseViewModel {
 
       String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
       List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString!);
-      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
-
+      DateTime nowUtc = DateTime.now().toUtc().add(const Duration(hours: 7));
+      DateTime nowLocalButUnchanged = DateTime(
+        nowUtc.year,
+        nowUtc.month,
+        nowUtc.day,
+        nowUtc.hour,
+        nowUtc.minute,
+        nowUtc.second,
+      );
       if (lstCampScheduleJson
           .map((e) => CampSchedule.fromJson(e))
           .where((camp) {
             DateTime fromTime = stringToDateTime(camp.fromTime);
             DateTime toTime = stringToDateTime(camp.toTime);
-            return fromTime.isBefore(now) &&
-                toTime.isAfter(now) &&
+            return (fromTime.isBefore(nowLocalButUnchanged) ||
+                    nowLocalButUnchanged == fromTime) &&
+                toTime.isAfter(nowLocalButUnchanged) &&
                 camp.status == '1' &&
                 AppString.checkPacket;
           })
@@ -173,7 +182,6 @@ class ViewCampViewModel extends BaseViewModel {
     if (AppSP.get(AppSPKey.turnOffPJ) == 'true') {
       _dio.get(offProjector);
     }
-
     homeViewModel.playVideo = false;
     Navigator.pop(context);
   }
@@ -211,8 +219,8 @@ class ViewCampViewModel extends BaseViewModel {
   }
 
   void _updateTime() {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    final formattedTime = DateFormat('HH:mm:ss').format(now);
+    now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final formattedTime = DateFormat('HH:mm:ss').format(now!);
     _formattedTime = formattedTime;
     notifyListeners();
   }
@@ -235,27 +243,37 @@ class ViewCampViewModel extends BaseViewModel {
     final hour = int.parse(parts[0]);
     final minute = int.parse(parts[1]);
     final second = int.parse(parts[2]);
-    return DateTime(now.year, now.month, now.day, hour, minute, second)
-        .toUtc()
-        .add(const Duration(hours: 7));
+    return DateTime(now.year, now.month, now.day, hour, minute, second);
   }
 
   Future<void> _loadNextMedia(List<CampSchedule> campSchedules,
       {int timeStart = 0}) async {
     if (!checkAlive || !context.mounted) return;
-    _betterPlayerController?.dispose();
+    if (_betterPlayerController != null) {
+      _betterPlayerController!.clearCache();
+      await _betterPlayerController!.pause();
+      _betterPlayerController!.dispose();
+      _betterPlayerController = null;
+    }
     isDisposeVideoPlayer = true;
     notifyListeners();
-
     image = null;
     if (currentIndex < campSchedules.length) {
       CampSchedule currentCampSchedule = campSchedules[currentIndex];
       DateTime fromTime = stringToDateTime(currentCampSchedule.fromTime);
       DateTime toTime = stringToDateTime(currentCampSchedule.toTime);
-      DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
-
-      if (fromTime.isBefore(now) &&
-          toTime.isAfter(now) &&
+      DateTime nowUtc = DateTime.now().toUtc().add(const Duration(hours: 7));
+      DateTime nowLocalButUnchanged = DateTime(
+        nowUtc.year,
+        nowUtc.month,
+        nowUtc.day,
+        nowUtc.hour,
+        nowUtc.minute,
+        nowUtc.second,
+      );
+      if ((fromTime.isBefore(nowLocalButUnchanged) ||
+              nowLocalButUnchanged == fromTime) &&
+          toTime.isAfter(nowLocalButUnchanged) &&
           currentCampSchedule.status == '1') {
         _waitTime = int.parse(currentCampSchedule.videoDuration);
         try {
@@ -336,7 +354,6 @@ class ViewCampViewModel extends BaseViewModel {
             });
           } else {
             checkImage = false;
-
             if (usbPaths.isEmpty) {
               bool isErrorInList =
                   _setCampaignError.contains(currentCampSchedule.campaignId);
@@ -425,19 +442,23 @@ class ViewCampViewModel extends BaseViewModel {
           _loadNextMediaInList(campSchedules);
         }
       } else {
-        if (!_setCampaignError.contains(currentCampSchedule.campaignId)) {
-          _setCampaignError.add(currentCampSchedule.campaignId);
-        }
+        flagPlayCamp = false;
         _loadNextMediaInList(campSchedules);
       }
     }
   }
 
   Future<void> _setupVideo(String url, {bool inInternet = true}) async {
+    if (_betterPlayerController != null) {
+      _betterPlayerController!.clearCache();
+      await _betterPlayerController!.pause();
+      _betterPlayerController!.dispose();
+      _betterPlayerController = null;
+    }
     BetterPlayerConfiguration betterPlayerConfiguration =
         const BetterPlayerConfiguration(
       autoPlay: true,
-      looping: true,
+      looping: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(
         showControls: false,
       ),
@@ -463,16 +484,14 @@ class ViewCampViewModel extends BaseViewModel {
           ratio = size.width / size.height;
         }
       }
-
       _aspectRatio = ratio;
     });
   }
 
   Future<void> _loadNextMediaInList(List<CampSchedule> campSchedules) async {
-    bool isAllInSet = campSchedules
-        .map((e) => e.campaignId)
-        .every((item) => _setCampaignError.contains(item));
-
+    bool isAllInSet = campSchedules.map((e) => e.campaignId).every((item) {
+      return _setCampaignError.contains(item);
+    });
     if (isAllInSet) {
       isPlaying = false;
       notifyListeners();
@@ -481,7 +500,6 @@ class ViewCampViewModel extends BaseViewModel {
       if (currentIndex >= campSchedules.length) {
         currentIndex = 0;
       }
-
       checkDisconnectUSB = null;
       _loadNextMedia(campSchedules);
     }
@@ -492,7 +510,12 @@ class ViewCampViewModel extends BaseViewModel {
     CampRequest campRequest = CampRequest();
 
     campRequest.addCampaignRunProfile(currentCampSchedule);
-
+    if (_betterPlayerController != null) {
+      _betterPlayerController!.clearCache();
+      _betterPlayerController!.pause();
+      _betterPlayerController!.dispose();
+      _betterPlayerController = null;
+    }
     _loadNextMediaInList(campSchedules);
   }
 

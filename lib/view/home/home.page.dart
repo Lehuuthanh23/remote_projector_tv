@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                                     },
                                   );
                                 },
-                                title: 'DANH SÁCH HỆ THỐNG',
+                                title: 'DANH SÁCH VIDEO',
                                 textSize: 15,
                               ),
                               ButtonCustom(

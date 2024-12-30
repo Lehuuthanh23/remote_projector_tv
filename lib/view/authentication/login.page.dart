@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 
+import '../../app/app_sp.dart';
+import '../../app/app_sp_key.dart';
+import '../../main.dart';
 import '../../view_models/login.vm.dart';
 import '../../widget/button_custom.dart';
 
@@ -196,6 +199,51 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ),
                               ),
+                              TextButton(
+                                onPressed: () async {
+                                  try {
+                                    await dpc.unlockApp();
+                                    await dpc.setAsLauncher(enable: true);
+                                    print('Unlock App');
+
+                                    final success = await dpc.startApp();
+                                    if (success) {
+                                      print("Settings opened successfully");
+                                      AppSP.set(
+                                          AppSPKey.isSettingsOpened, true);
+                                      // isSettingsOpened = true;
+                                    } else {
+                                      print("Failed to open Settings");
+                                    }
+                                  } catch (e) {
+                                    print("Error opening Settings: $e");
+                                  }
+                                },
+                                child: const Text(
+                                  'Cài đặt wifi',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              // TextButton(
+                              //   onPressed: () async {
+                              //     dpc.unlockApp();
+
+                              //   },
+                              //   child: const Text(
+                              //     'Trở về home',
+                              //     style: TextStyle(
+                              //       color: Colors.white,
+                              //       fontSize: 15,
+                              //       decoration: TextDecoration.underline,
+                              //       decorationColor: Colors.white,
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),

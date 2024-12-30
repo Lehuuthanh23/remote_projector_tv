@@ -107,9 +107,9 @@ class DeviceRequest {
         // print(
         //     '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token');
 
-        // await _dio.get(
-        //   '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
-        // );
+        await _dio.get(
+          '${Api.hostApi}${Api.updateDeviceFirebaseToken}/${device.computerId}/$token',
+        );
       } catch (_) {}
     }
   }
