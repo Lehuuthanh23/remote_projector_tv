@@ -1,0 +1,58 @@
+name: iOS-ipa-build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: 🎉 iOS Build
+    runs-on: macos-latest
+    steps:
+      # 1. Checkout mã nguồn từ repository
+      - uses: actions/checkout@v3
+
+      # 2. Thiết lập Flutter với cấu hình phù hợp
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.24.5'
+          architecture: x64
+
+      # 3. Dọn dẹp cache cũ
+      - name: Clean Flutter cache
+        run: flutter clean && rm -rf ~/.pub-cache
+
+      # 4. Cài đặt dependencies
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # 5. Cập nhật CocoaPods
+      - name: Update CocoaPods
+        run: pod repo update
+        working-directory: ios
+
+      # 6. Build iOS App
+      - name: Build iOS App
+        run: flutter build ios --release --no-codesign
+
+      # 7. Tạo thư mục Payload và di chuyển Runner.app vào
+      - name: Prepare Payload for IPA
+        run: |
+          mkdir Payload
+          mv Runner.app Payload/
+        working-directory: build/ios/iphoneos
+
+      # 8. Tạo file .ipa từ Payload
+      - name: Zip output to create .ipa
+        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
+        working-directory: build/ios/iphoneos
+
+      # 9. Tải file .ipa lên GitHub Release
+      - name: Upload .ipa to GitHub release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/ios/iphoneos/FlutterIpaExport.ipa
+          tag: v1.0
+          overwrite: true
+          body: "This is the first release of the app"
