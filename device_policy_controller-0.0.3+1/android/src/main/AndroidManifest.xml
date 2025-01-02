@@ -32,12 +32,12 @@
           android:name="android.app.device_admin"
           android:resource="@xml/device_admin_receiver" />
 
-        <intent-filter>
+        <!-- <intent-filter>
             <action android:name="android.intent.action.MAIN"/>
             <category android:name="android.intent.category.HOME" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.LAUNCHER"/>
-        </intent-filter>
+        </intent-filter> -->
         
       <intent-filter>
         <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />

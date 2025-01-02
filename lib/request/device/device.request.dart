@@ -16,8 +16,7 @@ import '../notification/notify.request.dart';
 class DeviceRequest {
   final Dio _dio = Dio();
 
-  Future<bool> connectDevice(
-      DeviceInfoModel deviceInfo, User currentUser) async {
+  Future connectDevice(DeviceInfoModel deviceInfo, User currentUser) async {
     bool checkConnect = false;
 
     final formData = FormData.fromMap({
@@ -33,20 +32,24 @@ class DeviceRequest {
       'location': '',
       'customer_id': currentUser.customerId,
       'type': 'chủ sở hữu',
-      'id_dir': '',
+      'id_dir': int.parse(AppSP.get(AppSPKey.currentDir).toString()),
       'time_end': ''
     });
 
     try {
+      formData.fields.forEach((field) {
+        print("${field.key}: ${field.value}");
+      });
+
       final response = await _dio.post(
         AppUtils.createUrl(Api.createDevice),
         data: formData,
         options: AppUtils.createOptionsNoCookie(),
       );
+      print(response);
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
         checkConnect = true;
-
         DeviceInfoModel deviceInfoModel =
             DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
         DeviceRequest deviceRequest = DeviceRequest();
@@ -73,10 +76,11 @@ class DeviceRequest {
           AppSPKey.serialComputer: device.serialComputer,
           AppSPKey.computerId: device.computerId
         });
+        return checkConnect;
+      } else {
+        return responseData;
       }
     } catch (_) {}
-
-    return checkConnect;
   }
 
   Future<List<Device>> getDeviceByCustomerId(String customerId) async {
@@ -115,15 +119,7 @@ class DeviceRequest {
   }
 
   Future<bool> updateDirByDevice(Device device, int? idDir) async {
-    User currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
-    DeviceInfoModel deviceInfoModel =
-        DeviceInfoModel.fromJson(jsonDecode(AppSP.get(AppSPKey.device)));
-    DeviceRequest deviceRequest = DeviceRequest();
-    List<Device> lstDevice =
-        await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
-    print('aaa1919: ${lstDevice.length}');
     device.idDir = idDir.toString();
-    print(device.toJson());
     final formData = FormData.fromMap({
       'computer_name': device.computerName,
       'seri_computer': device.serialComputer,
@@ -144,15 +140,11 @@ class DeviceRequest {
         AppUtils.createUrl('${Api.updateDevice}/${device.computerId}'),
         data: formData,
       );
-      List<Device> lstDevice =
-          await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
-      print('aaa88888: ${lstDevice.length}');
       final responseData = jsonDecode(response.data);
       if (responseData['status'] == 1) {
         AppSP.set(AppSPKey.currentDevice, jsonEncode(device.toJson()));
       }
       return responseData['status'] == 1;
-      // return true;
     } catch (_) {}
 
     return false;
