@@ -155,15 +155,6 @@ class HomeViewModel extends BaseViewModel {
     await _getTokenAndSendToServer();
     await getValue();
     await getDir();
-    if (AppSP.get(AppSPKey.currentDir) != 0) {
-      selectedDir = _listDirAll
-          .where((dir) {
-            return dir.dirId.toString() ==
-                AppSP.get(AppSPKey.currentDir).toString();
-          })
-          .toList()
-          .first;
-    }
     await WakelockPlus.enable();
   }
 
@@ -200,7 +191,8 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  changeKioskMode(bool check) {
+  changeKioskMode(bool check) async {
+    isAdmin = await dpc.isAdminActive();
     if (isAdmin) {
       if (check == false) {
         showDialog(
@@ -234,15 +226,11 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> getDir() async {
-    setBusy(true);
-
     _listDirAll.clear();
 
     await getMyDir();
-    // await getShareDir();
 
     _listDirAll.addAll([..._listDir]);
-    _listDirAll.add(Dir());
     if (AppSP.get(AppSPKey.currentDir) == null) {
       if (_listDirAll.isNotEmpty) {
         selectedDir = _listDirAll.first;
@@ -250,15 +238,15 @@ class HomeViewModel extends BaseViewModel {
       }
     }
     if (AppSP.get(AppSPKey.currentDir) != 0) {
-      selectedDir = _listDirAll
-          .where((dir) {
-            return dir.dirId.toString() ==
-                AppSP.get(AppSPKey.currentDir).toString();
-          })
-          .toList()
-          .first;
+      var list = _listDirAll.where((dir) {
+        return dir.dirId.toString() ==
+            AppSP.get(AppSPKey.currentDir).toString();
+      }).toList();
+      if (list.isNotEmpty) {
+        selectedDir = list.first;
+      }
     }
-    setBusy(false);
+    notifyListeners();
   }
 
   Future<void> getMyDir() async {
@@ -579,10 +567,10 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> connectDevice() async {
-    bool checkConnect =
+    dynamic checkConnect =
         await _deviceRequest.connectDevice(deviceInfo!, currentUser);
     if (context.mounted) {
-      if (checkConnect) {
+      if (checkConnect == true) {
         Navigator.pop(context);
         AppSP.set(AppSPKey.proPW, proPWController.text);
         AppSP.set(AppSPKey.proUN, proUNController.text);
@@ -609,7 +597,7 @@ class HomeViewModel extends BaseViewModel {
           builder: (BuildContext context) {
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_error.png"),
-              title: 'Kết nối thất bại',
+              title: 'Kết nối thất bại\n${checkConnect['msg']}',
               leftText: 'Xác nhận',
               onLeftTap: () {
                 Navigator.pop(context);

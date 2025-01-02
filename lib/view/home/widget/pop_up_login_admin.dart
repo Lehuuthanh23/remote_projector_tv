@@ -58,6 +58,7 @@ class PopUpLoginAdmin extends StatelessWidget {
                     viewModel.notifyListeners();
                   } else if (checkAdmin == true) {
                     await viewModel.dpc.unlockApp();
+                    viewModel.dpc.setAsLauncher(enable: false);
                     viewModel.errorStringCheckAdmin = "";
                     viewModel.usernameAdminController.clear();
                     viewModel.passwordAdminController.clear();

@@ -44,524 +44,565 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
           return Center(
             child: Container(
               color: Colors.grey.shade100,
-              child: Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'CÀI ĐẶT',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: FocusTraversalGroup(
-                          policy: WidgetOrderTraversalPolicy(),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'THÔNG TIN CÁ NHÂN',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      readOnly: true,
-                                      enabled: false,
-                                      decoration: InputDecoration(
-                                        label: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Họ & tên',
-                                              style: TextStyle(
-                                                  color: Color(0xff797979),
-                                                  fontSize: 15),
-                                            ),
-                                            Text(
-                                              widget.homeVM.currentUser
-                                                  .customerName!,
-                                              style:
-                                                  const TextStyle(fontSize: 20),
-                                            ),
-                                          ],
-                                        ),
-                                        prefixIcon: Image.asset(
-                                            'assets/images/ic_profile.png'),
-                                        border: const OutlineInputBorder(),
+              child: viewModel.isBusy
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          color: Colors.white,
+                          padding: const EdgeInsets.all(8.0),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'CÀI ĐẶT',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: FocusTraversalGroup(
+                                policy: WidgetOrderTraversalPolicy(),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'THÔNG TIN CÁ NHÂN',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: TextFormField(
-                                      readOnly: true,
-                                      enabled: false,
-                                      decoration: InputDecoration(
-                                        label: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Số điện thoại',
-                                              style: TextStyle(
-                                                  color: Color(0xff797979),
-                                                  fontSize: 15),
-                                            ),
-                                            Text(
-                                              widget.homeVM.currentUser
-                                                  .phoneNumber!,
-                                              style:
-                                                  const TextStyle(fontSize: 20),
-                                            ),
-                                          ],
-                                        ),
-                                        prefixIcon: Image.asset(
-                                            'assets/images/ic_phone_number.png'),
-                                        border: const OutlineInputBorder(),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'THÔNG TIN KẾT NỐI',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    const SizedBox(height: 10),
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: TextFormField(
-                                                enabled: false,
-                                                decoration: InputDecoration(
-                                                  labelText: widget
-                                                              .homeVM
-                                                              .deviceInfo
-                                                              ?.serialNumber ==
-                                                          'unknown'
-                                                      ? 'ANDROID ID'
-                                                      : 'SERI NUMBER',
-                                                  hintText: '',
-                                                  enabled: false,
-                                                  border:
-                                                      const UnderlineInputBorder(),
-                                                ),
-                                                initialValue: widget
-                                                            .homeVM
-                                                            .deviceInfo
-                                                            ?.serialNumber ==
-                                                        'unknown'
-                                                    ? widget.homeVM.deviceInfo!
-                                                        .androidId
-                                                    : widget.homeVM.deviceInfo
-                                                        ?.serialNumber,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              width: 200,
-                                              height: 50,
-                                              child:
-                                                  DropdownButtonFormField<Dir>(
-                                                focusNode: viewModel
-                                                    .focusNodeSelectDir,
-                                                style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.black),
-                                                itemHeight: 30,
-                                                decoration: InputDecoration(
-                                                  labelText: "Chọn hệ thống",
-                                                  hintText: "Chọn hệ thống",
-                                                  labelStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.black),
-                                                  hintStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.black),
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4.0),
-                                                    borderSide:
-                                                        const BorderSide(
-                                                            color: Colors.grey),
-                                                  ),
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4.0),
-                                                    borderSide:
-                                                        const BorderSide(
-                                                            color: Colors.red),
-                                                  ),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4.0),
-                                                    borderSide:
-                                                        const BorderSide(
-                                                            color: Colors.grey),
-                                                  ),
-                                                ),
-                                                value: viewModel.selectedDir,
-                                                items: viewModel.listDirAll
-                                                    .map((dir) {
-                                                  return DropdownMenuItem<Dir>(
-                                                    value: dir,
-                                                    child: Text(dir.dirName ??
-                                                        "Thiết bị ngoài"),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (Dir? value) {
-                                                  viewModel.onChangeDir(value);
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Trạng thái',
-                                            hintText: '',
+                                        Expanded(
+                                          child: TextFormField(
+                                            readOnly: true,
                                             enabled: false,
-                                            border: UnderlineInputBorder(),
-                                          ),
-                                          initialValue: 'Đang chạy',
-                                        ),
-                                        const SizedBox(height: 10),
-                                        TextFormField(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Tên thiết bị',
-                                            hintText: '',
-                                            enabled: false,
-                                            border: UnderlineInputBorder(),
-                                          ),
-                                          initialValue:
-                                              widget.homeVM.deviceInfo?.model,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: TextFieldSetting(
-                                                focusNode:
-                                                    viewModel.focusNodeProUN,
-                                                nextFocusNode:
-                                                    viewModel.focusNodeProPW,
-                                                label: 'ProUN',
-                                                controller:
-                                                    viewModel.proUNController,
-                                                enabled: (AppSP.get(AppSPKey
-                                                                .proUN) ??
-                                                            '') !=
-                                                        ''
-                                                    ? true
-                                                    : true,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: TextFieldSetting(
-                                                focusNode:
-                                                    viewModel.focusNodeProPW,
-                                                nextFocusNode:
-                                                    viewModel.focusNodeProIP,
-                                                label: 'ProPW',
-                                                controller:
-                                                    viewModel.proPWController,
-                                                enabled: (AppSP.get(AppSPKey
-                                                                .proPW) ??
-                                                            '') !=
-                                                        ''
-                                                    ? true
-                                                    : true,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: TextFieldSetting(
-                                                focusNode:
-                                                    viewModel.focusNodeProIP,
-                                                nextFocusNode:
-                                                    viewModel.focusNodeOpenPJ,
-                                                label: 'ProjectorIP',
-                                                controller:
-                                                    viewModel.proIPController,
-                                                enabled: (AppSP.get(AppSPKey
-                                                                .projectorIP) ??
-                                                            '') !=
-                                                        ''
-                                                    ? true
-                                                    : true,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Checkbox(
-                                                      checkColor: Colors.amber,
-                                                      activeColor:
-                                                          Colors.transparent,
-                                                      focusNode: viewModel
-                                                          .focusNodeOpenPJ,
-                                                      value: widget
-                                                          .homeVM.turnOnlPJ,
-                                                      onChanged: (bool? value) {
-                                                        widget.homeVM.turnOnl();
-                                                      },
-                                                    ),
-                                                    const Text(
-                                                        'Điều khiển mở PJ'),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Checkbox(
-                                                      checkColor: Colors.amber,
-                                                      activeColor:
-                                                          Colors.transparent,
-                                                      focusNode: viewModel
-                                                          .focusNodeClosePJ,
-                                                      value: widget
-                                                          .homeVM.turnOffPJ,
-                                                      onChanged: (bool? value) {
-                                                        widget.homeVM.turnOff();
-                                                      },
-                                                    ),
-                                                    const Text(
-                                                        'Điều khiển tắt PJ'),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Checkbox(
-                                                      checkColor: Colors.amber,
-                                                      activeColor:
-                                                          Colors.transparent,
-                                                      focusNode: viewModel
-                                                          .focusNodeOpenOnStart,
-                                                      value: widget
-                                                          .homeVM.openOnStartup,
-                                                      onChanged: (bool? value) {
-                                                        widget.homeVM
-                                                            .openOnStart();
-                                                      },
-                                                    ),
-                                                    const Text(
-                                                        'Mở khi khởi động'),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(
-                                              width: 30,
-                                            ),
-                                            Expanded(
-                                              child: Column(
+                                            decoration: InputDecoration(
+                                              label: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  const Align(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: Text(
-                                                          'Chạy từ nguồn:')),
-                                                  Column(
-                                                    children: [
-                                                      ListTile(
-                                                        title:
-                                                            const Text('USB'),
-                                                        leading: Radio<String>(
-                                                          focusNode: viewModel
-                                                              .focusNodeUSB,
-                                                          value: 'USB',
-                                                          groupValue:
-                                                              _selectedSource,
-                                                          onChanged:
-                                                              (String? value) {
-                                                            setState(() {
-                                                              _selectedSource =
-                                                                  value!;
-                                                              AppSP.set(
-                                                                  AppSPKey
-                                                                      .typePlayVideo,
-                                                                  _selectedSource);
-                                                            });
-                                                          },
-                                                        ),
-                                                      ),
-                                                      ListTile(
-                                                        title: const Text(
-                                                            'Chiến dịch'),
-                                                        leading: Radio<String>(
-                                                          value: 'Chiendich',
-                                                          groupValue:
-                                                              _selectedSource,
-                                                          focusNode: viewModel
-                                                              .focusNodeCamp,
-                                                          onChanged:
-                                                              (String? value) {
-                                                            setState(() {
-                                                              _selectedSource =
-                                                                  value!;
-                                                              AppSP.set(
-                                                                  AppSPKey
-                                                                      .typePlayVideo,
-                                                                  _selectedSource);
-                                                            });
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ],
+                                                  const Text(
+                                                    'Họ & tên',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Color(0xff797979),
+                                                        fontSize: 15),
+                                                  ),
+                                                  Text(
+                                                    widget.homeVM.currentUser
+                                                        .customerName!,
+                                                    style: const TextStyle(
+                                                        fontSize: 20),
                                                   ),
                                                 ],
                                               ),
-                                            )
-                                          ],
+                                              prefixIcon: Image.asset(
+                                                  'assets/images/ic_profile.png'),
+                                              border:
+                                                  const OutlineInputBorder(),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: TextFormField(
+                                            readOnly: true,
+                                            enabled: false,
+                                            decoration: InputDecoration(
+                                              label: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Text(
+                                                    'Số điện thoại',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Color(0xff797979),
+                                                        fontSize: 15),
+                                                  ),
+                                                  Text(
+                                                    widget.homeVM.currentUser
+                                                        .phoneNumber!,
+                                                    style: const TextStyle(
+                                                        fontSize: 20),
+                                                  ),
+                                                ],
+                                              ),
+                                              prefixIcon: Image.asset(
+                                                  'assets/images/ic_phone_number.png'),
+                                              border:
+                                                  const OutlineInputBorder(),
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 20),
+                                    const Text(
+                                      'THÔNG TIN KẾT NỐI',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: TextFormField(
+                                                      enabled: false,
+                                                      decoration:
+                                                          InputDecoration(
+                                                        labelText: widget
+                                                                    .homeVM
+                                                                    .deviceInfo
+                                                                    ?.serialNumber ==
+                                                                'unknown'
+                                                            ? 'ANDROID ID'
+                                                            : 'SERI NUMBER',
+                                                        hintText: '',
+                                                        enabled: false,
+                                                        border:
+                                                            const UnderlineInputBorder(),
+                                                      ),
+                                                      initialValue: widget
+                                                                  .homeVM
+                                                                  .deviceInfo
+                                                                  ?.serialNumber ==
+                                                              'unknown'
+                                                          ? widget
+                                                              .homeVM
+                                                              .deviceInfo!
+                                                              .androidId
+                                                          : widget
+                                                              .homeVM
+                                                              .deviceInfo
+                                                              ?.serialNumber,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 200,
+                                                    height: 50,
+                                                    child:
+                                                        DropdownButtonFormField<
+                                                            Dir>(
+                                                      focusNode: viewModel
+                                                          .focusNodeSelectDir,
+                                                      style: const TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.black),
+                                                      itemHeight: 30,
+                                                      decoration:
+                                                          InputDecoration(
+                                                        labelText:
+                                                            "Chọn hệ thống",
+                                                        hintText:
+                                                            "Chọn hệ thống",
+                                                        labelStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .black),
+                                                        hintStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .black),
+                                                        border:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      4.0),
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .grey),
+                                                        ),
+                                                        focusedBorder:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      4.0),
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .red),
+                                                        ),
+                                                        enabledBorder:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      4.0),
+                                                          borderSide:
+                                                              const BorderSide(
+                                                                  color: Colors
+                                                                      .grey),
+                                                        ),
+                                                      ),
+                                                      value:
+                                                          viewModel.selectedDir,
+                                                      items: [
+                                                        ...viewModel.listDirAll
+                                                            .map((dir) {
+                                                          return DropdownMenuItem<
+                                                              Dir>(
+                                                            value: dir,
+                                                            child: Text(
+                                                                dir.dirName ??
+                                                                    ''),
+                                                          );
+                                                        }),
+                                                      ],
+                                                      onChanged: (Dir? value) {
+                                                        viewModel
+                                                            .onChangeDir(value);
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
+                                              TextFormField(
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: 'Trạng thái',
+                                                  hintText: '',
+                                                  enabled: false,
+                                                  border:
+                                                      UnderlineInputBorder(),
+                                                ),
+                                                initialValue: 'Đang chạy',
+                                              ),
+                                              const SizedBox(height: 10),
+                                              TextFormField(
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: 'Tên thiết bị',
+                                                  hintText: '',
+                                                  enabled: false,
+                                                  border:
+                                                      UnderlineInputBorder(),
+                                                ),
+                                                initialValue: widget
+                                                    .homeVM.deviceInfo?.model,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: TextFieldSetting(
+                                                      focusNode: viewModel
+                                                          .focusNodeProUN,
+                                                      nextFocusNode: viewModel
+                                                          .focusNodeProPW,
+                                                      label: 'ProUN',
+                                                      controller: viewModel
+                                                          .proUNController,
+                                                      enabled: (AppSP.get(AppSPKey
+                                                                      .proUN) ??
+                                                                  '') !=
+                                                              ''
+                                                          ? true
+                                                          : true,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: TextFieldSetting(
+                                                      focusNode: viewModel
+                                                          .focusNodeProPW,
+                                                      nextFocusNode: viewModel
+                                                          .focusNodeProIP,
+                                                      label: 'ProPW',
+                                                      controller: viewModel
+                                                          .proPWController,
+                                                      enabled: (AppSP.get(AppSPKey
+                                                                      .proPW) ??
+                                                                  '') !=
+                                                              ''
+                                                          ? true
+                                                          : true,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: TextFieldSetting(
+                                                      focusNode: viewModel
+                                                          .focusNodeProIP,
+                                                      nextFocusNode: viewModel
+                                                          .focusNodeOpenPJ,
+                                                      label: 'ProjectorIP',
+                                                      controller: viewModel
+                                                          .proIPController,
+                                                      enabled: (AppSP.get(AppSPKey
+                                                                      .projectorIP) ??
+                                                                  '') !=
+                                                              ''
+                                                          ? true
+                                                          : true,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Checkbox(
+                                                            checkColor:
+                                                                Colors.amber,
+                                                            activeColor: Colors
+                                                                .transparent,
+                                                            focusNode: viewModel
+                                                                .focusNodeOpenPJ,
+                                                            value: widget.homeVM
+                                                                .turnOnlPJ,
+                                                            onChanged:
+                                                                (bool? value) {
+                                                              widget.homeVM
+                                                                  .turnOnl();
+                                                            },
+                                                          ),
+                                                          const Text(
+                                                              'Điều khiển mở PJ'),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Checkbox(
+                                                            checkColor:
+                                                                Colors.amber,
+                                                            activeColor: Colors
+                                                                .transparent,
+                                                            focusNode: viewModel
+                                                                .focusNodeClosePJ,
+                                                            value: widget.homeVM
+                                                                .turnOffPJ,
+                                                            onChanged:
+                                                                (bool? value) {
+                                                              widget.homeVM
+                                                                  .turnOff();
+                                                            },
+                                                          ),
+                                                          const Text(
+                                                              'Điều khiển tắt PJ'),
+                                                        ],
+                                                      ),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Checkbox(
+                                                            checkColor:
+                                                                Colors.amber,
+                                                            activeColor: Colors
+                                                                .transparent,
+                                                            focusNode: viewModel
+                                                                .focusNodeOpenOnStart,
+                                                            value: widget.homeVM
+                                                                .openOnStartup,
+                                                            onChanged:
+                                                                (bool? value) {
+                                                              widget.homeVM
+                                                                  .openOnStart();
+                                                            },
+                                                          ),
+                                                          const Text(
+                                                              'Mở khi khởi động'),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 30,
+                                                  ),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        const Align(
+                                                            alignment: Alignment
+                                                                .centerLeft,
+                                                            child: Text(
+                                                                'Chạy từ nguồn:')),
+                                                        Column(
+                                                          children: [
+                                                            ListTile(
+                                                              title: const Text(
+                                                                  'USB'),
+                                                              leading:
+                                                                  Radio<String>(
+                                                                focusNode: viewModel
+                                                                    .focusNodeUSB,
+                                                                value: 'USB',
+                                                                groupValue:
+                                                                    _selectedSource,
+                                                                onChanged:
+                                                                    (String?
+                                                                        value) {
+                                                                  setState(() {
+                                                                    _selectedSource =
+                                                                        value!;
+                                                                    AppSP.set(
+                                                                        AppSPKey
+                                                                            .typePlayVideo,
+                                                                        _selectedSource);
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ),
+                                                            ListTile(
+                                                              title: const Text(
+                                                                  'Chiến dịch'),
+                                                              leading:
+                                                                  Radio<String>(
+                                                                value:
+                                                                    'Chiendich',
+                                                                groupValue:
+                                                                    _selectedSource,
+                                                                focusNode: viewModel
+                                                                    .focusNodeCamp,
+                                                                onChanged:
+                                                                    (String?
+                                                                        value) {
+                                                                  setState(() {
+                                                                    _selectedSource =
+                                                                        value!;
+                                                                    AppSP.set(
+                                                                        AppSPKey
+                                                                            .typePlayVideo,
+                                                                        _selectedSource);
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ButtonCustom(
+                              width: 150,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              color: _checkConnect == null
+                                  ? const Color(0xff9a9a9a)
+                                  : null,
+                              isSplashScreen: false,
+                              onPressed: () async {
+                                if (_checkConnect == false) {
+                                  await widget.homeVM.connectDevice();
+                                }
+                                AppSP.set(AppSPKey.proPW,
+                                    viewModel.proPWController.text);
+                                AppSP.set(AppSPKey.proUN,
+                                    viewModel.proUNController.text);
+                                AppSP.set(AppSPKey.projectorIP,
+                                    viewModel.proIPController.text);
+                                if (_checkConnect == true) {
+                                  await viewModel.updateDirByDevice();
+                                }
+                              },
+                              title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',
+                              textSize: 15,
+                            ),
+                            ButtonCustom(
+                              width: 150,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              isSplashScreen: false,
+                              onPressed: () async {
+                                viewModel.openSettings();
+                              },
+                              title: 'Cài đặt Wifi',
+                              textSize: 15,
+                            ),
+                            ButtonCustom(
+                              width: 150,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              isSplashScreen: false,
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              title: 'THOÁT',
+                              textSize: 15,
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                CupertinoSwitch(
+                                    value: viewModel.kioskMode,
+                                    onChanged: (check) {
+                                      viewModel.changeKioskMode(check);
+                                    }),
+                                const Text(
+                                  'Kiosk mode',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ButtonCustom(
-                        width: 150,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: _checkConnect == null
-                            ? const Color(0xff9a9a9a)
-                            : null,
-                        isSplashScreen: false,
-                        onPressed: () async {
-                          User currentUser = User.fromJson(
-                              jsonDecode(AppSP.get(AppSPKey.userInfo)));
-                          DeviceInfoModel deviceInfoModel =
-                              DeviceInfoModel.fromJson(
-                                  jsonDecode(AppSP.get(AppSPKey.device)));
-                          DeviceRequest deviceRequest = DeviceRequest();
-                          List<Device> lstDevice = await deviceRequest
-                              .getDeviceByCustomerId(currentUser.customerId!);
-                          print('aaa0: ${lstDevice.length}');
-                          if (_checkConnect == false) {
-                            await widget.homeVM.connectDevice();
-                            lstDevice = await deviceRequest
-                                .getDeviceByCustomerId(currentUser.customerId!);
-                            print('aaa1: ${lstDevice.length}');
-                          }
-                          AppSP.set(
-                              AppSPKey.proPW, viewModel.proPWController.text);
-                          AppSP.set(
-                              AppSPKey.proUN, viewModel.proUNController.text);
-                          AppSP.set(AppSPKey.projectorIP,
-                              viewModel.proIPController.text);
-
-                          await viewModel.updateDirByDevice();
-                          lstDevice = await deviceRequest
-                              .getDeviceByCustomerId(currentUser.customerId!);
-                          print('aaa2: ${lstDevice.length}');
-                        },
-                        title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',
-                        textSize: 15,
-                      ),
-                      ButtonCustom(
-                        width: 150,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        isSplashScreen: false,
-                        onPressed: () async {
-                          viewModel.openSettings();
-                        },
-                        title: 'Cài đặt Wifi',
-                        textSize: 15,
-                      ),
-                      ButtonCustom(
-                        width: 150,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        isSplashScreen: false,
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        title: 'THOÁT',
-                        textSize: 15,
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          CupertinoSwitch(
-                              value: viewModel.kioskMode,
-                              onChanged: (check) {
-                                viewModel.changeKioskMode(check);
-                              }),
-                          const Text(
-                            'Kiosk mode',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
             ),
           );
         });

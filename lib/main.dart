@@ -60,7 +60,7 @@ Future<void> enableKioskMode() async {
     await dpc.setAsLauncher(enable: false);
     if (isAdmin) {
       await dpc.lockApp(home: true);
-      await dpc.setAsLauncher(enable: true);
+      // await dpc.setAsLauncher(enable: true);
       await dpc.setKeyguardDisabled(disabled: true);
       await dpc.setKeepScreenAwake(true);
     }
@@ -120,6 +120,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print('Vào didChangeAppLifecycleState');
+    dpc.unlockApp();
+    dpc.setAsLauncher(enable: false);
     // Xử lý trạng thái vòng đời ứng dụng
     bool isSettingsOpened = AppSP.get(AppSPKey.isSettingsOpened) ?? false;
     print(isSettingsOpened);

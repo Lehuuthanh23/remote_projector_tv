@@ -149,7 +149,10 @@ class _HomePageState extends State<HomePage> {
                                 width: 150,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 10),
-                                onPressed: () => viewModel.signOut(),
+                                onPressed: () => {
+                                  // viewModel.dpc.clearDeviceOwnerApp()
+                                  viewModel.signOut(),
+                                },
                                 title: 'THOÁT',
                                 textSize: 15,
                               ),
@@ -272,12 +275,16 @@ class _HomePageState extends State<HomePage> {
                                                   color: Colors.white),
                                             ),
                                             const SizedBox(width: 50),
-                                            Text(
-                                              camp.campaignName,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 20,
-                                                color: Colors.white,
+                                            Expanded(
+                                              child: Text(
+                                                camp.campaignName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 20,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                           ],
