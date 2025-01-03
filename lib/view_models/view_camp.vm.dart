@@ -220,7 +220,7 @@ class ViewCampViewModel extends BaseViewModel {
       checkDisconnectUSB = true;
     } else if (event == 'USB_CONNECTED') {
       checkDisconnectUSB = false;
-      // await _getUsbPath();
+      await _getUsbPath();
     }
   }
 
@@ -283,7 +283,7 @@ class ViewCampViewModel extends BaseViewModel {
           currentCampSchedule.status == '1') {
         _waitTime = int.parse(currentCampSchedule.videoDuration);
         try {
-          // await _getUsbPath();
+          await _getUsbPath();
 
           if (checkShowingImage(currentCampSchedule)) {
             checkImage = true;
