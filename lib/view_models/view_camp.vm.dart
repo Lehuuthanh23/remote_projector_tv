@@ -115,8 +115,6 @@ class ViewCampViewModel extends BaseViewModel {
           isPlaying = false;
           flagPlayCamp = false;
           _betterPlayerController?.pause();
-          _betterPlayerController?.clearCache();
-          _betterPlayerController?.dispose();
           _betterPlayerController = null;
           notifyListeners();
         }
@@ -143,7 +141,6 @@ class ViewCampViewModel extends BaseViewModel {
 
   @override
   void dispose() {
-    _betterPlayerController?.clearCache();
     _betterPlayerController?.dispose();
     _timerTimeShowing.cancel();
     _subscription?.cancel();
@@ -186,8 +183,6 @@ class ViewCampViewModel extends BaseViewModel {
       _dio.get(offProjector);
     }
     homeViewModel.playVideo = false;
-    _betterPlayerController?.clearCache();
-    _betterPlayerController?.dispose();
     Navigator.pop(context);
   }
 
@@ -215,12 +210,11 @@ class ViewCampViewModel extends BaseViewModel {
 
   Future<void> _onUsbEvent(dynamic event) async {
     if (event == 'USB_DISCONNECTED') {
-      _betterPlayerController?.clearCache();
       _betterPlayerController?.dispose();
       checkDisconnectUSB = true;
     } else if (event == 'USB_CONNECTED') {
       checkDisconnectUSB = false;
-      // await _getUsbPath();
+      await _getUsbPath();
     }
   }
 
@@ -283,7 +277,7 @@ class ViewCampViewModel extends BaseViewModel {
           currentCampSchedule.status == '1') {
         _waitTime = int.parse(currentCampSchedule.videoDuration);
         try {
-          // await _getUsbPath();
+          await _getUsbPath();
 
           if (checkShowingImage(currentCampSchedule)) {
             checkImage = true;
