@@ -441,8 +441,6 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> nexPlayVideoUSB() async {
     List<String> usbPaths = await UsbService().getUsbPath();
-    print('Pathhhhhhh: ');
-    print(usbPaths);
     if (usbPaths.isEmpty && context.mounted) {
       showDialog(
         context: context,
