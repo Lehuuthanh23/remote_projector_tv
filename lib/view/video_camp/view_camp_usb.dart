@@ -162,18 +162,18 @@ class _VideoUSBPageState extends State<VideoUSBPage>
   Future<void> _loadVideos() async {
     await _getUsbPath();
     final videosDirectory = Directory('${usbPaths.first}/Videos');
-    final pictureDirectory = Directory('${usbPaths.first}/Images');
+    // final pictureDirectory = Directory('${usbPaths.first}/Images');
     final videoFiles = videosDirectory
         .listSync()
         .where((item) => item.path.endsWith('.mp4'))
         .map((item) => item.path)
         .toList();
-    final imageFiles = pictureDirectory
-        .listSync()
-        .where((item) => _isImage(item.path))
-        .map((item) => item.path)
-        .toList();
-    videoFiles.addAll(imageFiles);
+    // final imageFiles = pictureDirectory
+    //     .listSync()
+    //     .where((item) => _isImage(item.path))
+    //     .map((item) => item.path)
+    //     .toList();
+    // videoFiles.addAll(imageFiles);
     if (videoFiles.isNotEmpty) {
       _videoFiles = videoFiles;
       _currentVideoIndex = -1;
