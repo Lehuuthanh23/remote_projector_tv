@@ -51,6 +51,7 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
+      disposeViewModel: false,
       viewModelBuilder: () => viewCampViewModel,
       onViewModelReady: (viewModel) {
         viewModel.init();
@@ -70,7 +71,7 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                   color: Colors.black,
                 ),
                 Center(
-                  child: viewModel.isPlaying
+                  child: viewModel.isPlaying && !viewModel.isSync
                       ? (viewModel.checkImage
                           ? (viewModel.campSchedulesNew[viewModel.currentIndex]
                                               .videoType ==
@@ -114,7 +115,9 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                               : Container(
                                   color: Colors.black,
                                 ))
-                      : const ADSPage(),
+                      : ADSPage(
+                          viewCampViewModel: viewModel,
+                        ),
                 ),
                 Positioned(
                   bottom: 20,

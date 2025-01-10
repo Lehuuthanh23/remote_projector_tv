@@ -65,6 +65,7 @@ dependencies:
   googleapis_auth: ^1.6.0
   http: ^1.2.2
   url_launcher: ^6.3.0
+  disk_space_plus: ^0.2.4
 
 dev_dependencies:
   flutter_test:

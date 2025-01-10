@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:play_box/request/authentication/authentication.request.dart';
+import 'package:play_box/view/home/widget/sync_progress_dialog.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -41,6 +42,7 @@ import '../view/splash/splash.page.dart';
 import '../view/video_camp/view_camp.dart';
 import '../view/video_camp/view_camp_usb.dart';
 import '../widget/pop_up.dart';
+import 'view_camp.vm.dart';
 
 class HomeViewModel extends BaseViewModel {
   HomeViewModel({required this.context});
@@ -60,6 +62,8 @@ class HomeViewModel extends BaseViewModel {
   TextEditingController usernameAdminController = TextEditingController();
   TextEditingController passwordAdminController = TextEditingController();
 
+  late final ViewCampViewModel _viewCampViewModel;
+  ViewCampViewModel get viewCampViewModel => _viewCampViewModel;
   final focusNodeProUN = FocusNode();
   final focusNodeProPW = FocusNode();
   final focusNodeProIP = FocusNode();
@@ -130,6 +134,8 @@ class HomeViewModel extends BaseViewModel {
   bool isFocusedSelectDir = false;
   bool isAdmin = false;
   Future<void> initialise() async {
+    _viewCampViewModel =
+        ViewCampViewModel(context: context, homeViewModel: this);
     String? info = AppSP.get(AppSPKey.userInfo);
     if (info != null) {
       currentUser = User.fromJson(jsonDecode(AppSP.get(AppSPKey.userInfo)));
@@ -426,6 +432,7 @@ class HomeViewModel extends BaseViewModel {
   Future<void> getValue() async {
     await getMyCamp();
     await getCampSchedule();
+    
     notifyListeners();
   }
 

@@ -5,15 +5,18 @@ import 'dart:math';
 
 import 'package:better_player/better_player.dart';
 import 'package:dio/dio.dart';
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
 import '../app/app_sp_key.dart';
 import '../app/app_string.dart';
 import '../app/app_utils.dart';
+import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../observer/navigator_observer.dart';
 import '../request/camp/camp.request.dart';
@@ -51,6 +54,9 @@ class ViewCampViewModel extends BaseViewModel {
 
   List<String> usbPaths = [];
   List<CampSchedule> campSchedulesNew = [];
+  List<CampSchedule> lstCampSchedule = [];
+  bool isSync = false;
+
   File? image;
   String proUN = '';
   String proPW = '';
@@ -72,8 +78,333 @@ class ViewCampViewModel extends BaseViewModel {
   DateTime? now;
   StreamSubscription? _subscription;
   FocusNode drawerFocus = FocusNode();
+  List<CampModel> camps = [];
+  final CampRequest _campRequest = CampRequest();
 
-  void init() {
+  double _totalProgress = 0.0; // Tiến độ tổng thể (0.0 - 1.0)
+  double get totalProgress => _totalProgress;
+  int _totalBytesToDownload = 0;
+  int _totalBytesDownloaded = 0;
+
+  String _currentTask = ''; // Mô tả công việc hiện tại
+  String get currentTask => _currentTask;
+
+  /// Đồng bộ hóa thư mục Videos cục bộ với danh sách URL video.
+  Future<void> syncVideo() async {
+    isSync = true;
+    _totalProgress = 0;
+    _totalBytesToDownload = 0;
+    _totalBytesDownloaded = 0;
+    _currentTask = 'Đang tính toán dung lượng khả dụng';
+    notifyListeners();
+    await getMyCamp();
+    await getCampSchedule1();
+
+    // Trích xuất các URL YouTube từ camps
+    List<String> listUrlVideo =
+        camps.map((camp) => camp.urlYoutube.toString()).toList();
+
+    // Trích xuất tên video từ URL
+    List<String> listVideoNames =
+        listUrlVideo.map((url) => getVideoName(url)).toList();
+
+    // Chuẩn bị thư mục Videos
+    String savePath = await prepareVideosDirectory();
+
+    // Lấy danh sách các tệp video hiện có trong thư mục
+    Directory videosDirectory = Directory(savePath);
+    List<FileSystemEntity> existingFiles =
+        await videosDirectory.list().toList();
+
+    // Tạo bản đồ các tệp hiện có theo tên cơ bản (không có phần mở rộng)
+    Map<String, File> existingVideoMap = {
+      for (var file in existingFiles)
+        if (file is File) getVideoName(file.path): file,
+    };
+
+    // Xác định các công việc cần làm
+    List<Function> tasks = [];
+    // Map<String, int> listUrlAndSize = {};
+    // Thêm công việc tải xuống các video thiếu
+    for (var url in listUrlVideo) {
+      String videoName = getVideoName(url);
+      if (!existingVideoMap.containsKey(videoName)) {
+        tasks.add(() => startVideoDownload(url, savePath));
+        int? fileSize = await getFileSizeWithDio(url);
+        if (fileSize != null) {
+          _totalBytesToDownload += fileSize;
+          // listUrlAndSize[videoName] = fileSize;
+        }
+      } else {
+        // Kiểm tra nếu tệp đã tồn tại nhưng kích thước không khớp
+        File existingFile = existingVideoMap[videoName]!;
+        int existingFileSize = await existingFile.length();
+        int? expectedFileSize = await getFileSizeWithDio(url);
+
+        if (expectedFileSize != null && existingFileSize != expectedFileSize) {
+          tasks.add(() => deleteVideo(existingFile)); // Thêm công việc xóa tệp
+          tasks.add(() =>
+              startVideoDownload(url, savePath)); // Thêm công việc tải lại
+        }
+      }
+    }
+
+    double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+    double requiredDiskSpaceMB = _totalBytesToDownload / (1024 * 1024);
+    if ((freeDiskSpaceMB ?? 0) < requiredDiskSpaceMB) {
+      isSync = false;
+      _currentTask =
+          'Không đủ dung lượng lưu trữ. Cần ${requiredDiskSpaceMB.toStringAsFixed(2)} MB nhưng chỉ có ${freeDiskSpaceMB?.toStringAsFixed(2)} MB khả dụng.';
+      notifyListeners();
+      return;
+    }
+    // Thêm công việc xóa các video không còn trong danh sách
+    for (var entry in existingVideoMap.entries) {
+      if (!listVideoNames.contains(entry.key)) {
+        tasks.add(() => deleteVideo(entry.value));
+      }
+    }
+
+    int totalTasks = tasks.length;
+    if (totalTasks == 0) {
+      _totalProgress = 1.0;
+      isSync = false;
+      notifyListeners();
+      print('Đồng bộ hóa hoàn tất. Không có công việc nào cần thực hiện.');
+
+      return;
+    }
+
+    // Thực hiện các công việc lần lượt và cập nhật tiến độ
+    for (int i = 0; i < tasks.length; i++) {
+      await tasks[i]();
+      notifyListeners();
+    }
+    isSync = false;
+    _totalProgress = 1;
+    _currentTask = 'Đồng bộ hóa hoàn tất';
+    notifyListeners();
+  }
+
+  /// Bắt đầu tải xuống video từ URL cho trước vào savePath.
+  /// Bắt đầu tải xuống video từ URL cho trước vào savePath.
+  Future<void> startVideoDownload(String url, String savePath) async {
+    try {
+      String videoName = getVideoName(url);
+      String filePath = '$savePath/$videoName';
+
+      // Kiểm tra xem tệp đã tồn tại chưa
+      File file = File(filePath);
+      if (await file.exists()) {
+        print('Tệp "$videoName" đã tồn tại tại $savePath.');
+        return;
+      }
+
+      print('Đang tải "$videoName"');
+
+      // Biến để theo dõi số byte đã tải trong tệp hiện tại
+      int previousReceived = 0;
+
+      // Bắt đầu tải xuống sử dụng Dio
+      Dio dio = Dio();
+      await dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            // Tính phần trăm tải xuống của tệp hiện tại
+            double progress = received / total;
+
+            // Tính sự tăng lên so với lần callback trước
+            int delta = received - previousReceived;
+            previousReceived = received;
+
+            // Cập nhật tổng số byte đã tải
+            _totalBytesDownloaded += delta;
+
+            // Cập nhật tiến độ tổng thể
+            _totalProgress = _totalBytesDownloaded /
+                _totalBytesToDownload.clamp(1, double.infinity);
+
+            // Cập nhật mô tả công việc hiện tại
+            _currentTask =
+                'Đang tải "$videoName": ${(progress * 100).toStringAsFixed(0)}%';
+            notifyListeners();
+          }
+        },
+      );
+
+      print('Tải xuống hoàn tất: "$videoName"');
+    } catch (e) {
+      print('Lỗi khi tải video từ $url: $e');
+    }
+  }
+
+  /// Xóa video khỏi thư mục.
+  Future<void> deleteVideo(File file) async {
+    try {
+      String videoName = getVideoName(file.path);
+      await file.delete();
+      print('Đã xóa video: $videoName');
+    } catch (e) {
+      print('Lỗi khi xóa tệp ${file.path}: $e');
+    }
+  }
+
+  /// Lấy kích thước tệp từ URL sử dụng yêu cầu HEAD.
+  Future<int?> getFileSizeWithDio(String url) async {
+    try {
+      Dio dio = Dio();
+
+      // Gửi yêu cầu HEAD
+      Response response = await dio.head(url);
+
+      // Trích xuất Content-Length từ header
+      if (response.headers.value('content-length') != null) {
+        return int.tryParse(response.headers.value('content-length')!);
+      } else {
+        print('Không tìm thấy header Content-Length cho $url.');
+        return null;
+      }
+    } catch (e) {
+      print('Lỗi khi lấy kích thước tệp cho $url: $e');
+      return null;
+    }
+  }
+
+  /// Trích xuất tên video từ URL đầy đủ hoặc đường dẫn tệp.
+  String getVideoName(String fullPath) {
+    // Lấy phần cuối cùng sau '/'
+    String fileName = fullPath.split('/').last;
+
+    // Loại bỏ các tham số truy vấn nếu có
+    if (fileName.contains('?')) {
+      fileName = fileName.split('?').first;
+    }
+
+    // Loại bỏ phần mở rộng tệp nếu có
+    String videoName = fileName;
+
+    return videoName;
+  }
+
+  /// Lấy danh sách các camp liên quan đến khách hàng.
+  Future<void> getMyCamp() async {
+    try {
+      camps = await _campRequest.getAllCampByIdCustomer();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách camp: $e');
+    }
+  }
+
+  Future<void> getCampSchedule1() async {
+    lstCampSchedule = await _campRequest.getCampSchedule();
+    List<Map<String, dynamic>> jsonList =
+        lstCampSchedule.map((camp) => camp.toJson()).toList();
+    String lstCampScheduleString = jsonEncode(jsonList);
+    AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
+  }
+
+  /// Chuẩn bị thư mục Videos trong bộ nhớ ngoài.
+  Future<String> prepareVideosDirectory() async {
+    try {
+      // Lấy thư mục bộ nhớ ngoài
+      Directory? externalStorage = await getExternalStorageDirectory();
+
+      if (externalStorage != null) {
+        // Định nghĩa đường dẫn tới Videos
+        String videosPath = '${externalStorage.path}/Videos';
+        Directory videosDirectory = Directory(videosPath);
+
+        // Tạo thư mục nếu chưa tồn tại
+        if (!await videosDirectory.exists()) {
+          await videosDirectory.create(recursive: true);
+          print('Đã tạo thư mục Videos tại $videosPath');
+        } else {
+          print('Thư mục Videos đã tồn tại tại $videosPath');
+        }
+
+        return videosDirectory.path;
+      } else {
+        throw Exception("Không thể truy cập bộ nhớ ngoài.");
+      }
+    } catch (e) {
+      throw Exception("Lỗi khi chuẩn bị thư mục Videos: $e");
+    }
+  }
+
+  Future<String> getVideosDirectoryPath() async {
+    try {
+      // Lấy thư mục bộ nhớ ngoài
+      Directory? externalStorage = await getExternalStorageDirectory();
+
+      if (externalStorage != null) {
+        // Định nghĩa đường dẫn tới Videos
+        String videosPath = '${externalStorage.path}/Videos';
+        return videosPath;
+      } else {
+        throw Exception("Không thể truy cập bộ nhớ ngoài.");
+      }
+    } catch (e) {
+      throw Exception("Lỗi khi lấy đường dẫn thư mục Videos: $e");
+    }
+  }
+
+  Future<void> deleteVideosDirectory() async {
+    try {
+      // Lấy đường dẫn thư mục Videos
+      String videosPath = await getVideosDirectoryPath();
+
+      Directory videosDirectory = Directory(videosPath);
+
+      // Kiểm tra xem thư mục có tồn tại hay không
+      if (await videosDirectory.exists()) {
+        // Xóa thư mục cùng với tất cả các tệp bên trong
+        await videosDirectory.delete(recursive: true);
+        print('Đã xóa thư mục Videos tại $videosPath');
+
+        // Thông báo cho các listener (nếu cần)
+        notifyListeners();
+      } else {
+        print('Thư mục Videos không tồn tại tại $videosPath');
+      }
+    } catch (e) {
+      print('Lỗi khi xóa thư mục Videos: $e');
+    }
+  }
+
+  /// Lấy danh sách tên các tệp video trong thư mục Videos.
+  Future<List<String>> getVideoFileNames() async {
+    try {
+      // Lấy đường dẫn thư mục Videos
+      String savePath = await prepareVideosDirectory();
+
+      Directory videosDirectory = Directory(savePath);
+
+      // Kiểm tra xem thư mục có tồn tại không
+      if (!await videosDirectory.exists()) {
+        print('Thư mục Videos không tồn tại tại $savePath');
+        return [];
+      }
+
+      // Lấy danh sách các tệp trong thư mục Videos
+      List<FileSystemEntity> files = await videosDirectory.list().toList();
+
+      // Lọc chỉ các tệp và lấy tên tệp
+      List<String> fileNames = files
+          .whereType<File>()
+          .map((file) => file.path.split('/').last)
+          .toList();
+
+      return fileNames;
+    } catch (e) {
+      print('Lỗi khi lấy danh sách tên tệp video: $e');
+      return [];
+    }
+  }
+
+  init() async {
+    await syncVideo();
     checkAlive = true;
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
     proPW = AppSP.get(AppSPKey.proPW) ?? '';
@@ -233,6 +564,12 @@ class ViewCampViewModel extends BaseViewModel {
 
   Future<void> _getUsbPath() async {
     usbPaths = await UsbService().getUsbPath();
+    Directory? externalStorage = await getExternalStorageDirectory();
+
+    if (externalStorage != null) {
+      usbPaths.insert(0, externalStorage.path);
+    }
+    print('usbPaths: $usbPaths');
     notifyListeners();
   }
 
@@ -386,12 +723,14 @@ class ViewCampViewModel extends BaseViewModel {
                 if (!videoDir.existsSync()) {
                   videoDir.createSync(recursive: true);
                 }
+                print('savePath: $savePath');
 
                 if (!File(savePath).existsSync()) {
-                  VideoDownloader.startDownload(
-                      currentCampSchedule.urlYoutube, savePath, (progress) {});
+                  // VideoDownloader.startDownload(
+                  //     currentCampSchedule.urlYoutube, savePath, (progress) {});
                 }
-
+                print(
+                    'File(savePath).existsSync(): ${File(savePath).existsSync()}');
                 if (!File(savePath).existsSync()) {
                   bool isErrorInList = _setCampaignError
                       .contains(currentCampSchedule.campaignId);
@@ -407,6 +746,7 @@ class ViewCampViewModel extends BaseViewModel {
                     return;
                   }
                 } else {
+                  print('Chạy trong bộ nhớ trong');
                   await _setupVideo(savePath, inInternet: false);
                 }
               } else {
@@ -475,6 +815,11 @@ class ViewCampViewModel extends BaseViewModel {
           ? BetterPlayerDataSourceType.network
           : BetterPlayerDataSourceType.file,
       url,
+      cacheConfiguration: const BetterPlayerCacheConfiguration(
+        useCache: true,
+        maxCacheSize: 100 * 1024 * 1024, // 100 MB
+        maxCacheFileSize: 10 * 1024 * 1024, // 10 MB per file
+      ),
     );
 
     _betterPlayerController = BetterPlayerController(betterPlayerConfiguration);

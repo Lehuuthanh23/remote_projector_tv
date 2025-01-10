@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:play_box/view/home/widget/sync_progress_dialog.dart';
 
 import '../../../models/camp/camp_model.dart';
 import '../../../view_models/home.vm.dart';
@@ -82,12 +83,30 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   isSplashScreen: false,
-                  onPressed: () {
+                  onPressed: () async {
                     widget.vm.getValue();
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return SyncProgressDialog(
+                              viewCampViewModel: widget.vm.viewCampViewModel);
+                        });
+                    await widget.vm.viewCampViewModel.syncVideo();
+                    Navigator.of(context).pop();
                   },
                   title: 'NẠP LẠI',
                   textSize: 15,
                 ),
+                // ButtonCustom(
+                //   width: 150,
+                //   padding: const EdgeInsets.symmetric(vertical: 10),
+                //   isSplashScreen: false,
+                //   onPressed: () {
+                //     widget.vm.viewCampViewModel.deleteVideosDirectory();
+                //   },
+                //   title: 'Xóa bộ nhớ',
+                //   textSize: 15,
+                // ),
                 ButtonCustom(
                   width: 150,
                   padding: const EdgeInsets.symmetric(vertical: 10),
