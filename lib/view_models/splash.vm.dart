@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -34,6 +36,8 @@ class SplashViewModel extends BaseViewModel {
   String projectorIP = '';
   bool checkLogin = false;
   bool isLoading = true;
+  String errorString = '';
+  bool checkConnect = false;
 
   Future<void> init(BuildContext context) async {
     token = AppSP.get(AppSPKey.token) ?? "";
@@ -51,7 +55,46 @@ class SplashViewModel extends BaseViewModel {
   }
 
   Future<void> _checkLogin() async {
-    ConfigModel? config = await _configRequest.getConfig();
+    bool hasInternet = await InternetConnection().hasInternetAccess;
+
+    if (hasInternet) {
+      // Nếu đã có kết nối internet, thực hiện đăng nhập ngay lập tức
+      await _attemptLogin();
+      return;
+    }
+
+    // Nếu chưa có kết nối internet, thiết lập listener để đợi kết nối
+    final Completer<void> completer = Completer<void>();
+
+    StreamSubscription<InternetStatus>? listener;
+
+    listener = InternetConnection()
+        .onStatusChange
+        .listen((InternetStatus status) async {
+      if (status == InternetStatus.connected) {
+        print('Có internet');
+        checkConnect = true;
+        errorString = '';
+        await _attemptLogin();
+        notifyListeners();
+        completer
+            .complete(); // Hoàn thành Completable khi kết nối được phục hồi
+        await listener?.cancel(); // Hủy bỏ listener sau khi hoàn thành
+      } else if (status == InternetStatus.disconnected) {
+        print('Không có kết nối internet');
+        errorString = 'Không có kết nối internet';
+        checkConnect = false;
+        notifyListeners();
+      }
+    });
+
+    // Đợi cho đến khi completer được hoàn thành (khi kết nối internet được phục hồi)
+    await completer.future;
+  }
+
+  _attemptLogin() async {
+    ConfigModel? config;
+    config = await _configRequest.getConfig();
     saveConfig(config);
     if (config != null) {
       Api.hostApi = config.apiServer ?? Api.hostApi;

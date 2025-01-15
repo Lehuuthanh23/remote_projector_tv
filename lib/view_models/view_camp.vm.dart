@@ -584,7 +584,6 @@ class ViewCampViewModel extends BaseViewModel {
     if (externalStorage != null) {
       usbPaths.insert(0, externalStorage.path);
     }
-    print('usbPaths: $usbPaths');
     notifyListeners();
   }
 

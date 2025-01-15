@@ -146,13 +146,20 @@ class HomeViewModel extends BaseViewModel {
     if (isAdmin) {
       if (AppSP.get(AppSPKey.isKioskMode) != null) {
         kioskMode = AppSP.get(AppSPKey.isKioskMode);
+        if (kioskMode) {
+          dpc.lockApp(home: true);
+        } else {
+          dpc.unlockApp();
+        }
       } else {
         kioskMode = true;
+        dpc.lockApp(home: true);
       }
     } else {
       kioskMode = false;
+      dpc.unlockApp();
     }
-
+    AppSP.set(AppSPKey.isKioskMode, kioskMode);
     proUNController.text = AppSP.get(AppSPKey.proUN) ?? '';
     proPWController.text = AppSP.get(AppSPKey.proPW) ?? '';
     proIPController.text = AppSP.get(AppSPKey.projectorIP) ?? '';
@@ -237,7 +244,7 @@ class HomeViewModel extends BaseViewModel {
     await getMyDir();
 
     _listDirAll.addAll([..._listDir]);
-    if (AppSP.get(AppSPKey.currentDir) == null) {
+    if (AppSP.get(AppSPKey.currentDir) == 'null') {
       if (_listDirAll.isNotEmpty) {
         selectedDir = _listDirAll.first;
         AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);

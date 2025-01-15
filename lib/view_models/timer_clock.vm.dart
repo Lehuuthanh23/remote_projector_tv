@@ -59,8 +59,10 @@ class TimerClockViewModel extends BaseViewModel {
   Future<void> _updateTime() async {
     _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
     homeViewModel.currentTimeFormatted = currentTimeFormatted;
-    Device device =
-        Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    Device? device;
+    if (AppSP.get(AppSPKey.currentDevice) != 'null') {
+      device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    }
     notifyListeners();
     day = AppSP.get(AppSPKey.day) ?? '';
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
@@ -75,7 +77,9 @@ class TimerClockViewModel extends BaseViewModel {
       AppSP.set(AppSPKey.day, now.toString().substring(0, 10));
       getCampSchedule1();
     }
-    if (device.turnoffTime != null && device.turnonTime != null) {
+    if (device != null &&
+        ((device.turnoffTime != null && device.turnonTime != null) &&
+            (device.turnoffTime != '' && device.turnonTime != ''))) {
       DateTime turnOff = DateTime(
           now.year,
           now.month,
@@ -102,27 +106,22 @@ class TimerClockViewModel extends BaseViewModel {
 
     if (isDeviceOwner) {
       print("Cho thiết bị ngủ");
-      _navigationService.clearStackAndShow(Routes.homePage);
+      homeViewModel.setCallback(null);
       bool success = await DevicePolicyController.instance.lockDevice();
       if (success) {
-        // ScaffoldMessenger.of(viewContext).showSnackBar(
-        //   const SnackBar(content: Text('Thiết bị đã được khóa.')),
-        // );
         print('Thiết bị đã được khóa.');
+        if (homeViewModel.playVideo) {
+          Navigator.pop(viewContext);
+        }
+        homeViewModel.playCamp(false);
         await _alarmService.setWakeUpAlarm(delay.inSeconds);
         homeViewModel.playCamp(true);
       } else {
         ScaffoldMessenger.of(viewContext).showSnackBar(
           const SnackBar(content: Text('Không thể khóa thiết bị.')),
-        );
+        ); 
         print('Không thể khóa thiết bị.');
       }
-
-      // ScaffoldMessenger.of(viewContext).showSnackBar(
-      //   SnackBar(
-      //       content: Text(
-      //           'Đã đặt lịch khóa thiết bị sau ${delay.inMinutes} phút và đánh thức sau cùng.')),
-      // );
     } else {
       ScaffoldMessenger.of(viewContext).showSnackBar(
         const SnackBar(content: Text('Ứng dụng không phải là Device Owner.')),
