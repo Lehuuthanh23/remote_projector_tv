@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:stacked/stacked.dart';
 
 import '../../../app/app_sp.dart';
@@ -14,6 +15,7 @@ import '../../../models/user/user.dart';
 import '../../../request/device/device.request.dart';
 import '../../../view_models/home.vm.dart';
 import '../../../widget/button_custom.dart';
+import '../../../widget/pop_up.dart';
 
 class PopupSettingScreen extends StatefulWidget {
   const PopupSettingScreen({super.key, required this.homeVM});
@@ -548,17 +550,44 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                   : null,
                               isSplashScreen: false,
                               onPressed: () async {
-                                if (_checkConnect == false) {
-                                  await widget.homeVM.connectDevice();
-                                }
-                                AppSP.set(AppSPKey.proPW,
-                                    viewModel.proPWController.text);
-                                AppSP.set(AppSPKey.proUN,
-                                    viewModel.proUNController.text);
-                                AppSP.set(AppSPKey.projectorIP,
-                                    viewModel.proIPController.text);
-                                if (_checkConnect == true) {
-                                  await viewModel.updateDirByDevice();
+                                bool hasInternet = await InternetConnection()
+                                    .hasInternetAccess;
+                                if (hasInternet) {
+                                  _checkConnect = await AppUtils.checkConnect();
+                                  if (_checkConnect == false) {
+                                    await widget.homeVM.connectDevice();
+                                  }
+                                  AppSP.set(AppSPKey.proPW,
+                                      viewModel.proPWController.text);
+                                  AppSP.set(AppSPKey.proUN,
+                                      viewModel.proUNController.text);
+                                  AppSP.set(AppSPKey.projectorIP,
+                                      viewModel.proIPController.text);
+                                  if (_checkConnect == true) {
+                                    await viewModel.updateDirByDevice();
+                                  }
+                                } else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      Future.delayed(const Duration(seconds: 3),
+                                          () {
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                        }
+                                      });
+
+                                      return PopUpWidget(
+                                        icon: Image.asset(
+                                            "assets/images/ic_error.png"),
+                                        title: 'Không có kết nối Internet',
+                                        leftText: 'Xác nhận',
+                                        onLeftTap: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      );
+                                    },
+                                  );
                                 }
                               },
                               title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',

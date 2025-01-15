@@ -6,6 +6,7 @@ import 'package:device_policy_controller/device_policy_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:play_box/request/authentication/authentication.request.dart';
 import 'package:play_box/view/home/widget/sync_progress_dialog.dart';
@@ -643,26 +644,49 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> playCamp(bool check) async {
-    playVideo = check;
-    if (playVideo == true) {
-      if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
-        await _fetchPackets();
-        if (AppString.checkPacket && context.mounted) {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ViewCamp(
-                homeViewModel: this,
+    bool hasInternet = await InternetConnection().hasInternetAccess;
+    if (hasInternet) {
+      playVideo = check;
+      if (playVideo == true) {
+        if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {
+          await _fetchPackets();
+          if (AppString.checkPacket && context.mounted) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ViewCamp(
+                  homeViewModel: this,
+                ),
               ),
-            ),
-          );
-          playVideo == false;
+            );
+            playVideo == false;
+          }
+        } else {
+          await nexPlayVideoUSB();
         }
-      } else {
-        await nexPlayVideoUSB();
       }
+      notifyListeners();
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) {
+          Future.delayed(const Duration(seconds: 3), () {
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_error.png"),
+            title: 'Không có kết nối Internet',
+            leftText: 'Xác nhận',
+            onLeftTap: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
     }
-    notifyListeners();
   }
 
   //Check update

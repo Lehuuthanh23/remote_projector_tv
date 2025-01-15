@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:play_box/view/home/widget/sync_progress_dialog.dart';
 
 import '../../../models/camp/camp_model.dart';
 import '../../../view_models/home.vm.dart';
 import '../../../widget/button_custom.dart';
+import '../../../widget/pop_up.dart';
 import 'camp_card.dart';
 
 class PopupCampRunScreen extends StatefulWidget {
@@ -84,15 +86,39 @@ class _PopupCampRunScreenState extends State<PopupCampRunScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   isSplashScreen: false,
                   onPressed: () async {
-                    widget.vm.getValue();
-                    showDialog(
+                    bool hasInternet =
+                        await InternetConnection().hasInternetAccess;
+                    if (hasInternet) {
+                      widget.vm.getValue();
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return SyncProgressDialog(
+                                viewCampViewModel: widget.vm.viewCampViewModel);
+                          });
+                      await widget.vm.viewCampViewModel.syncVideo();
+                      Navigator.of(context).pop();
+                    } else {
+                      showDialog(
                         context: context,
                         builder: (context) {
-                          return SyncProgressDialog(
-                              viewCampViewModel: widget.vm.viewCampViewModel);
-                        });
-                    await widget.vm.viewCampViewModel.syncVideo();
-                    Navigator.of(context).pop();
+                          Future.delayed(const Duration(seconds: 3), () {
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          });
+
+                          return PopUpWidget(
+                            icon: Image.asset("assets/images/ic_error.png"),
+                            title: 'Không có kết nối Internet',
+                            leftText: 'Xác nhận',
+                            onLeftTap: () {
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                      );
+                    }
                   },
                   title: 'NẠP LẠI',
                   textSize: 15,
