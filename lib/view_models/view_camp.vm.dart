@@ -151,8 +151,6 @@ class ViewCampViewModel extends BaseViewModel {
     }
 
     double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
-    double? totalDiskSpaceMB = await DiskSpacePlus.getTotalDiskSpace;
-
     double requiredDiskSpaceMB = _totalBytesToDownload / (1024 * 1024);
     if ((freeDiskSpaceMB ?? 0) < requiredDiskSpaceMB) {
       isSync = false;
