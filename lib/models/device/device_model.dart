@@ -28,6 +28,8 @@ class Device {
   String deleted;
   int isCheckOnProjector;
   int isCheckOffProjector;
+  String? turnonTime;
+  String? turnoffTime;
 
   Device({
     required this.computerId,
@@ -59,6 +61,8 @@ class Device {
     required this.deleted,
     required this.isCheckOnProjector,
     required this.isCheckOffProjector,
+    this.turnoffTime,
+    this.turnonTime,
   });
 
   factory Device.fromJson(Map<String, dynamic> json) {
@@ -93,6 +97,8 @@ class Device {
       isCheckOnProjector: int.tryParse(json['isCheckOnProjector'] ?? '0') ?? 0,
       isCheckOffProjector:
           int.tryParse(json['isCheckOffProjector'] ?? '0') ?? 0,
+      turnonTime: json['turnon_time'] ?? '',
+      turnoffTime: json['turnoff_time'] ?? '',
     );
   }
 
@@ -127,6 +133,8 @@ class Device {
       'deleted': deleted,
       'isCheckOnProjector': isCheckOnProjector.toString(),
       'isCheckOffProjector': isCheckOffProjector.toString(),
+      'turnon_time': turnonTime,
+      'turnoff_time': turnoffTime,
     };
   }
 }

@@ -16,6 +16,20 @@ import '../notification/notify.request.dart';
 class DeviceRequest {
   final Dio _dio = Dio();
 
+  Future updateRomDevice(
+      String computerId, String romMemoryTotal, String romMemoryUsed) async {
+    final formData = FormData.fromMap({
+      'rom_memory_total': romMemoryTotal,
+      'rom_memory_used': romMemoryUsed,
+    });
+    final response = await _dio.post(
+      AppUtils.createUrl('${Api.updateRomMemory}/$computerId'),
+      data: formData,
+      options: AppUtils.createOptionsNoCookie(),
+    );
+    print('Response update rom: ${response.data}');
+  }
+
   Future connectDevice(DeviceInfoModel deviceInfo, User currentUser) async {
     bool checkConnect = false;
 

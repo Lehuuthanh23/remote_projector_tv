@@ -56,6 +56,7 @@ class CampRequest {
                     : deviceInfoModel.serialNumber))
             .toList();
     Device? device = lstDevice.isNotEmpty ? lstDevice.first : null;
+    AppSP.set(AppSPKey.currentDevice, jsonEncode(device?.toJson()));
     await AppSP.set(
         AppSPKey.computer, device != null ? jsonEncode(device.toJson()) : '');
 
@@ -69,6 +70,8 @@ class CampRequest {
         final response = await _dio.get(
           '${Api.hostApi}${Api.getCampTodayByComputerId}/${device.computerId}/${DateTime.now().toUtc().add(const Duration(hours: 7)).toString().substring(0, 10)}/1',
         );
+        print(
+            '${Api.hostApi}${Api.getCampTodayByComputerId}/${device.computerId}/${DateTime.now().toUtc().add(const Duration(hours: 7)).toString().substring(0, 10)}/1');
         final responseData = jsonDecode(response.data);
         // print(responseData);
         List<dynamic> campList = responseData['Camp_list'];
@@ -78,7 +81,11 @@ class CampRequest {
         }
 
         for (var camp in lstCamp) {
-          camp.lstTimeRun = await getTimeRunCampById(camp.campaignId);
+          if (int.parse(camp.defaultCampaignId) > 0) {
+            camp.lstTimeRun = await getTimeRunCampById(camp.defaultCampaignId);
+          } else {
+            camp.lstTimeRun = await getTimeRunCampById(camp.campaignId);
+          }
         }
       } catch (_) {}
     }
