@@ -71,38 +71,39 @@ class _ADSPageState extends State<ADSPage> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 50),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 500,
-                            child: LinearProgressIndicator(
-                                value: viewModel.totalProgress),
-                          ),
-                          Text(
-                            '${(viewModel.totalProgress * 100).toStringAsFixed(0)}%',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            viewModel.currentTask,
-                            style: const TextStyle(
-                                fontSize: 14, fontStyle: FontStyle.italic),
-                          ),
-                          // ElevatedButton(
-                          //     onPressed: () {
-                          //       viewModel.deleteVideosDirectory();
-                          //     },
-                          //     child: const Text('Xóa video')),
-                          // ElevatedButton(
-                          //     onPressed: () {
-                          //       viewModel.syncVideo();
-                          //     },
-                          //     child: const Text('Đồng bộ')),
-                        ],
+                    if (viewModel.isSync == true)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 50),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 500,
+                              child: LinearProgressIndicator(
+                                  value: viewModel.totalProgress),
+                            ),
+                            Text(
+                              '${(viewModel.totalProgress * 100).toStringAsFixed(0)}%',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              viewModel.currentTask,
+                              style: const TextStyle(
+                                  fontSize: 14, fontStyle: FontStyle.italic),
+                            ),
+                            // ElevatedButton(
+                            //     onPressed: () {
+                            //       viewModel.deleteVideosDirectory();
+                            //     },
+                            //     child: const Text('Xóa video')),
+                            // ElevatedButton(
+                            //     onPressed: () {
+                            //       viewModel.syncVideo();
+                            //     },
+                            //     child: const Text('Đồng bộ')),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

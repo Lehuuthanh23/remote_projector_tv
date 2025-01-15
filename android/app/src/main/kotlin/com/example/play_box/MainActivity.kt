@@ -32,6 +32,10 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import io.flutter.plugins.GeneratedPluginRegistrant.registerWith
 import com.example.play_box.plugin.InstallPlugin
+import android.app.AlarmManager
+import android.app.PendingIntent
+import androidx.annotation.NonNull
+import com.example.play_box.receive.WakeUpReceiver
 
 class MainActivity : FlutterActivity() {
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
@@ -41,6 +45,7 @@ class MainActivity : FlutterActivity() {
         private const val TAG = "MainActivity"
         private const val SERIAL_CHANNEL = "com.example.usb/serial"
         private const val USB_EVENT_CHANNEL = "com.example.usb/event"
+        private const val WAKE_UP_CHANNEL = "com.example.play_box.wakeup"
         private const val REQUEST_EXTERNAL_STORAGE = 1
         private const val OVERLAY_PERMISSION_REQUEST_CODE = 1234
         private val PERMISSIONS_STORAGE = arrayOf(
@@ -50,6 +55,7 @@ class MainActivity : FlutterActivity() {
 
         lateinit var channel: MethodChannel
         lateinit var eventChannel: EventChannel
+        lateinit var wakeUpChannel: MethodChannel
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -89,6 +95,16 @@ class MainActivity : FlutterActivity() {
 
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
+                "setWakeUpAlarm" -> {
+                    val delay = call.argument<Int>("delay")
+                    if (delay != null) {
+                        setWakeUpAlarm(delay)
+                        result.success(null)
+                    } else {
+                        result.error("INVALID_DELAY", "Delay không hợp lệ", null)
+                    }
+                }
+
                 "saveUser" -> {
                     val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
                     sharedPreferencesManager.saveUserIdConnected(argument)
@@ -145,6 +161,41 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
+
+        wakeUpChannel  = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WAKE_UP_CHANNEL)
+        MyBackgroundService.wakeUpChannel = wakeUpChannel
+        wakeUpChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "setWakeUpAlarm" -> {
+                    val delay = call.argument<Int>("delay")
+                    if (delay != null) {
+                        setWakeUpAlarm(delay)
+                        result.success(null)
+                    } else {
+                        result.error("INVALID_DELAY", "Delay không hợp lệ", null)
+                    }
+                }
+                else -> {
+                    result.success("")
+                }
+            }
+        }
+    }
+
+    private fun setWakeUpAlarm(delayInSeconds: Int) {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, WakeUpReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val triggerAtMillis = System.currentTimeMillis() + delayInSeconds * 1000L
+
+        // Sử dụng setExactAndAllowWhileIdle để đảm bảo alarm hoạt động trong Doze Mode
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
     }
 
     private val usbReceiver = object : BroadcastReceiver() {

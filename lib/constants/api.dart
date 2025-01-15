@@ -20,6 +20,7 @@ class Api {
   static const String createDevice = '/home/CreateDevice';
   static const String getDeviceByCustomerId = '/home/GetDevices_ByCustomerId';
   static const String updateDevice = '/home/UpDateDevice_ById';
+  static const String updateRomMemory = '/home/UpdateRomMemory';
 
   //Dir
   static const String getCustomerDir = '/home/GetDirCustomer_ById';

@@ -15,6 +15,7 @@ class CampModel {
   String urlYoutube;
   String urlUSP;
   String computerId;
+  String defaultCampaignId;
   List<TimeRunModel>? lstTimeRun;
 
   CampModel({
@@ -32,6 +33,7 @@ class CampModel {
     required this.urlUSP,
     required this.computerId,
     required this.lstTimeRun,
+    required this.defaultCampaignId,
   });
 
   factory CampModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ class CampModel {
       urlUSP: json['url_usp'] ?? '',
       computerId: json['computer_id'] ?? '',
       lstTimeRun: json['lstTimeRun'] ?? [],
+      defaultCampaignId: json['default_campaign_id'] ?? ''
     );
   }
 }

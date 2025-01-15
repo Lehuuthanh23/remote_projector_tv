@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    
     <application
         android:label="TS Screen"
         android:name="${applicationName}"
@@ -53,7 +54,7 @@
             android:value="2" />
 
         <service android:name=".service.MyBackgroundService"/>
-
+        <receiver android:name=".receive.WakeUpReceiver" />
         <receiver android:name=".receive.MyBroadcastReceiver"
             android:enabled="true"
             android:exported="false"

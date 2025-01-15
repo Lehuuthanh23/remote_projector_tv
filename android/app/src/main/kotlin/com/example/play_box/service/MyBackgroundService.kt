@@ -39,6 +39,7 @@ class MyBackgroundService : Service() {
         var isFirebase = false
 
         var channel: MethodChannel? = null
+        lateinit var wakeUpChannel: MethodChannel
     }
 
     private var handler: Handler = Handler(Looper.getMainLooper())

@@ -51,7 +51,6 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
-      disposeViewModel: false,
       viewModelBuilder: () => viewCampViewModel,
       onViewModelReady: (viewModel) {
         viewModel.init();

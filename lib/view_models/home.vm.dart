@@ -380,7 +380,7 @@ class HomeViewModel extends BaseViewModel {
         if (callbackCommand != null) {
           callbackCommand?.call(AppString.stopVideo);
         }
-
+        checkConnectDevice = await AppUtils.checkConnect();
         await getCampSchedule();
         playCamp(true);
 
@@ -393,7 +393,8 @@ class HomeViewModel extends BaseViewModel {
           callbackCommand!.call(AppString.stopVideo);
         }
 
-        Future.delayed(const Duration(seconds: 1), () {
+        Future.delayed(const Duration(seconds: 1), () async {
+          checkConnectDevice = await AppUtils.checkConnect();
           playCamp(true);
         });
 
@@ -407,6 +408,8 @@ class HomeViewModel extends BaseViewModel {
         }
 
         Future.delayed(const Duration(seconds: 1), () async {
+          checkConnectDevice = await AppUtils.checkConnect();
+          print('Nhận chạy lại camp');
           await getCampSchedule();
           playCamp(true);
         });
@@ -432,7 +435,7 @@ class HomeViewModel extends BaseViewModel {
   Future<void> getValue() async {
     await getMyCamp();
     await getCampSchedule();
-    
+
     notifyListeners();
   }
 

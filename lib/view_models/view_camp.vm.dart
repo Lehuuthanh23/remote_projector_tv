@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:play_box/request/device/device.request.dart';
 import 'package:stacked/stacked.dart';
 
 import '../app/app_sp.dart';
@@ -18,6 +19,7 @@ import '../app/app_string.dart';
 import '../app/app_utils.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
+import '../models/device/device_model.dart';
 import '../observer/navigator_observer.dart';
 import '../request/camp/camp.request.dart';
 import '../services/usb.service.dart';
@@ -80,7 +82,7 @@ class ViewCampViewModel extends BaseViewModel {
   FocusNode drawerFocus = FocusNode();
   List<CampModel> camps = [];
   final CampRequest _campRequest = CampRequest();
-
+  final DeviceRequest _deviceRequest = DeviceRequest();
   double _totalProgress = 0.0; // Tiến độ tổng thể (0.0 - 1.0)
   double get totalProgress => _totalProgress;
   int _totalBytesToDownload = 0;
@@ -99,7 +101,6 @@ class ViewCampViewModel extends BaseViewModel {
     notifyListeners();
     await getMyCamp();
     await getCampSchedule1();
-
     // Trích xuất các URL YouTube từ camps
     List<String> listUrlVideo =
         camps.map((camp) => camp.urlYoutube.toString()).toList();
@@ -150,6 +151,8 @@ class ViewCampViewModel extends BaseViewModel {
     }
 
     double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+    double? totalDiskSpaceMB = await DiskSpacePlus.getTotalDiskSpace;
+
     double requiredDiskSpaceMB = _totalBytesToDownload / (1024 * 1024);
     if ((freeDiskSpaceMB ?? 0) < requiredDiskSpaceMB) {
       isSync = false;
@@ -171,7 +174,7 @@ class ViewCampViewModel extends BaseViewModel {
       isSync = false;
       notifyListeners();
       print('Đồng bộ hóa hoàn tất. Không có công việc nào cần thực hiện.');
-
+      updateRomMemory();
       return;
     }
 
@@ -183,7 +186,20 @@ class ViewCampViewModel extends BaseViewModel {
     isSync = false;
     _totalProgress = 1;
     _currentTask = 'Đồng bộ hóa hoàn tất';
+    updateRomMemory();
     notifyListeners();
+  }
+
+  updateRomMemory() async {
+    double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+    double? totalDiskSpaceMB = await DiskSpacePlus.getTotalDiskSpace;
+    Device device =
+        Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    _deviceRequest.updateRomDevice(
+        device.computerId,
+        (totalDiskSpaceMB! * 1024 * 1024).toString(),
+        ((totalDiskSpaceMB * 1024 * 1024) - (freeDiskSpaceMB! * 1024 * 1024))
+            .toString());
   }
 
   /// Bắt đầu tải xuống video từ URL cho trước vào savePath.
@@ -417,7 +433,7 @@ class ViewCampViewModel extends BaseViewModel {
     _timerTimeShowing = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       checkNumberOfPages(context);
       getCampSchedule();
-
+      // updateRomMemory();
       String? lstCampScheduleString = AppSP.get(AppSPKey.lstCampSchedule);
       List<dynamic> lstCampScheduleJson = jsonDecode(lstCampScheduleString!);
       DateTime nowUtc = DateTime.now().toUtc().add(const Duration(hours: 7));
@@ -476,6 +492,7 @@ class ViewCampViewModel extends BaseViewModel {
   void dispose() {
     _betterPlayerController?.clearCache();
     _betterPlayerController?.dispose();
+    _betterPlayerController = null;
     _timerTimeShowing.cancel();
     _subscription?.cancel();
     _subscription = null;
@@ -484,9 +501,7 @@ class ViewCampViewModel extends BaseViewModel {
     usbPaths.clear();
     campSchedulesNew.clear();
     _setCampaignError.clear();
-
     homeViewModel.setCallback(null);
-
     super.dispose();
   }
 
@@ -589,6 +604,28 @@ class ViewCampViewModel extends BaseViewModel {
     return DateTime(now.year, now.month, now.day, hour, minute, second);
   }
 
+  bool isTodayInDaysOfWeek(List<String> daysOfWeek) {
+    // Lấy ngày hiện tại
+    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+
+    // Định nghĩa các thứ trong tuần tương ứng
+    Map<int, String> weekdayMap = {
+      1: 'T2',
+      2: 'T3',
+      3: 'T4',
+      4: 'T5',
+      5: 'T6',
+      6: 'T7',
+      7: 'CN',
+    };
+
+    // Lấy thứ của ngày hiện tại
+    String today = weekdayMap[now.weekday] ?? '';
+
+    // Kiểm tra xem ngày hiện tại có trong danh sách hay không
+    return daysOfWeek.contains(today);
+  }
+
   Future<void> _loadNextMedia(List<CampSchedule> campSchedules,
       {int timeStart = 0}) async {
     if (!checkAlive || !context.mounted) return;
@@ -614,10 +651,12 @@ class ViewCampViewModel extends BaseViewModel {
         nowUtc.minute,
         nowUtc.second,
       );
+      List<String> daysOfWeek = currentCampSchedule.daysOfWeek.split(',');
       if ((fromTime.isBefore(nowLocalButUnchanged) ||
               nowLocalButUnchanged == fromTime) &&
           toTime.isAfter(nowLocalButUnchanged) &&
-          currentCampSchedule.status == '1') {
+          currentCampSchedule.status == '1' &&
+          isTodayInDaysOfWeek(daysOfWeek)) {
         _waitTime = int.parse(currentCampSchedule.videoDuration);
         try {
           await _getUsbPath();
@@ -852,7 +891,9 @@ class ViewCampViewModel extends BaseViewModel {
         currentIndex = 0;
       }
       checkDisconnectUSB = null;
-      _loadNextMedia(campSchedules);
+      if (context.mounted) {
+        _loadNextMedia(campSchedules);
+      }
     }
   }
 
@@ -861,12 +902,12 @@ class ViewCampViewModel extends BaseViewModel {
     CampRequest campRequest = CampRequest();
 
     campRequest.addCampaignRunProfile(currentCampSchedule);
-    if (_betterPlayerController != null) {
-      _betterPlayerController!.clearCache();
-      _betterPlayerController!.pause();
-      _betterPlayerController!.dispose();
-      _betterPlayerController = null;
-    }
+
+    _betterPlayerController?.clearCache();
+    _betterPlayerController?.pause();
+    _betterPlayerController?.dispose();
+    _betterPlayerController = null;
+
     _loadNextMediaInList(campSchedules);
   }
 
