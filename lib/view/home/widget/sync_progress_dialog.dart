@@ -13,9 +13,6 @@ class SyncProgressDialog extends StatelessWidget {
     return ViewModelBuilder<ViewCampViewModel>.reactive(
       disposeViewModel: false,
       viewModelBuilder: () => viewCampViewModel,
-      onViewModelReady: (viewModel) {
-        viewModel.syncVideo();
-      },
       builder: (context, viewModel, child) {
         return Dialog(
           shape: RoundedRectangleBorder(

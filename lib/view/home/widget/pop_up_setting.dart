@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:play_box/constants/app_color.dart';
 import 'package:stacked/stacked.dart';
 
 import '../../../app/app_sp.dart';
@@ -39,6 +40,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
           _selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
           _checkConnect = await AppUtils.checkConnect();
           await viewModel.getDir();
+          AppSP.set(AppSPKey.currentDir, viewModel.selectedDir?.dirId ?? 0);
           viewModel.kioskMode = AppSP.get(AppSPKey.isKioskMode) ?? false;
           viewModel.notifyListeners();
         },
@@ -47,7 +49,9 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
             child: Container(
               color: Colors.grey.shade100,
               child: viewModel.isBusy
-                  ? const CircularProgressIndicator()
+                  ? const CircularProgressIndicator(
+                      color: AppColor.appBarStart,
+                    )
                   : Column(
                       children: [
                         Container(
@@ -555,7 +559,9 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                 if (hasInternet) {
                                   _checkConnect = await AppUtils.checkConnect();
                                   if (_checkConnect == false) {
-                                    await widget.homeVM.connectDevice();
+                                    await viewModel.connectDevice();
+                                    _checkConnect =
+                                        viewModel.checkConnectDevice;
                                   }
                                   AppSP.set(AppSPKey.proPW,
                                       viewModel.proPWController.text);

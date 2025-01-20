@@ -173,6 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                               ButtonCustom(
                                 autofocus: false,
                                 focusNode: viewModel.exitButtonFocusNode,
+                                isSplashScreen: true,
                                 onPressed: () {
                                   SystemNavigator.pop();
                                 },

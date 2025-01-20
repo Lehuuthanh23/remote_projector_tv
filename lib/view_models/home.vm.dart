@@ -134,7 +134,12 @@ class HomeViewModel extends BaseViewModel {
   FocusNode focusNodeSelectDir = FocusNode();
   bool isFocusedSelectDir = false;
   bool isAdmin = false;
+  Device? device;
   Future<void> initialise() async {
+    device = AppSP.get(AppSPKey.currentDevice) != null &&
+            AppSP.get(AppSPKey.currentDevice) != 'null'
+        ? Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)))
+        : null;
     _viewCampViewModel =
         ViewCampViewModel(context: context, homeViewModel: this);
     String? info = AppSP.get(AppSPKey.userInfo);
@@ -240,15 +245,32 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> getDir() async {
+    device = AppSP.get(AppSPKey.currentDevice) != null &&
+            AppSP.get(AppSPKey.currentDevice) != 'null'
+        ? Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)))
+        : null;
     _listDirAll.clear();
 
     await getMyDir();
-
     _listDirAll.addAll([..._listDir]);
-    if (AppSP.get(AppSPKey.currentDir) == 'null') {
+    if ((AppSP.get(AppSPKey.currentDir) == 'null' ||
+            AppSP.get(AppSPKey.currentDir) == null) &&
+        device != null) {
+      if (_listDirAll.isNotEmpty) {
+        selectedDir = _listDirAll
+            .where((dir) {
+              return int.parse(device!.idDir) == dir.dirId;
+            })
+            .toList()
+            .first;
+        AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
+      }
+    } else if ((AppSP.get(AppSPKey.currentDir) == 'null' ||
+            AppSP.get(AppSPKey.currentDir) == null ||
+            AppSP.get(AppSPKey.currentDir) == 0) &&
+        device == null) {
       if (_listDirAll.isNotEmpty) {
         selectedDir = _listDirAll.first;
-        AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
       }
     }
     if (AppSP.get(AppSPKey.currentDir) != 0) {
@@ -645,7 +667,16 @@ class HomeViewModel extends BaseViewModel {
 
   Future<void> playCamp(bool check) async {
     bool hasInternet = await InternetConnection().hasInternetAccess;
+
     if (hasInternet) {
+      await getValue();
+      // showDialog(
+      //     context: context,
+      //     builder: (context) {
+      //       return SyncProgressDialog(viewCampViewModel: viewCampViewModel);
+      //     });
+      // await viewCampViewModel.syncVideo();
+      // Navigator.of(context).pop();
       playVideo = check;
       if (playVideo == true) {
         if (AppSP.get(AppSPKey.typePlayVideo) == 'Chiendich') {

@@ -23,8 +23,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    print('Thiết bị hiện tại');
-    print(AppSP.get(AppSPKey.currentDevice));
     return ViewModelBuilder<HomeViewModel>.reactive(
       viewModelBuilder: () => HomeViewModel(context: context),
       onViewModelReady: (viewModel) async {
