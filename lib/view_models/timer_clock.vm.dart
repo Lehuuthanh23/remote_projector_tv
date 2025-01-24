@@ -77,8 +77,8 @@ class TimerClockViewModel extends BaseViewModel {
     DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
     if (day != now.toString().substring(0, 10)) {
       AppSP.set(AppSPKey.day, now.toString().substring(0, 10));
-      await getCampSchedule1();
       await homeViewModel.viewCampViewModel.syncVideo();
+      await getCampSchedule1();
     }
     if (device != null &&
         device.turnoffTime != null &&
