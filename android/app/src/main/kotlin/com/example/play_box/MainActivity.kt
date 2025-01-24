@@ -52,7 +52,7 @@ class MainActivity : FlutterActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
-
+        private lateinit var wakeUpReceiver: WakeUpReceiver
         lateinit var channel: MethodChannel
         lateinit var eventChannel: EventChannel
         lateinit var wakeUpChannel: MethodChannel
@@ -95,16 +95,6 @@ class MainActivity : FlutterActivity() {
 
         channel.setMethodCallHandler { call, result ->
             when (call.method) {
-                "setWakeUpAlarm" -> {
-                    val delay = call.argument<Int>("delay")
-                    if (delay != null) {
-                        setWakeUpAlarm(delay)
-                        result.success(null)
-                    } else {
-                        result.error("INVALID_DELAY", "Delay không hợp lệ", null)
-                    }
-                }
-
                 "saveUser" -> {
                     val argument = call.argument<String>(Constants.USER_ID_CONNECTED)
                     sharedPreferencesManager.saveUserIdConnected(argument)
@@ -164,6 +154,9 @@ class MainActivity : FlutterActivity() {
 
         wakeUpChannel  = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WAKE_UP_CHANNEL)
         MyBackgroundService.wakeUpChannel = wakeUpChannel
+        wakeUpReceiver = WakeUpReceiver()
+        wakeUpReceiver.setMethodChannel(wakeUpChannel)
+        
         wakeUpChannel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "setWakeUpAlarm" -> {

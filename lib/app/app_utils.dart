@@ -42,7 +42,7 @@ class AppUtils {
     DeviceRequest deviceRequest = DeviceRequest();
     List<Device> lstDevice =
         await deviceRequest.getDeviceByCustomerId(currentUser.customerId!);
-        
+
     List<Device> devices = lstDevice
         .where((device) =>
             device.serialComputer ==
@@ -54,6 +54,7 @@ class AppUtils {
       AppSP.set(AppSPKey.currentDevice, jsonEncode(devices.first.toJson()));
       return true;
     } else {
+      AppSP.remove(AppSPKey.currentDevice);
       return false;
     }
   }

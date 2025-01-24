@@ -50,7 +50,7 @@ android {
             signingConfig signingConfigs.release
             applicationVariants.all { variant ->
                 variant.outputs.all {
-                    def newApkName = "GT-Global-TV.apk"
+                    def newApkName = "TS-Screen-TV.apk"
                     outputFileName = newApkName
                 }
             }

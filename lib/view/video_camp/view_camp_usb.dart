@@ -103,6 +103,12 @@ class _VideoUSBPageState extends State<VideoUSBPage>
   }
 
   Future<void> _setupVideo(String url) async {
+    if (_betterPlayerController != null) {
+      _betterPlayerController!.clearCache();
+      await _betterPlayerController!.pause();
+      _betterPlayerController!.dispose();
+      _betterPlayerController = null;
+    }
     BetterPlayerConfiguration betterPlayerConfiguration =
         const BetterPlayerConfiguration(
       autoPlay: true,

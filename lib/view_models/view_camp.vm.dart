@@ -20,8 +20,10 @@ import '../app/app_utils.dart';
 import '../models/camp/camp_model.dart';
 import '../models/camp/camp_schedule.dart';
 import '../models/device/device_model.dart';
+import '../models/notification/notify_model.dart';
 import '../observer/navigator_observer.dart';
 import '../request/camp/camp.request.dart';
+import '../request/notification/notify.request.dart';
 import '../services/usb.service.dart';
 import '../view/video_camp/video_downloader.dart';
 import 'home.vm.dart';
@@ -123,18 +125,32 @@ class ViewCampViewModel extends BaseViewModel {
         if (file is File) getVideoName(file.path): file,
     };
 
-    // Xác định các công việc cần làm
     List<Function> tasks = [];
-    // Map<String, int> listUrlAndSize = {};
-    // Thêm công việc tải xuống các video thiếu
+    Map<String, int> listUrlAndSize = {};
+    double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+    double remainingFreeSpaceMB = freeDiskSpaceMB ?? 0;
+    List<String> listVideoDownload = [];
+    List<String> listVideoNotDownload = [];
+    List<String> listVideoDelete = [];
+
+// Th Thêm công việc tải xuống các video thiếu và tính toán tổng dung lượng
     for (var url in listUrlVideo) {
       String videoName = getVideoName(url);
       if (!existingVideoMap.containsKey(videoName)) {
-        tasks.add(() => startVideoDownload(url, savePath));
+        // Lấy kích thước tệp
         int? fileSize = await getFileSizeWithDio(url);
         if (fileSize != null) {
-          _totalBytesToDownload += fileSize;
-          // listUrlAndSize[videoName] = fileSize;
+          listUrlAndSize[videoName] = fileSize;
+          double videoSizeMB = fileSize / (1024 * 1024);
+          if (videoSizeMB <= remainingFreeSpaceMB) {
+            _totalBytesToDownload += fileSize;
+            remainingFreeSpaceMB -= videoSizeMB;
+            listVideoDownload.add(videoName);
+            tasks.add(() => startVideoDownload(url, savePath));
+          } else {
+            listVideoNotDownload.add(videoName);
+            print('Không đủ dung lượng để tải video: $videoName');
+          }
         }
       } else {
         // Kiểm tra nếu tệp đã tồn tại nhưng kích thước không khớp
@@ -144,28 +160,31 @@ class ViewCampViewModel extends BaseViewModel {
 
         if (expectedFileSize != null && existingFileSize != expectedFileSize) {
           tasks.add(() => deleteVideo(existingFile)); // Thêm công việc xóa tệp
-          tasks.add(() =>
-              startVideoDownload(url, savePath)); // Thêm công việc tải lại
+          listUrlAndSize[videoName] = expectedFileSize;
+          double videoSizeMB = expectedFileSize / (1024 * 1024);
+          if (videoSizeMB <= remainingFreeSpaceMB) {
+            _totalBytesToDownload += expectedFileSize;
+            remainingFreeSpaceMB -= videoSizeMB;
+            listVideoDownload.add(videoName);
+            tasks.add(() =>
+                startVideoDownload(url, savePath)); // Thêm công việc tải lại
+          } else {
+            listVideoNotDownload.add(videoName);
+            print('Không đủ dung lượng để tải lại video: $videoName');
+          }
         }
       }
     }
 
-    double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
-    double requiredDiskSpaceMB = _totalBytesToDownload / (1024 * 1024);
-    if ((freeDiskSpaceMB ?? 0) < requiredDiskSpaceMB) {
-      isSync = false;
-      _currentTask =
-          'Không đủ dung lượng lưu trữ. Cần ${requiredDiskSpaceMB.toStringAsFixed(2)} MB nhưng chỉ có ${freeDiskSpaceMB?.toStringAsFixed(2)} MB khả dụng.';
-      notifyListeners();
-      return;
-    }
-    // Thêm công việc xóa các video không còn trong danh sách
+// Thêm công việc xóa các video không còn trong danh sách
     for (var entry in existingVideoMap.entries) {
       if (!listVideoNames.contains(entry.key)) {
-        tasks.add(() => deleteVideo(entry.value));
+        if (!listVideoNotDownload.contains(entry.key)) {
+          listVideoDelete.add(entry.key);
+          tasks.add(() => deleteVideo(entry.value));
+        }
       }
     }
-
     int totalTasks = tasks.length;
     if (totalTasks == 0) {
       _totalProgress = 1.0;
@@ -180,6 +199,30 @@ class ViewCampViewModel extends BaseViewModel {
     for (int i = 0; i < tasks.length; i++) {
       await tasks[i]();
       notifyListeners();
+    }
+    if (listVideoNotDownload.isNotEmpty) {
+      double requiredDiskSpaceMB = 0;
+      for (var video in listUrlAndSize.entries) {
+        if (listVideoNotDownload.contains(video.key)) {
+          requiredDiskSpaceMB += video.value / (1024 * 1024);
+        }
+      }
+      freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+      Device currentDevice =
+          Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+      Notify notify = Notify(
+          title: 'Thiết bị ${currentDevice.computerName} thiếu bộ nhớ',
+          descript: 'Không thể tải đồng bộ tất cả video',
+          detail: '''
+Không đủ dung lượng lưu trữ. Cần ${requiredDiskSpaceMB.toStringAsFixed(2)} MB nhưng chỉ có ${freeDiskSpaceMB?.toStringAsFixed(2)} MB khả dụng.
+**Các video được chọn để tải xuống (${listVideoDownload.length}):**
+        ${listVideoDownload.join(', ')}
+
+**Các video không thể tải xuống do thiếu dung lượng (${listVideoNotDownload.length}):**
+${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Không có'}
+              ''',
+          picture: '');
+      await NotifyRequest().addNotify(notify);
     }
     isSync = false;
     _totalProgress = 1;
@@ -258,8 +301,12 @@ class ViewCampViewModel extends BaseViewModel {
   Future<void> deleteVideo(File file) async {
     try {
       String videoName = getVideoName(file.path);
-      await file.delete();
-      print('Đã xóa video: $videoName');
+      if (file.existsSync()) {
+        await file.delete();
+        print('Đã xóa video: $videoName');
+      } else {
+        print('Đã xóa video trước đó: $videoName');
+      }
     } catch (e) {
       print('Lỗi khi xóa tệp ${file.path}: $e');
     }
@@ -664,8 +711,8 @@ class ViewCampViewModel extends BaseViewModel {
             if (usbPaths.isNotEmpty) {
               String nameImageSave =
                   currentCampSchedule.urlYoutube.split('/').last;
-              String savePath = '${usbPaths.first}/Images/$nameImageSave';
-              Directory imageDir = Directory('${usbPaths.first}/Images');
+              String savePath = '${usbPaths.first}/Videos/$nameImageSave';
+              Directory imageDir = Directory('${usbPaths.first}/Videos');
 
               if (!imageDir.existsSync()) {
                 imageDir.createSync(recursive: true);
@@ -694,10 +741,10 @@ class ViewCampViewModel extends BaseViewModel {
                   image = File(savePath);
                 }
               } else if (File(
-                      '${usbPaths.first}/Images/${currentCampSchedule.urlUsb}')
+                      '${usbPaths.first}/Videos/${currentCampSchedule.urlUsb}')
                   .existsSync()) {
                 image = File(
-                    '${usbPaths.first}/Images/${currentCampSchedule.urlUsb}');
+                    '${usbPaths.first}/Videos/${currentCampSchedule.urlUsb}');
               } else {
                 _loadNextMediaInList(campSchedules);
                 return;
@@ -759,20 +806,17 @@ class ViewCampViewModel extends BaseViewModel {
                 if (!videoDir.existsSync()) {
                   videoDir.createSync(recursive: true);
                 }
-                print('savePath: $savePath');
-
                 if (!File(savePath).existsSync()) {
                   // VideoDownloader.startDownload(
                   //     currentCampSchedule.urlYoutube, savePath, (progress) {});
                 }
-                print(
-                    'File(savePath).existsSync(): ${File(savePath).existsSync()}');
                 if (!File(savePath).existsSync()) {
                   bool isErrorInList = _setCampaignError
                       .contains(currentCampSchedule.campaignId);
 
                   if (!isErrorInList &&
                       await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
+                        print('Chạy trong mạng: ${currentCampSchedule.urlYoutube}');
                     await _setupVideo(currentCampSchedule.urlYoutube);
                   } else {
                     if (!isErrorInList) {
@@ -782,7 +826,7 @@ class ViewCampViewModel extends BaseViewModel {
                     return;
                   }
                 } else {
-                  print('Chạy trong bộ nhớ trong');
+                  print('Chạy trong bộ nhớ trong: $savePath');
                   await _setupVideo(savePath, inInternet: false);
                 }
               } else {

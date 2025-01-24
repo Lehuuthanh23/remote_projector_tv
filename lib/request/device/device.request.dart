@@ -104,7 +104,6 @@ class DeviceRequest {
       final response = await _dio.get(
         '${Api.hostApi}${Api.getDeviceByCustomerId}/$customerId',
       );
-      print('${Api.hostApi}${Api.getDeviceByCustomerId}/$customerId');
       final responseData = jsonDecode(response.data);
       // print(responseData);
       List<dynamic> deviceList = responseData['Device_list'];
