@@ -507,8 +507,6 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Kh√¥ng c√
           isPlaying = false;
           flagPlayCamp = false;
           _betterPlayerController?.pause();
-          _betterPlayerController?.clearCache();
-          _betterPlayerController?.dispose();
           _betterPlayerController = null;
           notifyListeners();
         }
@@ -535,7 +533,6 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Kh√¥ng c√
 
   @override
   void dispose() {
-    _betterPlayerController?.clearCache();
     _betterPlayerController?.dispose();
     _betterPlayerController = null;
     _timerTimeShowing.cancel();
@@ -577,8 +574,6 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Kh√¥ng c√
       _dio.get(offProjector);
     }
     homeViewModel.playVideo = false;
-    _betterPlayerController?.clearCache();
-    _betterPlayerController?.dispose();
     Navigator.pop(context);
   }
 
@@ -606,7 +601,6 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Kh√¥ng c√
 
   Future<void> _onUsbEvent(dynamic event) async {
     if (event == 'USB_DISCONNECTED') {
-      _betterPlayerController?.clearCache();
       _betterPlayerController?.dispose();
       checkDisconnectUSB = true;
     } else if (event == 'USB_CONNECTED') {
