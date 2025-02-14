@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:core';
+
 import 'package:crypto/crypto.dart';
 
+import '../constants/api.dart';
 import '../models/config/config_model.dart';
 import 'app_sp.dart';
 import 'app_sp_key.dart';
@@ -25,7 +27,6 @@ void saveConfig(ConfigModel? config) {
     AppSP.set(AppSPKey.config, '');
     AppUtils.platformChannel.invokeMethod('clearUser');
   }
-  AppUtils.platformChannel.invokeMethod('setHost', {
-    AppSPKey.config: config?.apiServer
-  });
+  AppUtils.platformChannel
+      .invokeMethod('setHost', {AppSPKey.config: Api.hostApi});
 }
