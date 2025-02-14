@@ -3,7 +3,7 @@ class Api {
   static const String configApi = 'https://gtglobal.com.vn/config6789.php';
 
   // Host URL
-  static String hostApi = 'https://api6789.web5sao.net';
+  static String hostApi = 'https://api.gtglobal.id.vn';
 
   // Authentication & User Fetch URL
   static const String login = '/home/login';

@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:play_box/app/app_sp.dart';
 import 'package:play_box/app/app_sp_key.dart';
 import 'package:stacked/stacked.dart';
@@ -84,6 +88,38 @@ class _HomePageState extends State<HomePage> {
                               fontSize: 25,
                             ),
                           ),
+                          // Text(
+                          //   viewModel.usbPath.toString(),
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: Colors.white,
+                          //     fontSize: 25,
+                          //   ),
+                          // ),
+                          // Text(
+                          //   viewModel.pathLocal.toString(),
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: Colors.white,
+                          //     fontSize: 25,
+                          //   ),
+                          // ),
+                          // Text(
+                          //   viewModel.freeDiskSpaceMBDevice.toString(),
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: Colors.white,
+                          //     fontSize: 25,
+                          //   ),
+                          // ),
+                          // Text(
+                          //   viewModel.freeDiskSpaceMB.toString(),
+                          //   style: const TextStyle(
+                          //     fontWeight: FontWeight.bold,
+                          //     color: Colors.white,
+                          //     fontSize: 25,
+                          //   ),
+                          // ),
                         ],
                       ).centered(),
                       const Spacer(),
@@ -158,6 +194,39 @@ class _HomePageState extends State<HomePage> {
                                 title: 'THOÁT',
                                 textSize: 15,
                               ),
+                              // ButtonCustom(
+                              //   focus: !viewModel.updateAvailable,
+                              //   isSplashScreen: true,
+                              //   width: 150,
+                              //   padding:
+                              //       const EdgeInsets.symmetric(vertical: 10),
+                              //   onPressed: () async {
+                              //     viewModel.usbPath.clear();
+                              //     var result = await AppUtils.platformChannel
+                              //         .invokeMethod('getUsbPath');
+                              //     print('result: $result');
+                              //     for (var path in result) {
+                              //       viewModel.freeDiskSpaceMB =
+                              //           await DiskSpacePlus
+                              //               .getFreeDiskSpaceForPath(path);
+                              //       Directory? externalStorage =
+                              //           await getExternalStorageDirectory();
+                              //       setState(() {
+                              //         viewModel.pathLocal =
+                              //             externalStorage!.path;
+                              //       });
+
+                              //       viewModel.freeDiskSpaceMBDevice =
+                              //           await DiskSpacePlus.getFreeDiskSpace;
+                              //       if (viewModel.freeDiskSpaceMB != null &&
+                              //           viewModel.freeDiskSpaceMB! > 0) {
+                              //         viewModel.usbPath.add(path.toString());
+                              //       }
+                              //     }
+                              //   },
+                              //   title: 'Dung lượng',
+                              //   textSize: 15,
+                              // ),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
