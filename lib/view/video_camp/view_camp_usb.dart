@@ -58,7 +58,6 @@ class _VideoUSBPageState extends State<VideoUSBPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _betterPlayerController?.clearCache();
     _betterPlayerController?.dispose();
 
     _videoFiles.clear();
