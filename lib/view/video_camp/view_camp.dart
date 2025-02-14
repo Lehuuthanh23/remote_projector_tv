@@ -192,12 +192,16 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
                                                   color: Colors.white),
                                             ),
                                             const SizedBox(width: 50),
-                                            Text(
-                                              camp.campaignName,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 20,
-                                                color: Colors.white,
+                                            Expanded(
+                                              child: Text(
+                                                camp.campaignName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 20,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                           ],

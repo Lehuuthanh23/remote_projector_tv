@@ -91,7 +91,10 @@ class HomeViewModel extends BaseViewModel {
   bool openOnStartup = false;
   bool? pauseVideo;
   bool checkConnectDevice = false;
-
+  var usbPath = [];
+  var pathLocal = '';
+  double? freeDiskSpaceMB = 0;
+  double? freeDiskSpaceMBDevice = 0;
   CancelToken? _cancelToken;
 
   bool _permissionGranted = false;
@@ -480,6 +483,7 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> nexPlayVideoUSB() async {
+    print('Vào nexPlayVideoUSB');
     List<String> usbPaths = await UsbService().getUsbPath();
     if (usbPaths.isEmpty && context.mounted) {
       showDialog(

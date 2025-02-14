@@ -16,6 +16,7 @@ class WakeUpReceiver : BroadcastReceiver() {
         // Đánh thức màn hình
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = powerManager.newWakeLock(
+            PowerManager.FULL_WAKE_LOCK or
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
             PowerManager.FULL_WAKE_LOCK or
             PowerManager.ACQUIRE_CAUSES_WAKEUP or
