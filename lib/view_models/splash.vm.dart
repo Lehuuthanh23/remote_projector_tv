@@ -95,12 +95,12 @@ class SplashViewModel extends BaseViewModel {
   _attemptLogin() async {
     ConfigModel? config;
     config = await _configRequest.getConfig();
-    saveConfig(config);
     if (config != null) {
       Api.hostApi = config.apiServer ?? Api.hostApi;
     } else {
       clearUser();
     }
+    saveConfig(config);
     String? loginWith = AppSP.get(AppSPKey.loginWith) ?? '';
 
     if (token.isNotEmpty) {
