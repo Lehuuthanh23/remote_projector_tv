@@ -44,6 +44,7 @@ import '../view/video_camp/view_camp.dart';
 import '../view/video_camp/view_camp_usb.dart';
 import '../widget/pop_up.dart';
 import 'view_camp.vm.dart';
+import 'package:path/path.dart' as p;
 
 class HomeViewModel extends BaseViewModel {
   HomeViewModel({required this.context});
@@ -482,10 +483,88 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  /// Hàm kiểm tra xem file có phải là file video hay không
+  bool isVideoFile(String filePath) {
+    // Định nghĩa các đuôi mở rộng video bạn muốn hỗ trợ
+    final videoExtensions = <String>[
+      '.mp4',
+      '.mov',
+      '.avi',
+      '.mkv',
+      '.wmv',
+      '.flv',
+      // ...bổ sung thêm nếu cần
+    ];
+
+    // Lấy phần đuôi mở rộng của file
+    final extension = p.extension(filePath).toLowerCase();
+    return videoExtensions.contains(extension);
+  }
+
+  Future<bool> checkUsbVideos(List<String> usbPaths) async {
+    // Duyệt qua từng usbPath
+    for (String usbPath in usbPaths) {
+      // Tạo đường dẫn đến thư mục Videos bên trong usbPath
+      final videosDir = Directory(p.join(usbPath, 'Videos'));
+
+      // Kiểm tra xem thư mục Videos có tồn tại không
+      if (videosDir.existsSync()) {
+        print('Thư mục Videos tồn tại trong: $usbPath');
+
+        // Lấy danh sách tất cả các FileSystemEntity (file/folder) trong thư mục Videos
+        final entities = videosDir.listSync();
+
+        // Lọc ra những file nào là file video dựa trên đuôi mở rộng
+        final videoFiles = entities.where((entity) {
+          if (entity is File) {
+            return isVideoFile(entity.path);
+          }
+          return false;
+        }).toList();
+
+        // Nếu tìm thấy ít nhất một video ở usbPath này => trả về true
+        if (videoFiles.isNotEmpty) {
+          print('Tìm thấy video trong thư mục Videos của: $usbPath');
+          return true;
+        } else {
+          print('Không có video nào trong thư mục Videos của: $usbPath');
+        }
+      } else {
+        print('Không tìm thấy thư mục Videos trong: $usbPath');
+      }
+    }
+
+    // Nếu đã duyệt qua tất cả usbPath mà không tìm thấy video nào => trả về false
+    return false;
+  }
+
   Future<void> nexPlayVideoUSB() async {
     print('Vào nexPlayVideoUSB');
     List<String> usbPaths = await UsbService().getUsbPath();
-    if (usbPaths.isEmpty && context.mounted) {
+    bool checkVideo = await checkUsbVideos(usbPaths);
+    print('checkVideo: $checkVideo');
+    if (!checkVideo && usbPaths.isNotEmpty && context.mounted) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          Future.delayed(const Duration(seconds: 3), () {
+            if (context.mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+
+          return PopUpWidget(
+            icon: Image.asset("assets/images/ic_error.png"),
+            title: 'Không có video trong usb kết nối',
+            leftText: 'Xác nhận',
+            onLeftTap: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
+      playVideo = false;
+    } else if (usbPaths.isEmpty && context.mounted) {
       showDialog(
         context: context,
         builder: (context) {
