@@ -1,6 +1,8 @@
 package com.example.play_box.base.api
 
+import android.util.Log
 import com.example.play_box.utils.AppApi.BASE_URL
+import com.example.play_box.utils.SharedPreferencesManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +11,16 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
-class ApiService {
+class ApiService(private val sharedPreferences: SharedPreferencesManager) {
     private val client = OkHttpClient()
+
+    private fun getHost(): String {
+        val host = sharedPreferences.getHost() ?: BASE_URL
+
+        Log.i("TAG", "Host $host")
+
+        return host
+    }
 
     private suspend fun apiCall(
         request: Request
@@ -35,7 +45,7 @@ class ApiService {
         url: String,
         headers: Map<String, String>? = null
     ): Map<String, Any>? {
-        val requestBuilder = Request.Builder().url("${BASE_URL}${url}")
+        val requestBuilder = Request.Builder().url("${getHost()}/${url}")
         headers?.forEach { (key, value) ->
             requestBuilder.addHeader(key, value)
         }
@@ -49,7 +59,7 @@ class ApiService {
         headers: Map<String, String>? = null,
         body: FormBody
     ): Map<String, Any>? {
-        val requestBuilder = Request.Builder().url("${BASE_URL}${url}").post(body)
+        val requestBuilder = Request.Builder().url("${getHost()}/${url}").post(body)
         headers?.forEach { (key, value) ->
             requestBuilder.addHeader(key, value)
         }
@@ -63,7 +73,7 @@ class ApiService {
         headers: Map<String, String>? = null,
         body: FormBody
     ): Map<String, Any>? {
-        val requestBuilder = Request.Builder().url("${BASE_URL}${url}").put(body)
+        val requestBuilder = Request.Builder().url("${getHost()}/${url}").put(body)
         headers?.forEach { (key, value) ->
             requestBuilder.addHeader(key, value)
         }
@@ -76,7 +86,7 @@ class ApiService {
         url: String,
         headers: Map<String, String>? = null
     ): Map<String, Any>? {
-        val requestBuilder = Request.Builder().url("${BASE_URL}${url}").delete()
+        val requestBuilder = Request.Builder().url("${getHost()}/${url}").delete()
         headers?.forEach { (key, value) ->
             requestBuilder.addHeader(key, value)
         }

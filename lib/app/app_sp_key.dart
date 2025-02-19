@@ -18,6 +18,7 @@ class AppSPKey {
   static const String lstCampSchedule = 'lstCampSchedule';
   static const String typePlayVideo = 'typePlayVideo';
   static const String config = 'config';
+  static const String host = 'host';
   static const String loginWith = 'loginWith';
   static const String useFirebase = 'useFirebase';
   static const String isSettingsOpened = 'isSettingsOpened';

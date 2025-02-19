@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:play_box/request/authentication/authentication.request.dart';
-import 'package:play_box/view/home/widget/sync_progress_dialog.dart';
 import 'package:stacked/stacked.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -718,7 +717,7 @@ class HomeViewModel extends BaseViewModel {
           builder: (BuildContext context) {
             return PopUpWidget(
               icon: Image.asset("assets/images/ic_error.png"),
-              title: 'Kết nối thất bại\n${checkConnect['msg']}',
+              title: 'Kết nối thất bại',
               leftText: 'Xác nhận',
               onLeftTap: () {
                 Navigator.pop(context);
