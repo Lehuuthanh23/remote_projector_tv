@@ -28,5 +28,5 @@ void saveConfig(ConfigModel? config) {
     AppUtils.platformChannel.invokeMethod('clearUser');
   }
   AppUtils.platformChannel
-      .invokeMethod('setHost', {AppSPKey.config: Api.hostApi});
+      .invokeMethod('setHost', {AppSPKey.host: Api.hostApi});
 }

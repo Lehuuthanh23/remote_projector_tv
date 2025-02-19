@@ -93,8 +93,7 @@ class SplashViewModel extends BaseViewModel {
   }
 
   _attemptLogin() async {
-    ConfigModel? config;
-    config = await _configRequest.getConfig();
+    ConfigModel? config = await _configRequest.getConfig();
     if (config != null) {
       Api.hostApi = config.apiServer ?? Api.hostApi;
     } else {

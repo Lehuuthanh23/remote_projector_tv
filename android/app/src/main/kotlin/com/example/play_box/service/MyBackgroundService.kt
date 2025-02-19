@@ -12,6 +12,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.util.Log
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import com.example.play_box.MainActivity
@@ -44,7 +45,7 @@ class MyBackgroundService : Service() {
 
     private var handler: Handler = Handler(Looper.getMainLooper())
 
-    private val apiService = ApiService()
+    private lateinit var apiService: ApiService
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
@@ -219,13 +220,17 @@ class MyBackgroundService : Service() {
     }
 
     private fun checkAlive() {
+        Log.i("Tag", "Enter check alive")
         if (!sharedPreferences.getUserIdConnected().isNullOrBlank()) {
             serviceScope.launch {
                 val computerId = sharedPreferences.getIdComputer()
+                Log.i("Tag", "Computer: $computerId")
                 if (computerId != null) {
-                    apiService.get(
+                    val response = apiService.get(
                         url = "${AppApi.UPDATE_ALIVE_TIME_DEVICE}/$computerId",
                     )
+
+                    Log.i("Tag", response.toString())
                 }
             }
         } else stopSelf()
@@ -233,6 +238,7 @@ class MyBackgroundService : Service() {
 
     override fun onCreate() {
         sharedPreferences = SharedPreferencesManager(applicationContext)
+        apiService = ApiService(sharedPreferences)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelId = "ts_screen_channel"
@@ -255,6 +261,7 @@ class MyBackgroundService : Service() {
         handler.removeCallbacks(openAppRunnable)
         handler.removeCallbacks(checkCommandRunnable)
 
+        checkAlive()
         handler.post(checkAliveRunnable)
         handler.postDelayed(checkCommandRunnable, CHECK_COMMAND_INTERVAL)
         handler.postDelayed(openAppRunnable, 2 * CHECK_COMMAND_INTERVAL)
