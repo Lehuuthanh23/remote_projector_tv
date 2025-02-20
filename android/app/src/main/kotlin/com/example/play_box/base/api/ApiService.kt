@@ -15,11 +15,7 @@ class ApiService(private val sharedPreferences: SharedPreferencesManager) {
     private val client = OkHttpClient()
 
     private fun getHost(): String {
-        val host = sharedPreferences.getHost() ?: BASE_URL
-
-        Log.i("TAG", "Host $host")
-
-        return host
+        return sharedPreferences.getHost() ?: BASE_URL
     }
 
     private suspend fun apiCall(
