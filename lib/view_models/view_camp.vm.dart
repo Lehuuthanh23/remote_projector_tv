@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:better_player/better_player.dart';
 import 'package:dio/dio.dart';
@@ -465,6 +464,7 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Không c�
   }
 
   init() async {
+    homeViewModel.setCallback(onCommandInvoke);
     await syncVideo();
     checkAlive = true;
     proUN = AppSP.get(AppSPKey.proUN) ?? '';
@@ -530,7 +530,6 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Không c�
 
     _subscription =
         usbEventChannel.receiveBroadcastStream().listen(_onUsbEvent);
-    homeViewModel.setCallback(onCommandInvoke);
   }
 
   @override
@@ -816,7 +815,7 @@ ${listVideoNotDownload.isNotEmpty ? listVideoNotDownload.join(', ') : 'Không c�
 
                   if (!isErrorInList &&
                       await isVideoUrlValid(currentCampSchedule.urlYoutube)) {
-                        print('Chạy trong mạng: ${currentCampSchedule.urlYoutube}');
+                    print('Chạy trong mạng: ${currentCampSchedule.urlYoutube}');
                     await _setupVideo(currentCampSchedule.urlYoutube);
                   } else {
                     if (!isErrorInList) {
