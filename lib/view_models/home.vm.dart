@@ -8,6 +8,7 @@ import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:play_box/request/authentication/authentication.request.dart';
 import 'package:stacked/stacked.dart';
@@ -44,7 +45,6 @@ import '../view/video_camp/view_camp.dart';
 import '../view/video_camp/view_camp_usb.dart';
 import '../widget/pop_up.dart';
 import 'view_camp.vm.dart';
-import 'package:path/path.dart' as p;
 
 class HomeViewModel extends BaseViewModel {
   HomeViewModel({required this.context});
@@ -493,6 +493,10 @@ class HomeViewModel extends BaseViewModel {
         AppSP.set(AppSPKey.lstCampSchedule, '[]');
 
         getValue();
+        return null;
+
+      case AppString.deleteUser:
+        signOut();
         return null;
 
       default:

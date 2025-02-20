@@ -142,6 +142,11 @@ class MyBackgroundService : Service() {
                 command.cmdId
             )
 
+            CommandEnum.DELETE_USER.command -> invokeCommandToFlutter(
+                CommandEnum.DELETE_USER,
+                command.cmdId
+            )
+
             CommandEnum.DELETE_DEVICE.command -> {
                 sharedPreferences.saveIdComputer(null)
                 sharedPreferences.saveSerialComputer(null)
@@ -161,6 +166,13 @@ class MyBackgroundService : Service() {
     }
 
     private fun invokeCommandToFlutter(commandEnum: CommandEnum, commandId: String?) {
+        if (commandEnum == CommandEnum.DELETE_USER) {
+            sharedPreferences.saveIdComputer(null)
+            sharedPreferences.saveSerialComputer(null)
+
+            stopSelf()
+        }
+
         if (!isAppRunning()) {
             replayCommand(value = "APP_NOT_SHOW", commandId = commandId)
 
@@ -220,17 +232,13 @@ class MyBackgroundService : Service() {
     }
 
     private fun checkAlive() {
-        Log.i("Tag", "Enter check alive")
         if (!sharedPreferences.getUserIdConnected().isNullOrBlank()) {
             serviceScope.launch {
                 val computerId = sharedPreferences.getIdComputer()
-                Log.i("Tag", "Computer: $computerId")
                 if (computerId != null) {
                     val response = apiService.get(
                         url = "${AppApi.UPDATE_ALIVE_TIME_DEVICE}/$computerId",
                     )
-
-                    Log.i("Tag", response.toString())
                 }
             }
         } else stopSelf()

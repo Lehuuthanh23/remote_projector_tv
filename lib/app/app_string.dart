@@ -11,6 +11,7 @@ class AppString {
   static const String restartApp = 'RESTART_APP';
   static const String getTimeNow = 'GET_TIMENOW';
   static const String wakeUpApp = 'WAKE_UP_APP';
+  static const String deleteUser = 'DELETE_USER';
 
   static const String notPlayVideo = 'NOT_PLAY';
   static const String successCommand = 'OK';
