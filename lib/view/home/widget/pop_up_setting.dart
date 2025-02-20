@@ -28,29 +28,46 @@ class PopupSettingScreen extends StatefulWidget {
 }
 
 class _PopupSettingScreenState extends State<PopupSettingScreen> {
-  String _selectedSource = "USB";
-  bool? _checkConnect;
-
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<HomeViewModel>.reactive(
         disposeViewModel: false,
         viewModelBuilder: () => widget.homeVM,
-        onViewModelReady: (viewModel) async {
-          _selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
-          _checkConnect = await AppUtils.checkConnect();
-          await viewModel.getDir();
-          AppSP.set(AppSPKey.currentDir, viewModel.selectedDir?.dirId ?? 0);
-          viewModel.kioskMode = AppSP.get(AppSPKey.isKioskMode) ?? false;
-          viewModel.notifyListeners();
+        onViewModelReady: (viewModel) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            viewModel.initialisePopUpSetting();
+          });
         },
         builder: (context, viewModel, child) {
           return Center(
             child: Container(
               color: Colors.grey.shade100,
               child: viewModel.isBusy
-                  ? const CircularProgressIndicator(
-                      color: AppColor.appBarStart,
+                  ? Column(
+                      children: [
+                        // Expanded giúp CircularProgressIndicator căn giữa màn hình
+                        const Expanded(
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColor.appBarStart,
+                            ),
+                          ),
+                        ),
+                        // Spacer đẩy Button xuống cuối cùng
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 25),
+                          child: ButtonCustom(
+                            width: 150,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            isSplashScreen: false,
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            title: 'THOÁT',
+                            textSize: 15,
+                          ),
+                        ),
+                      ],
                     )
                   : Column(
                       children: [
@@ -188,19 +205,25 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                         border:
                                                             const UnderlineInputBorder(),
                                                       ),
-                                                      initialValue: widget
+                                                      initialValue: viewModel
+                                                                  .currentDevice !=
+                                                              null
+                                                          ? viewModel
+                                                              .currentDevice
+                                                              ?.serialComputer
+                                                          : widget
+                                                                      .homeVM
+                                                                      .deviceInfo
+                                                                      ?.serialNumber ==
+                                                                  'unknown'
+                                                              ? widget
+                                                                  .homeVM
+                                                                  .deviceInfo!
+                                                                  .androidId
+                                                              : widget
                                                                   .homeVM
                                                                   .deviceInfo
-                                                                  ?.serialNumber ==
-                                                              'unknown'
-                                                          ? widget
-                                                              .homeVM
-                                                              .deviceInfo!
-                                                              .androidId
-                                                          : widget
-                                                              .homeVM
-                                                              .deviceInfo
-                                                              ?.serialNumber,
+                                                                  ?.serialNumber,
                                                     ),
                                                   ),
                                                   SizedBox(
@@ -301,16 +324,16 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                               ),
                                               const SizedBox(height: 10),
                                               TextFormField(
-                                                decoration:
-                                                    const InputDecoration(
+                                                decoration: InputDecoration(
                                                   labelText: 'Tên thiết bị',
                                                   hintText: '',
-                                                  enabled: false,
+                                                  enabled:
+                                                      !viewModel.checkConnect,
                                                   border:
-                                                      UnderlineInputBorder(),
+                                                      const UnderlineInputBorder(),
                                                 ),
-                                                initialValue: widget
-                                                    .homeVM.deviceInfo?.model,
+                                                controller: viewModel
+                                                    .computerNameController,
                                               ),
                                             ],
                                           ),
@@ -485,17 +508,20 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                                     .focusNodeUSB,
                                                                 value: 'USB',
                                                                 groupValue:
-                                                                    _selectedSource,
+                                                                    viewModel
+                                                                        .selectedSource,
                                                                 onChanged:
                                                                     (String?
                                                                         value) {
                                                                   setState(() {
-                                                                    _selectedSource =
+                                                                    viewModel
+                                                                            .selectedSource =
                                                                         value!;
                                                                     AppSP.set(
                                                                         AppSPKey
                                                                             .typePlayVideo,
-                                                                        _selectedSource);
+                                                                        viewModel
+                                                                            .selectedSource);
                                                                   });
                                                                 },
                                                               ),
@@ -508,19 +534,22 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                                                 value:
                                                                     'Chiendich',
                                                                 groupValue:
-                                                                    _selectedSource,
+                                                                    viewModel
+                                                                        .selectedSource,
                                                                 focusNode: viewModel
                                                                     .focusNodeCamp,
                                                                 onChanged:
                                                                     (String?
                                                                         value) {
                                                                   setState(() {
-                                                                    _selectedSource =
+                                                                    viewModel
+                                                                            .selectedSource =
                                                                         value!;
                                                                     AppSP.set(
                                                                         AppSPKey
                                                                             .typePlayVideo,
-                                                                        _selectedSource);
+                                                                        viewModel
+                                                                            .selectedSource);
                                                                   });
                                                                 },
                                                               ),
@@ -549,7 +578,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                             ButtonCustom(
                               width: 150,
                               padding: const EdgeInsets.symmetric(vertical: 10),
-                              color: _checkConnect == null
+                              color: viewModel.checkConnect == null
                                   ? const Color(0xff9a9a9a)
                                   : null,
                               isSplashScreen: false,
@@ -557,10 +586,11 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                 bool hasInternet = await InternetConnection()
                                     .hasInternetAccess;
                                 if (hasInternet) {
-                                  _checkConnect = await AppUtils.checkConnect();
-                                  if (_checkConnect == false) {
+                                  viewModel.checkConnect =
+                                      await AppUtils.checkConnect();
+                                  if (viewModel.checkConnect == false) {
                                     await viewModel.connectDevice();
-                                    _checkConnect =
+                                    viewModel.checkConnect =
                                         viewModel.checkConnectDevice;
                                   }
                                   AppSP.set(AppSPKey.proPW,
@@ -569,7 +599,7 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                       viewModel.proUNController.text);
                                   AppSP.set(AppSPKey.projectorIP,
                                       viewModel.proIPController.text);
-                                  if (_checkConnect == true) {
+                                  if (viewModel.checkConnect == true) {
                                     await viewModel.updateDirByDevice();
                                   }
                                 } else {
@@ -596,7 +626,9 @@ class _PopupSettingScreenState extends State<PopupSettingScreen> {
                                   );
                                 }
                               },
-                              title: _checkConnect == true ? 'LƯU' : 'KẾT NỐI',
+                              title: viewModel.checkConnect == true
+                                  ? 'LƯU'
+                                  : 'KẾT NỐI',
                               textSize: 15,
                             ),
                             ButtonCustom(
