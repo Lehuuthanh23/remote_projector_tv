@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:device_policy_controller/device_policy_controller.dart';
 import 'package:dio/dio.dart';
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
@@ -62,7 +63,7 @@ class HomeViewModel extends BaseViewModel {
   TextEditingController proIPController = TextEditingController();
   TextEditingController usernameAdminController = TextEditingController();
   TextEditingController passwordAdminController = TextEditingController();
-
+  TextEditingController computerNameController = TextEditingController();
   late final ViewCampViewModel _viewCampViewModel;
   ViewCampViewModel get viewCampViewModel => _viewCampViewModel;
   final focusNodeProUN = FocusNode();
@@ -79,7 +80,7 @@ class HomeViewModel extends BaseViewModel {
   List<CampModel> camps = [];
   List<CampSchedule> lstCampSchedule = [];
   List<PacketModel> packets = [];
-
+  Device? currentDevice;
   User currentUser = User();
   DeviceInfoModel? deviceInfo;
   String? currentTimeFormatted;
@@ -138,6 +139,28 @@ class HomeViewModel extends BaseViewModel {
   bool isFocusedSelectDir = false;
   bool isAdmin = false;
   Device? device;
+
+  String selectedSource = "USB";
+  bool checkConnect = false;
+
+  Future<void> initialisePopUpSetting() async {
+    setBusy(true);
+    selectedSource = AppSP.get(AppSPKey.typePlayVideo) ?? 'USB';
+    checkConnect = await AppUtils.checkConnect();
+    if (AppSP.get(AppSPKey.currentDevice) != null) {
+      currentDevice =
+          Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    }
+    await getDir();
+    AppSP.set(AppSPKey.currentDir, selectedDir?.dirId ?? 0);
+    kioskMode = AppSP.get(AppSPKey.isKioskMode) ?? false;
+    computerNameController.text = (currentDevice != null
+        ? currentDevice?.computerName
+        : deviceInfo?.model)!;
+    updateRomMemory();
+    setBusy(false);
+  }
+
   Future<void> initialise() async {
     device = AppSP.get(AppSPKey.currentDevice) != null &&
             AppSP.get(AppSPKey.currentDevice) != 'null'
@@ -205,6 +228,18 @@ class HomeViewModel extends BaseViewModel {
     WakelockPlus.disable();
 
     super.dispose();
+  }
+
+  updateRomMemory() async {
+    double? freeDiskSpaceMB = await DiskSpacePlus.getFreeDiskSpace;
+    double? totalDiskSpaceMB = await DiskSpacePlus.getTotalDiskSpace;
+    Device device =
+        Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
+    _deviceRequest.updateRomDevice(
+        device.computerId,
+        (totalDiskSpaceMB! * 1024 * 1024).toString(),
+        ((totalDiskSpaceMB * 1024 * 1024) - (freeDiskSpaceMB! * 1024 * 1024))
+            .toString());
   }
 
   onChangeDir(Dir? dir) {
@@ -687,8 +722,8 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> connectDevice() async {
-    dynamic checkConnect =
-        await _deviceRequest.connectDevice(deviceInfo!, currentUser);
+    dynamic checkConnect = await _deviceRequest.connectDevice(
+        deviceInfo!, currentUser, computerNameController.text);
     if (context.mounted) {
       if (checkConnect == true) {
         Navigator.pop(context);

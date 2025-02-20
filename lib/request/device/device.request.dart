@@ -30,11 +30,11 @@ class DeviceRequest {
     print('Response update rom: ${response.data}');
   }
 
-  Future connectDevice(DeviceInfoModel deviceInfo, User currentUser) async {
+  Future connectDevice(DeviceInfoModel deviceInfo, User currentUser, String computerName) async {
     bool checkConnect = false;
 
     final formData = FormData.fromMap({
-      'computer_name': deviceInfo.model,
+      'computer_name': computerName,
       'seri_computer': deviceInfo.serialNumber == 'unknown'
           ? deviceInfo.androidId
           : deviceInfo.serialNumber,
@@ -60,6 +60,7 @@ class DeviceRequest {
         data: formData,
         options: AppUtils.createOptionsNoCookie(),
       );
+      print('Kết nối nè');
       print(response);
       final responseData = jsonDecode(response.data);
       if (responseData["status"] == 1) {
