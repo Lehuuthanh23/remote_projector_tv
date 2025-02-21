@@ -157,11 +157,16 @@ class HomeViewModel extends BaseViewModel {
     computerNameController.text = (currentDevice != null
         ? currentDevice?.computerName
         : deviceInfo?.model)!;
-    updateRomMemory();
+    if (AppSP.get(AppSPKey.currentDevice) != null) {
+      updateRomMemory();
+    }
     setBusy(false);
   }
 
   Future<void> initialise() async {
+    var info1 = await dpc.getDeviceInfo();
+    print('Thông tin thiết bị');
+    print(info1);
     device = AppSP.get(AppSPKey.currentDevice) != null &&
             AppSP.get(AppSPKey.currentDevice) != 'null'
         ? Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)))
@@ -175,6 +180,7 @@ class HomeViewModel extends BaseViewModel {
           'saveUser', {AppSPKey.userInfo: currentUser.customerId});
     }
     isAdmin = await dpc.isAdminActive();
+
     if (isAdmin) {
       if (AppSP.get(AppSPKey.isKioskMode) != null) {
         kioskMode = AppSP.get(AppSPKey.isKioskMode);
@@ -200,6 +206,9 @@ class HomeViewModel extends BaseViewModel {
     await _getTokenAndSendToServer();
     await getValue();
     await getDir();
+    if (AppSP.get(AppSPKey.currentDevice) != null) {
+      updateRomMemory();
+    }
     await WakelockPlus.enable();
   }
 
@@ -735,6 +744,7 @@ class HomeViewModel extends BaseViewModel {
         AppSP.set(AppSPKey.proUN, proUNController.text);
         AppSP.set(AppSPKey.projectorIP, proIPController.text);
         _getTokenAndSendToServer();
+        updateRomMemory();
         showDialog(
           context: context,
           builder: (BuildContext context) {
