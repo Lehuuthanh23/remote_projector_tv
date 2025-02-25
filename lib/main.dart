@@ -42,7 +42,7 @@ Future<void> initKioskMode() async {
       await dpc.put(bootCompletedHandlerStartedKey, content: "true");
       if (!isStarted) {
         try {
-          await dpc.startApp();
+          //await dpc.startApp();
           await enableKioskMode();
         } catch (e) {
           print('dpc:: handleBootCompleted startApp error: $e');

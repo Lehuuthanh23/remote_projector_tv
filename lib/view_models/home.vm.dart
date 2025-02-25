@@ -164,9 +164,6 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> initialise() async {
-    var info1 = await dpc.getDeviceInfo();
-    print('Thông tin thiết bị');
-    print(info1);
     device = AppSP.get(AppSPKey.currentDevice) != null &&
             AppSP.get(AppSPKey.currentDevice) != 'null'
         ? Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)))

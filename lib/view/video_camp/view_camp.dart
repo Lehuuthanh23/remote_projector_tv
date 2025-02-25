@@ -25,6 +25,7 @@ class _ViewCampState extends State<ViewCamp> with WidgetsBindingObserver {
       context: context,
       homeViewModel: widget.homeViewModel,
     );
+    //viewCampViewModel = widget.homeViewModel.viewCampViewModel;
     WidgetsBinding.instance.addObserver(this);
 
     super.initState();
