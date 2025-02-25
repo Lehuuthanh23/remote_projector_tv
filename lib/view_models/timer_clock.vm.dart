@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:device_policy_controller/device_policy_controller.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
@@ -22,10 +23,12 @@ class TimerClockViewModel extends BaseViewModel {
   final HomeViewModel homeViewModel;
 
   late Timer _timer;
+  final Dio _dio = Dio();
   final AlarmService _alarmService = AlarmService();
   final CampRequest _campRequest = CampRequest();
   static final _navigationService = appLocator<NavigationService>();
   DateTime _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
+  //DateTime _currentTime = DateTime(2025, 2, 24, 23, 50);
   String get currentTimeFormatted => _formatTime(_currentTime);
   List<CampSchedule> lstCampSchedule = [];
   String proUN = '';
@@ -37,13 +40,25 @@ class TimerClockViewModel extends BaseViewModel {
   bool flagPlayCamp = false;
   bool isPlaying = false;
   bool isScheduled = false;
+  String offProjector = '';
+  String onProjector = '';
 
   Future<void> initialize() async {
-    _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
+    day = AppSP.get(AppSPKey.day) ?? '';
+    proUN = AppSP.get(AppSPKey.proUN) ?? '';
+    proPW = AppSP.get(AppSPKey.proPW) ?? '';
+    projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
+    offProjector =
+        'http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0203';
+    onProjector =
+        "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
+    
+    _dio.get(onProjector);
+    // _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
     _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       _updateTime();
     });
-    List<CampSchedule> lstCampSchedule = await _campRequest.getCampSchedule();
+    lstCampSchedule = await _campRequest.getCampSchedule();
     List<Map<String, dynamic>> jsonList =
         lstCampSchedule.map((camp) => camp.toJson()).toList();
     String lstCampScheduleString = jsonEncode(jsonList);
@@ -59,25 +74,25 @@ class TimerClockViewModel extends BaseViewModel {
 
   Future<void> _updateTime() async {
     _currentTime = DateTime.now().toUtc().add(const Duration(hours: 7));
+    //_currentTime = _currentTime.add(const Duration(seconds: 1));
     homeViewModel.currentTimeFormatted = currentTimeFormatted;
+
     Device? device;
     if (AppSP.get(AppSPKey.currentDevice) != 'null' &&
         AppSP.get(AppSPKey.currentDevice) != null) {
       device = Device.fromJson(jsonDecode(AppSP.get(AppSPKey.currentDevice)));
     }
     notifyListeners();
-    day = AppSP.get(AppSPKey.day) ?? '';
-    proUN = AppSP.get(AppSPKey.proUN) ?? '';
-    proPW = AppSP.get(AppSPKey.proPW) ?? '';
-    // String offProjector =
-    //     'http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0203';
-    // String onProjector =
-    //     "http://$proUN:$proPW@$projectorIP/cgi-bin/sd95.cgi?cm=0200a13d0103";
-    projectorIP = AppSP.get(AppSPKey.projectorIP) ?? '';
-    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    
+    DateTime now =
+        _currentTime; //DateTime.now().toUtc().add(const Duration(hours: 7));
     if (day != now.toString().substring(0, 10)) {
       AppSP.set(AppSPKey.day, now.toString().substring(0, 10));
-      await getCampSchedule1();
+      lstCampSchedule = await _campRequest.getCampSchedule();
+      List<Map<String, dynamic>> jsonList =
+          lstCampSchedule.map((camp) => camp.toJson()).toList();
+      String lstCampScheduleString = jsonEncode(jsonList);
+      AppSP.set(AppSPKey.lstCampSchedule, lstCampScheduleString);
       await homeViewModel.viewCampViewModel.syncVideo();
     }
     if (device != null &&
@@ -119,6 +134,7 @@ class TimerClockViewModel extends BaseViewModel {
         Duration difference = turnOn.difference(turnOff);
         print("Đúng điều kiện ngủ");
         if (!isScheduled) {
+          _dio.get(offProjector);
           _scheduleSleep(difference);
         }
       }
@@ -129,7 +145,7 @@ class TimerClockViewModel extends BaseViewModel {
     // if(device.turnOff)
   }
 
-  void _scheduleSleep(Duration delay) async {
+  _scheduleSleep(Duration delay) async {
     print('Vào _scheduleSleep');
 
     bool isDeviceOwner = await DevicePolicyController.instance.isAdminActive();
@@ -149,10 +165,11 @@ class TimerClockViewModel extends BaseViewModel {
         print('ngủ trong: ${delay.inSeconds}');
         await _alarmService.setWakeUpAlarm(delay.inSeconds);
         print('Đã đặt thời gian thức dậy');
+
         _alarmService.listenForWakeUpEvents(() async {
           // Khi thiết bị thức dậy
           print('Thiết bị đã thức dậy.');
-
+          _dio.get(onProjector);
           // Tiến hành các hành động khi thiết bị thức dậy
           homeViewModel.playCamp(true); // Đánh thức và tiếp tục
           print('Đã hết thời gian, thiết bị sẽ thức dậy.');

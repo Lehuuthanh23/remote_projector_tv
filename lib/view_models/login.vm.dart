@@ -53,6 +53,7 @@ class LoginViewModel extends BaseViewModel {
 
     if (error != null) {
       errorMessage = error;
+      print('Vào error');
     } else if (context.mounted) {
       AppSP.set(AppSPKey.loginWith, 'email');
       Navigator.pushAndRemoveUntil(
@@ -60,6 +61,7 @@ class LoginViewModel extends BaseViewModel {
         MaterialPageRoute(builder: (context) => const HomePage()),
         (route) => false,
       );
+      print('Vào hôme');
     }
     notifyListeners();
   }
